@@ -70,6 +70,11 @@ import {
   startHealthThresholdWatcher,
   upsertTargetHealthThreshold,
 } from './src/server/healthThresholdService.ts';
+import {
+  createDemoSessionToken,
+  DEMO_USER,
+  ensureDemoWorkspaceSeeded,
+} from './src/server/demoWorkspace.ts';
 
 dotenv.config();
 
@@ -225,6 +230,27 @@ function getActorEmail(req: AuthRequest): string {
 // Public health check
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
+});
+
+// Live Demo Workspace session (isolated demo user with pre-populated telemetry)
+app.post('/api/auth/demo-session', async (_req, res) => {
+  try {
+    await ensureDemoWorkspaceSeeded();
+    const session = createDemoSessionToken();
+    res.json({
+      token: session.token,
+      expiresAt: session.expiresAt,
+      user: DEMO_USER,
+    });
+  } catch (error) {
+    console.error('Failed to initialize demo session:', error);
+    res.status(500).json({
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Unable to initialize demo workspace.',
+    });
+  }
 });
 
 // CI/CD Machine-to-Machine Drift Gate (API Key auth via X-DriftGuard-Key)

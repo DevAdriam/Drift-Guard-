@@ -710,7 +710,11 @@ export function startHealthThresholdWatcher(
         .where(eq(targetHealthThresholds.enabled, true));
 
       const uniqueOwners = Array.from(
-        new Set(enabledPolicies.map((p) => p.ownerUid))
+        new Set(
+          enabledPolicies
+            .map((p) => p.ownerUid)
+            .filter((uid) => uid !== 'demo_driftguard_workspace')
+        )
       );
 
       for (const ownerUid of uniqueOwners) {

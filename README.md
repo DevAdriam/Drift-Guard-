@@ -11,7 +11,7 @@
 
 DriftGuard is a production-grade PostgreSQL observability and schema governance platform. Using strictly **read-only catalog inspection**, it detects undocumented schema drift via canonical SHA-256 baselines, catches lock contention and index bloat before outages occur, analyzes slow queries and sequential scans, gates unsafe migrations in CI/CD pipelines, and automatically re-inspects databases when custom health score thresholds are breached.
 
-![DriftGuard Monitored PostgreSQL Targets Dashboard](docs/screenshots/dashboard-overview.jpg)
+![DriftGuard Monitored PostgreSQL Targets Dashboard](docs/screenshots/dashboard-overview.png)
 
 ---
 
@@ -37,28 +37,35 @@ DriftGuard is a production-grade PostgreSQL observability and schema governance 
 ### 1. Fleet Dashboard, 24-Hour Activity Heat Map & Bulk Target Operations
 Monitor every PostgreSQL cluster across Production, Staging, and Development from a unified Grid or Table workspace. Spot peak incident hours on the 24-hour heat map, track 7-day health score sparklines per database, and run concurrent inspections or deletions via bulk selection.
 
-![Monitored PostgreSQL Targets & 24-Hour Activity Heat Map](docs/screenshots/dashboard-overview.jpg)
+![Monitored PostgreSQL Targets & 24-Hour Activity Heat Map](docs/screenshots/dashboard-overview.png)
 
 ---
 
 ### 2. Target Detail View, SHA-256 Schema Diff & Event Timeline
 Drill into any monitored target to inspect column-level additions, removals, and type modifications against your promoted Git commit baseline, review blocking PID trees and index bloat, export a formatted PDF Health Report, and audit every schema change, alert trigger, and manual scan in the chronological **Event Timeline** sidebar.
 
-![Target Detail View & Event Timeline](docs/screenshots/target-detail-timeline.jpg)
+![Target Detail View & Event Timeline](docs/screenshots/target-detail-timeline.png)
 
 ---
 
-### 3. SQL Telemetry Suite — 30-Day Performance Trends & Index Advisor
-Spot query latency regressions over 7, 14, or 30 days compared against historical baselines, and use the **Index Advisor** to analyze `EXPLAIN` query plans and high-latency sequential scans to generate copy-ready `CREATE INDEX CONCURRENTLY` single and composite index statements.
+### 3. SQL Telemetry Suite — 30-Day Performance Trends
+Spot query latency regressions over 7, 14, or 30 days compared against historical baselines, highlighting regression spikes across top `pg_stat_statements` queries.
 
-![SQL Telemetry Suite — Performance Trends & Index Advisor](docs/screenshots/sql-telemetry-suite.jpg)
+![SQL Telemetry Suite — 30-Day Performance Trends](docs/screenshots/sql-telemetry-suite.png)
 
 ---
 
-### 4. CI/CD Gates & Per-Target Health Score Auto-Inspection
+### 4. SQL Telemetry Suite — Index Advisor & Sequential Scan Hotspots
+Analyze `EXPLAIN` query plans and high-latency sequential scan hotspots to generate copy-ready `CREATE INDEX CONCURRENTLY` single-column and ESR (Equality → Sort → Range) composite B-Tree index recommendations.
+
+![SQL Telemetry Suite — Index Advisor](docs/screenshots/index-advisor.png)
+
+---
+
+### 5. CI/CD Gates & Per-Target Health Score Auto-Inspection
 Configure custom minimum 0–100 health score thresholds and anti-loop cooldown windows per database. Whenever a database's computed health score drops below its threshold, DriftGuard automatically executes a verification re-inspection and records the event in the immutable Activity Audit Log.
 
-![Automation Settings — Health Score Auto-Inspect](docs/screenshots/health-score-auto-inspect.jpg)
+![Automation Settings — Health Score Auto-Inspect](docs/screenshots/health-score-auto-inspect.png)
 
 ---
 
@@ -154,6 +161,9 @@ npm start
 
 Open **http://localhost:3000** in your browser.
 
+### 5. Instant Live Demo Workspace
+Want to explore every feature without connecting your own PostgreSQL cluster first? Click **"Try Live Demo Workspace"** on the sign-in screen to launch an isolated demo session (`demo@driftguard.dev`) pre-populated with 4 PostgreSQL clusters (`prod-billing-pg`, `prod-core-ledger`, `staging-orders-pg`, `dev-analytics-pg`), 7-day health trends, 24-hour activity heat map telemetry, open schema drift & lock incidents, 30-day query latency regressions, configured health-score auto-inspect rules, Slack/Discord alert channels, and audit logs.
+
 ---
 
 ## Provisioning a Read-Only Target Role
@@ -235,6 +245,8 @@ All `/api/*` endpoints (except `/api/health` and `/api/ci/check-drift`) require 
 ## Localization
 
 DriftGuard supports instant runtime language switching between **English (`en`)** and **Burmese (`my`)** from the sidebar and sign-in screen. All navigation, dashboard KPIs, charts, SQL telemetry explanations, migration warnings, bulk controls, and date/time formatting adapt automatically.
+
+![DriftGuard Burmese Localization](docs/screenshots/burmese-localization.png)
 
 ---
 

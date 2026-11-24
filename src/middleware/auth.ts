@@ -2,9 +2,10 @@ import type { Request, Response, NextFunction } from 'express';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 import { adminAuth } from '../lib/firebase-admin.ts';
 import { getOrCreateUser } from '../db/users.ts';
+import { verifyDemoSessionToken } from '../server/demoWorkspace.ts';
 
 export interface AuthRequest extends Request {
-  user?: DecodedIdToken;
+  user?: Pick<DecodedIdToken, 'uid' | 'email'> & { name?: string };
 }
 
 export const requireAuth = async (
@@ -21,6 +22,19 @@ export const requireAuth = async (
   const token = authHeader.slice('Bearer '.length).trim();
   if (!token) {
     res.status(401).json({ error: 'Unauthorized: Empty bearer token' });
+    return;
+  }
+
+  // Allow cryptographically verified Demo Workspace sessions (strictly isolated to demo_driftguard_workspace)
+  const demoUser = verifyDemoSessionToken(token);
+  if (demoUser) {
+    req.user = {
+      uid: demoUser.uid,
+      email: demoUser.email,
+      name: demoUser.name,
+    };
+    await getOrCreateUser(demoUser.uid, demoUser.email, demoUser.name);
+    next();
     return;
   }
 
