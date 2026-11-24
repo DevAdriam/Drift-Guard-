@@ -1,0 +1,6 @@
+{
+  "name": "DriftGuard",
+  "description": "PostgreSQL Schema Drift & Health Monitor with read-only catalog inspection, canonical SHA-256 baseline diffing, recursive lock tree detection, index bloat telemetry, and Slack/Discord webhook alerting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
