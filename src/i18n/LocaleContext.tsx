@@ -222,7 +222,7 @@ export function LanguageSwitcher({
   if (variant === 'header') {
     return (
       <div
-        className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 p-0.5 shrink-0"
+        className="inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-0.5 shrink-0"
         role="group"
         aria-label={t('lang.label')}
       >
@@ -231,8 +231,8 @@ export function LanguageSwitcher({
           onClick={() => setLocale('en')}
           className={`px-2.5 py-1 text-xs font-semibold rounded transition-colors cursor-pointer whitespace-nowrap ${
             locale === 'en'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           {t('lang.en')}
@@ -242,8 +242,8 @@ export function LanguageSwitcher({
           onClick={() => setLocale('my')}
           className={`px-2.5 py-1 text-xs font-semibold rounded transition-colors cursor-pointer whitespace-nowrap ${
             locale === 'my'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           {t('lang.my')}
@@ -254,12 +254,12 @@ export function LanguageSwitcher({
 
   return (
     <div className="flex items-center justify-between gap-2 px-1 py-1.5">
-      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 min-w-0">
-        <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 min-w-0">
+        <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
         <span className="truncate">{t('lang.label')}</span>
       </div>
       <div
-        className="inline-flex items-center rounded-md border border-slate-200 bg-slate-100/80 p-0.5 shrink-0"
+        className="inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800 p-0.5 shrink-0"
         role="group"
         aria-label={t('lang.label')}
       >
@@ -268,8 +268,8 @@ export function LanguageSwitcher({
           onClick={() => setLocale('en')}
           className={`px-2 py-0.5 text-[11px] font-semibold rounded transition-colors cursor-pointer whitespace-nowrap ${
             locale === 'en'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           {t('lang.en')}
@@ -279,8 +279,8 @@ export function LanguageSwitcher({
           onClick={() => setLocale('my')}
           className={`px-2 py-0.5 text-[11px] font-semibold rounded transition-colors cursor-pointer whitespace-nowrap ${
             locale === 'my'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           {t('lang.my')}

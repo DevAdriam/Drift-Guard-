@@ -7,6 +7,7 @@ import {
   telemetrySnapshots,
 } from '../db/schema.ts';
 import { getWorkspaceSettings, recordAuditLog } from './extendedService.ts';
+import { isInActiveMaintenanceWindow } from './governanceService.ts';
 import type {
   DatabaseHealthSummary,
   EnvironmentType,
@@ -343,7 +344,11 @@ export interface PostInspectionThresholdOutcome {
   minHealthScore: number | null;
   breached: boolean;
   autoReinspectTriggered: boolean;
-  skippedReason?: 'cooldown' | 'in_progress' | 'auto_reinspect_pass';
+  skippedReason?:
+    | 'cooldown'
+    | 'in_progress'
+    | 'auto_reinspect_pass'
+    | 'maintenance_window';
 }
 
 /**
@@ -456,6 +461,29 @@ export async function handlePostInspectionThresholdCheck(params: {
       breached: true,
       autoReinspectTriggered: false,
       skippedReason: 'in_progress',
+    };
+  }
+
+  const maintCheck = await isInActiveMaintenanceWindow(params.ownerUid, {
+    databaseId: params.databaseId,
+    checkType: 'auto_reinspect',
+  });
+  if (maintCheck.suppressed) {
+    await db
+      .update(targetHealthThresholds)
+      .set({
+        lastEvaluatedScore: params.healthScore,
+        lastBreachAt: now,
+      })
+      .where(eq(targetHealthThresholds.databaseId, params.databaseId));
+
+    return {
+      healthScore: params.healthScore,
+      thresholdEnabled: true,
+      minHealthScore: policy.minHealthScore,
+      breached: true,
+      autoReinspectTriggered: false,
+      skippedReason: 'maintenance_window',
     };
   }
 
@@ -610,6 +638,25 @@ export async function evaluateOwnerHealthThresholds(
         breached: true,
         triggered: false,
         skippedReason: 'in_progress',
+      });
+      continue;
+    }
+
+    const maintCheck = await isInActiveMaintenanceWindow(ownerUid, {
+      databaseId: target.databaseId,
+      environment: target.environment,
+      checkType: 'auto_reinspect',
+    });
+    if (maintCheck.suppressed) {
+      results.push({
+        databaseId: target.databaseId,
+        databaseName: target.databaseName,
+        previousScore: target.currentHealthScore,
+        newScore: null,
+        minHealthScore: target.minHealthScore,
+        breached: true,
+        triggered: false,
+        skippedReason: 'maintenance_window',
       });
       continue;
     }

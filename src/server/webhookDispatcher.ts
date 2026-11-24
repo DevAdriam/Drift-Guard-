@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '../db/index.ts';
 import { alertWebhooks } from '../db/schema.ts';
 import { decryptSecret, validateSafeWebhookUrl } from './crypto.ts';
+import { isInActiveMaintenanceWindow } from './governanceService.ts';
 import type {
   IncidentDetails,
   IncidentType,
@@ -16,6 +17,7 @@ const SEVERITY_RANK: Record<SeverityLevel, number> = {
 };
 
 export interface AlertDispatchPayload {
+  databaseId?: string;
   databaseName: string;
   environment: string;
   incidentType: IncidentType;
@@ -87,7 +89,17 @@ function buildProviderPayload(
 export async function dispatchIncidentAlerts(
   ownerUid: string,
   alert: AlertDispatchPayload
-): Promise<{ delivered: number; failed: number }> {
+): Promise<{ delivered: number; failed: number; suppressed?: boolean }> {
+  // Respect active Maintenance Windows configured for this environment or target
+  const silenceCheck = await isInActiveMaintenanceWindow(ownerUid, {
+    databaseId: alert.databaseId ?? null,
+    environment: alert.environment,
+    checkType: 'webhook',
+  });
+  if (silenceCheck.suppressed) {
+    return { delivered: 0, failed: 0, suppressed: true };
+  }
+
   let channels: (typeof alertWebhooks.$inferSelect)[];
   try {
     channels = await db

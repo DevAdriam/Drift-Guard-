@@ -13,12 +13,16 @@ import {
   RotateCcw,
   Search,
   ShieldAlert,
+  ShieldCheck,
   Trash2,
 } from 'lucide-react';
 import type { ApiClient, DatabaseDetailResponse } from '../lib/api.ts';
 import type { ColumnCatalogRow, ColumnDiffItem } from '../types/telemetry.ts';
 import { EventTimelineSidebar } from './EventTimelineSidebar.tsx';
 import { UpdateCredentialsModal } from './UpdateCredentialsModal.tsx';
+import { SchemaErdPanel } from './SchemaErdPanel.tsx';
+import { SchemaTimeMachinePanel } from './SchemaTimeMachinePanel.tsx';
+import { SecurityAuditPanel } from './SecurityAuditPanel.tsx';
 import { useI18n } from '../i18n/LocaleContext.tsx';
 
 interface TargetDetailViewProps {
@@ -31,6 +35,9 @@ interface TargetDetailViewProps {
 type DetailTab =
   | 'diff'
   | 'catalog'
+  | 'erd'
+  | 'time-machine'
+  | 'security'
   | 'health'
   | 'unused-idx'
   | 'locks'
@@ -287,6 +294,40 @@ export function TargetDetailView({
     }
   };
 
+  const handleRequestBaselineApproval = async () => {
+    setBusyAction('approval-request');
+    setNotice(null);
+    setError(null);
+    try {
+      const res = await api.createBaselineApprovalRequest({
+        databaseId,
+        gitCommitSha: gitShaInput.trim() || undefined,
+        note: tr(
+          'Submitted from Target Inspector for DBA/Admin baseline promotion sign-off.',
+          'DBA/Admin အတည်ပြုချက် ရယူရန် ပစ်မှတ် စစ်ဆေးရေးမှ တင်သွင်းထားပါသည်။'
+        ),
+      });
+      setGitShaInput('');
+      setNotice(
+        locale === 'my'
+          ? `မူလစံ အတည်ပြုချက် တောင်းဆိုမှု တင်သွင်းပြီးပါပြီ (${res.approval.proposedSchemaHash.slice(0, 12)}) — စီမံခန့်ခွဲမှုနှင့် အစီရင်ခံစာများ ကဏ္ဍတွင် အတည်ပြုနိုင်ပါသည်။`
+          : `Baseline promotion approval request submitted (${res.approval.proposedSchemaHash.slice(0, 12)}). Review and approve under Governance & Reports.`
+      );
+      await loadDetail();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : tr(
+              'Failed to submit baseline approval request.',
+              'မူလစံ အတည်ပြုချက် တောင်းဆိုမှု တင်သွင်း၍ မရပါ။'
+            )
+      );
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
   const handleRestoreBaseline = async (baselineId: string) => {
     setBusyAction(`restore-${baselineId}`);
     setNotice(null);
@@ -405,17 +446,17 @@ export function TargetDetailView({
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-56 bg-slate-200 rounded animate-pulse" />
-        <div className="h-28 bg-white border border-slate-200 rounded-xl animate-pulse" />
-        <div className="h-80 bg-white border border-slate-200 rounded-xl animate-pulse" />
+        <div className="h-8 w-56 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+        <div className="h-28 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl animate-pulse" />
+        <div className="h-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl animate-pulse" />
       </div>
     );
   }
 
   if (!detail) {
     return (
-      <div className="bg-white border border-slate-200 rounded-xl p-8 text-center space-y-3">
-        <p className="text-sm font-medium text-slate-900">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center space-y-3">
+        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
           {error ||
             tr(
               'Target database could not be loaded.',
@@ -425,7 +466,7 @@ export function TargetDetailView({
         <button
           type="button"
           onClick={onBack}
-          className="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+          className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer"
         >
           {tr('Return to Targets', 'ဒေတာဘေ့စ် စာရင်းသို့ ပြန်သွားရန်')}
         </button>
@@ -458,7 +499,7 @@ export function TargetDetailView({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>
@@ -466,26 +507,26 @@ export function TargetDetailView({
             </span>
           </button>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {database.name}
             </h1>
-            <span className="text-xs font-medium text-slate-500">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {formatEnv(database.environment)}
             </span>
             {health?.pg_version && (
               <>
-                <span className="text-slate-300" aria-hidden="true">
+                <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                   ·
                 </span>
-                <span className="text-xs font-mono text-slate-600">
+                <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
                   {health.pg_version}
                 </span>
               </>
             )}
-            <span className="text-slate-300" aria-hidden="true">
+            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
               ·
             </span>
-            <span className="text-xs font-mono text-slate-500 truncate max-w-md">
+            <span className="text-xs font-mono text-slate-500 dark:text-slate-400 truncate max-w-md">
               {database.maskedTarget}
             </span>
           </div>
@@ -498,8 +539,8 @@ export function TargetDetailView({
             aria-pressed={showTimeline}
             className={`inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium border rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               showTimeline
-                ? 'text-blue-800 bg-blue-50/70 border-blue-200 hover:bg-blue-50'
-                : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50'
+                ? 'text-blue-800 dark:text-blue-300 bg-blue-50/70 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/70 hover:bg-blue-50 dark:hover:bg-blue-950/55'
+                : 'text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
             <History className="w-4 h-4" />
@@ -514,9 +555,9 @@ export function TargetDetailView({
             type="button"
             onClick={handleDownloadHealthReport}
             disabled={busyAction !== null}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-slate-800 bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
-            <FileDown className="w-4 h-4 text-slate-600" />
+            <FileDown className="w-4 h-4 text-slate-600 dark:text-slate-300" />
             <span>
               {busyAction === 'report'
                 ? tr('Generating PDF…', 'PDF ထုတ်ယူနေသည်…')
@@ -529,9 +570,9 @@ export function TargetDetailView({
               type="button"
               onClick={() => setCredentialsModalOpen(true)}
               disabled={busyAction !== null}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <KeyRound className="w-4 h-4 text-slate-500" />
+              <KeyRound className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <span>{tr('Update URI', 'URI ပြင်ဆင်ရန်')}</span>
             </button>
           )}
@@ -540,7 +581,7 @@ export function TargetDetailView({
             type="button"
             onClick={handleInspectNow}
             disabled={busyAction !== null}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <RefreshCw
               className={`w-4 h-4 ${busyAction === 'inspect' ? 'animate-spin' : ''}`}
@@ -556,28 +597,28 @@ export function TargetDetailView({
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-700 border border-slate-200 hover:border-red-200 bg-white rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-red-700 dark:hover:text-red-400 border border-slate-200 dark:border-slate-800 hover:border-red-200 dark:hover:border-red-800/70 bg-white dark:bg-slate-900 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
               <span>{tr('Remove', 'ဖယ်ရှားရန်')}</span>
             </button>
           ) : (
-            <div className="inline-flex items-center gap-2 border border-red-200 bg-red-50 rounded-lg px-3 py-1.5">
-              <span className="text-xs font-medium text-red-800">
+            <div className="inline-flex items-center gap-2 border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 rounded-lg px-3 py-1.5">
+              <span className="text-xs font-medium text-red-800 dark:text-red-300">
                 {tr('Delete target?', 'ပစ်မှတ်ကို ဖျက်မည်လား?')}
               </span>
               <button
                 type="button"
                 onClick={handleDeleteTarget}
                 disabled={busyAction === 'delete'}
-                className="text-xs font-semibold text-red-700 hover:text-red-900 cursor-pointer"
+                className="text-xs font-semibold text-red-700 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 cursor-pointer"
               >
                 {tr('Confirm', 'အတည်ပြုရန်')}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmDelete(false)}
-                className="text-xs font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
+                className="text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
               >
                 {t('action.cancel')}
               </button>
@@ -590,16 +631,16 @@ export function TargetDetailView({
         database.credentialsValid === false && (
           <div
             role="alert"
-            className="px-4 py-3.5 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            className="px-4 py-3.5 rounded-lg border border-amber-200 dark:border-amber-900/70 bg-amber-50 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
           >
             <div className="space-y-0.5">
-              <p className="font-semibold text-amber-950">
+              <p className="font-semibold text-amber-950 dark:text-amber-200">
                 {tr(
                   'Stored connection credentials need to be re-entered.',
                   'သိမ်းဆည်းထားသော ချိတ်ဆက်မှု အချက်အလက်ကို ပြန်လည်ထည့်သွင်းရန် လိုအပ်ပါသည်။'
                 )}
               </p>
-              <p className="text-amber-800">
+              <p className="text-amber-800 dark:text-amber-300">
                 {tr(
                   'This target was encrypted with an earlier temporary key before a server restart. Re-enter its PostgreSQL URI once — it will now persist across restarts.',
                   'ဤဒေတာဘေ့စ်ကို ဆာဗာပြန်မစတင်မီ ယာယီသော့ဖြင့် ကုဒ်ဝှက်ထားခဲ့ခြင်း ဖြစ်ပါသည်။ PostgreSQL URI ကို တစ်ကြိမ် ပြန်လည်ထည့်သွင်းပါ — ယခုအခါ ဆာဗာပြန်စတင်သော်လည်း တည်မြဲနေမည် ဖြစ်ပါသည်။'
@@ -609,7 +650,7 @@ export function TargetDetailView({
             <button
               type="button"
               onClick={() => setCredentialsModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
             >
               <KeyRound className="w-3.5 h-3.5" />
               <span>
@@ -620,7 +661,7 @@ export function TargetDetailView({
         )}
 
       {notice && (
-        <div className="px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm text-blue-900">
+        <div className="px-4 py-3 rounded-lg border border-blue-200 dark:border-blue-900/70 bg-blue-50 dark:bg-blue-950/40 text-sm text-blue-900 dark:text-blue-200">
           {notice}
         </div>
       )}
@@ -628,29 +669,29 @@ export function TargetDetailView({
       {error && (
         <div
           role="alert"
-          className="px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-800"
+          className="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-sm text-red-800 dark:text-red-300"
         >
           {error}
         </div>
       )}
 
       {/* Primary Telemetry Summary Strip */}
-      <div className="bg-white border border-slate-200 rounded-xl grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800">
         <div className="p-5">
-          <p className="text-xs font-medium text-slate-500">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             {tr('Drift Status', 'ဖွဲ့စည်းပုံ အခြေအနေ')}
           </p>
           <p
             className={`mt-1.5 text-lg font-semibold ${
               database.lastHealthStatus === 'DRIFT'
-                ? 'text-red-700'
+                ? 'text-red-700 dark:text-red-400'
                 : database.lastHealthStatus === 'WARNING'
-                  ? 'text-amber-700'
+                  ? 'text-amber-700 dark:text-amber-400'
                   : database.lastHealthStatus === 'ERROR'
-                    ? 'text-red-700'
+                    ? 'text-red-700 dark:text-red-400'
                     : database.lastHealthStatus === 'HEALTHY'
-                      ? 'text-emerald-700'
-                      : 'text-slate-600'
+                      ? 'text-emerald-700 dark:text-emerald-400'
+                      : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             {database.lastHealthStatus === 'HEALTHY'
@@ -663,7 +704,7 @@ export function TargetDetailView({
                     ? tr('Poll Error', 'စစ်ဆေးမှု အမှား')
                     : tr('Pending', 'စောင့်ဆိုင်းနေသည်')}
           </p>
-          <p className="mt-1 text-xs text-slate-500 tabular-nums">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
             {locale === 'my'
               ? `ဖွင့်ထားသော သတိပေးချက် ${openCount} ခု · ${database.pollIntervalSeconds} စက္ကန့်တိုင်း စစ်ဆေးသည်`
               : `${openCount} open incident${openCount === 1 ? '' : 's'} · Poll every ${database.pollIntervalSeconds}s`}
@@ -671,11 +712,11 @@ export function TargetDetailView({
         </div>
 
         <div className="p-5">
-          <p className="text-xs font-medium text-slate-500">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             {tr('Live Canonical SHA-256', 'လက်ရှိ စံ SHA-256')}
           </p>
           <div className="mt-1.5 flex items-center gap-2">
-            <span className="text-base font-mono font-semibold text-slate-900 tabular-nums">
+            <span className="text-base font-mono font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
               {shortHash(latestSnapshot?.schemaHash ?? database.lastSchemaHash)}
             </span>
             {latestSnapshot?.schemaHash && (
@@ -683,17 +724,17 @@ export function TargetDetailView({
                 type="button"
                 onClick={() => copyText('live-hash', latestSnapshot.schemaHash)}
                 aria-label={tr('Copy live SHA-256 hash', 'လက်ရှိ SHA-256 ကူးယူရန်')}
-                className="text-slate-400 hover:text-slate-700 cursor-pointer"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
               >
                 {copiedId === 'live-hash' ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-700" />
+                  <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                 ) : (
                   <Copy className="w-3.5 h-3.5" />
                 )}
               </button>
             )}
           </div>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {latestBaseline
               ? hashMatches
                 ? tr('Matches stored baseline', 'သိမ်းဆည်းထားသော မူလစံနှင့် ကိုက်ညီသည်')
@@ -705,21 +746,21 @@ export function TargetDetailView({
         </div>
 
         <div className="p-5">
-          <p className="text-xs font-medium text-slate-500">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             {tr('Cache Hit & DB Size', 'Cache ထိရောက်မှုနှင့် ဒေတာဘေ့စ် အရွယ်အစား')}
           </p>
           <p
             className={`mt-1.5 text-lg font-semibold font-mono tabular-nums ${
               health && health.cache_hit_ratio_pct < 95
-                ? 'text-amber-700'
-                : 'text-slate-900'
+                ? 'text-amber-700 dark:text-amber-400'
+                : 'text-slate-900 dark:text-slate-100'
             }`}
           >
             {health
               ? `${health.cache_hit_ratio_pct.toFixed(1)}% · ${health.database_size_pretty}`
               : '—'}
           </p>
-          <p className="mt-1 text-xs text-slate-500 tabular-nums">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
             {latestSnapshot
               ? locale === 'my'
                 ? `ဇယား ${latestSnapshot.tableCount} ခု · ကော်လံ ${latestSnapshot.columnCount} ခု`
@@ -729,21 +770,21 @@ export function TargetDetailView({
         </div>
 
         <div className="p-5">
-          <p className="text-xs font-medium text-slate-500">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             {tr('Connection Pool', 'ချိတ်ဆက်မှု ပမာဏ')}
           </p>
           <p
             className={`mt-1.5 text-lg font-semibold font-mono tabular-nums ${
               health && health.connection_usage_pct >= 80
-                ? 'text-amber-700'
-                : 'text-slate-900'
+                ? 'text-amber-700 dark:text-amber-400'
+                : 'text-slate-900 dark:text-slate-100'
             }`}
           >
             {health
               ? `${health.active_connections + health.idle_connections + health.idle_in_transaction} / ${health.max_connections} (${health.connection_usage_pct}%)`
               : '—'}
           </p>
-          <p className="mt-1 text-xs text-slate-500 tabular-nums">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
             {health
               ? locale === 'my'
                 ? `လုပ်ဆောင်နေဆဲ ${health.active_connections} ခု · idle-in-tx ${health.idle_in_transaction} ခု`
@@ -759,10 +800,10 @@ export function TargetDetailView({
       <div className="flex flex-col xl:flex-row xl:items-start gap-6">
         <div className="flex-1 min-w-0 space-y-6">
           {/* Baseline Promotion & Incident Drill Action Bar */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
-                <GitCommitHorizontal className="w-4 h-4 text-slate-400 shrink-0" />
+                <GitCommitHorizontal className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
                 <input
                   type="text"
                   maxLength={40}
@@ -772,14 +813,14 @@ export function TargetDetailView({
                     'Git commit SHA (optional)',
                     'Git commit SHA (ထည့်လိုက ထည့်ပါ)'
                   )}
-                  className="w-48 px-3 py-1.5 text-xs font-mono border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+                  className="w-48 px-3 py-1.5 text-xs font-mono border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
                 />
               </div>
               <button
                 type="button"
                 onClick={handleCaptureBaseline}
                 disabled={busyAction !== null}
-                className="px-3.5 py-1.5 text-xs font-semibold text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                className="px-3.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-800 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
               >
                 {busyAction === 'baseline'
                   ? tr('Capturing…', 'သိမ်းဆည်းနေသည်…')
@@ -788,17 +829,32 @@ export function TargetDetailView({
                       'လက်ရှိ Catalog ကို မူလစံအဖြစ် သတ်မှတ်ရန်'
                     )}
               </button>
+              {database.environment === 'production' && (
+                <button
+                  type="button"
+                  onClick={handleRequestBaselineApproval}
+                  disabled={busyAction !== null}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-950/75 border border-blue-200 dark:border-blue-900/70 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>
+                    {busyAction === 'approval-request'
+                      ? tr('Submitting…', 'တင်သွင်းနေသည်…')
+                      : tr('Request Approval', 'အတည်ပြုချက် တောင်းဆိုရန်')}
+                  </span>
+                </button>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-slate-500 mr-1">
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 mr-1">
                 {tr('Verify Alert Pipeline:', 'သတိပေးစနစ် စမ်းသပ်ရန်:')}
               </span>
               <button
                 type="button"
                 onClick={() => handleRunDrill('drift')}
                 disabled={busyAction !== null}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 border border-red-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 border border-red-200 dark:border-red-900/70 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
               >
                 <Play className="w-3 h-3" />
                 <span>{tr('Drift Drill', 'Drift စမ်းသပ်ရန်')}</span>
@@ -807,7 +863,7 @@ export function TargetDetailView({
                 type="button"
                 onClick={() => handleRunDrill('lock')}
                 disabled={busyAction !== null}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-50 border border-amber-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/50 border border-amber-200 dark:border-amber-900/70 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
               >
                 <Play className="w-3 h-3" />
                 <span>{tr('Lock Drill', 'Lock စမ်းသပ်ရန်')}</span>
@@ -816,7 +872,7 @@ export function TargetDetailView({
                 type="button"
                 onClick={() => handleRunDrill('bloat')}
                 disabled={busyAction !== null}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-800 hover:bg-blue-50 border border-blue-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-800 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/55 border border-blue-200 dark:border-blue-900/70 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
               >
                 <Play className="w-3 h-3" />
                 <span>{tr('Bloat Drill', 'Bloat စမ်းသပ်ရန်')}</span>
@@ -825,7 +881,7 @@ export function TargetDetailView({
           </div>
 
           {/* Sub-navigation Tabs */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg w-fit overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit overflow-x-auto max-w-full">
             {(
               [
                 {
@@ -835,6 +891,18 @@ export function TargetDetailView({
                 {
                   id: 'catalog',
                   label: `${tr('Live Catalog', 'လက်ရှိ Catalog')} (${latestSnapshot?.columnCount ?? 0})`,
+                },
+                {
+                  id: 'erd',
+                  label: tr('ERD Graph', 'ERD ဆက်နွှယ်ပုံ'),
+                },
+                {
+                  id: 'time-machine',
+                  label: tr('Time Machine', 'အချိန်ခရီးစဉ်'),
+                },
+                {
+                  id: 'security',
+                  label: tr('Security Audit', 'လုံခြုံရေး စစ်ဆေးမှု'),
                 },
                 {
                   id: 'health',
@@ -864,8 +932,8 @@ export function TargetDetailView({
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                   activeTab === tab.id
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
                 {tab.label}
@@ -876,16 +944,16 @@ export function TargetDetailView({
           {/* TAB 1: Schema Diff & Revert SQL */}
           {activeTab === 'diff' && (
             <div className="space-y-4">
-              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <h2 className="text-sm font-semibold text-slate-900">
+                    <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {tr(
                         'Live Catalog vs. Stored Baseline Comparison',
                         'လက်ရှိ Catalog နှင့် သိမ်းဆည်းထားသော မူလစံ နှိုင်းယှဉ်ချက်'
                       )}
                     </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       {tr(
                         'Detects added, dropped, or changed columns compared to your expected Git baseline.',
                         'သတ်မှတ်ထားသော Git မူလစံနှင့် နှိုင်းယှဉ်၍ အသစ်ထည့်ထားသော၊ ဖျက်လိုက်သော သို့မဟုတ် ပြောင်းလဲသွားသော ကော်လံများကို ရှာဖွေဖော်ပြပါသည်။'
@@ -893,7 +961,7 @@ export function TargetDetailView({
                     </p>
                   </div>
                   {latestBaseline && (
-                    <span className="text-xs font-mono text-slate-500 tabular-nums">
+                    <span className="text-xs font-mono text-slate-500 dark:text-slate-400 tabular-nums">
                       {tr('Baseline', 'မူလစံ')}{' '}
                       {shortHash(latestBaseline.schemaHash)}
                       {latestBaseline.gitCommitSha
@@ -905,13 +973,13 @@ export function TargetDetailView({
 
                 {!latestBaseline ? (
                   <div className="p-8 text-center space-y-2">
-                    <p className="text-sm font-medium text-slate-900">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                       {tr(
                         'No schema baseline recorded yet',
                         'ဖွဲ့စည်းပုံ မူလစံ မှတ်တမ်း မသိမ်းဆည်းရသေးပါ'
                       )}
                     </p>
-                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                       {tr(
                         'Click "Promote Live Catalog to Baseline" above to save your expected schema snapshot.',
                         'သတ်မှတ်ထားသော ဖွဲ့စည်းပုံ မှတ်တမ်းကို သိမ်းဆည်းရန် အပေါ်ရှိ "လက်ရှိ Catalog ကို မူလစံအဖြစ် သတ်မှတ်ရန်" ခလုတ်ကို နှိပ်ပါ။'
@@ -920,17 +988,17 @@ export function TargetDetailView({
                   </div>
                 ) : liveDiff.length === 0 ? (
                   <div className="p-8 text-center space-y-1.5">
-                    <p className="text-sm font-semibold text-emerald-700">
+                    <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                       {tr(
                         'Zero Unexpected Database Changes',
                         'မမျှော်လင့်သော ဒေတာဘေ့စ် ပြောင်းလဲမှု လုံးဝမရှိပါ'
                       )}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {locale === 'my' ? (
                         <>
                           လက်ရှိ SHA-256 တန်ဖိုး{' '}
-                          <code className="font-mono text-slate-700">
+                          <code className="font-mono text-slate-700 dark:text-slate-300">
                             {shortHash(latestSnapshot?.schemaHash)}
                           </code>{' '}
                           သည် ကော်လံ {latestSnapshot?.columnCount ?? 0} ခုလုံးတွင်
@@ -939,7 +1007,7 @@ export function TargetDetailView({
                       ) : (
                         <>
                           Live SHA-256 hash{' '}
-                          <code className="font-mono text-slate-700">
+                          <code className="font-mono text-slate-700 dark:text-slate-300">
                             {shortHash(latestSnapshot?.schemaHash)}
                           </code>{' '}
                           matches stored baseline identically across{' '}
@@ -952,7 +1020,7 @@ export function TargetDetailView({
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
+                        <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs font-medium text-slate-500 dark:text-slate-400">
                           <th className="py-2.5 px-4">
                             {tr('Change', 'ပြောင်းလဲမှု')}
                           </th>
@@ -968,20 +1036,20 @@ export function TargetDetailView({
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 text-xs">
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
                         {liveDiff.map((diff) => (
                           <tr
                             key={`${diff.kind}-${diff.table_schema}.${diff.table_name}.${diff.column_name}`}
-                            className="hover:bg-slate-50"
+                            className="hover:bg-slate-50 dark:hover:bg-slate-800/60"
                           >
                             <td className="py-3 px-4 font-semibold">
                               <span
                                 className={
                                   diff.kind === 'ADDED'
-                                    ? 'text-emerald-700'
+                                    ? 'text-emerald-700 dark:text-emerald-400'
                                     : diff.kind === 'REMOVED'
-                                      ? 'text-red-700'
-                                      : 'text-amber-700'
+                                      ? 'text-red-700 dark:text-red-400'
+                                      : 'text-amber-700 dark:text-amber-400'
                                 }
                               >
                                 {diff.kind === 'ADDED'
@@ -991,13 +1059,13 @@ export function TargetDetailView({
                                     : tr('~ Modified', '~ ပြင်ဆင်')}
                               </span>
                             </td>
-                            <td className="py-3 px-4 font-mono text-slate-700">
+                            <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300">
                               {diff.table_schema}.{diff.table_name}
                             </td>
-                            <td className="py-3 px-4 font-mono font-semibold text-slate-900">
+                            <td className="py-3 px-4 font-mono font-semibold text-slate-900 dark:text-slate-100">
                               {diff.column_name}
                             </td>
-                            <td className="py-3 px-4 font-mono text-slate-600">
+                            <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">
                               {diff.baseline
                                 ? `${diff.baseline.data_type} · ${
                                     diff.baseline.is_nullable === 'YES'
@@ -1006,7 +1074,7 @@ export function TargetDetailView({
                                   }`
                                 : '—'}
                             </td>
-                            <td className="py-3 px-4 font-mono text-slate-900">
+                            <td className="py-3 px-4 font-mono text-slate-900 dark:text-slate-100">
                               {diff.live
                                 ? `${diff.live.data_type} · ${
                                     diff.live.is_nullable === 'YES'
@@ -1024,9 +1092,9 @@ export function TargetDetailView({
               </div>
 
               {revertToBaselineSql && (
-                <div className="bg-slate-900 rounded-xl overflow-hidden">
+                <div className="bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 rounded-xl overflow-hidden">
                   <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between gap-4">
-                    <span className="text-xs font-medium text-slate-300">
+                    <span className="text-xs font-medium text-slate-300 dark:text-slate-700">
                       {tr(
                         'Suggested Reconciliation SQL (Revert Live to Match Baseline)',
                         'အကြံပြု ပြန်လည်ညှိနှိုင်း SQL (လက်ရှိကို မူလစံနှင့် ကိုက်ညီစေရန်)'
@@ -1035,7 +1103,7 @@ export function TargetDetailView({
                     <button
                       type="button"
                       onClick={() => copyText('revert-sql', revertToBaselineSql)}
-                      className="inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white cursor-pointer whitespace-nowrap shrink-0"
+                      className="inline-flex items-center gap-1.5 text-xs text-slate-300 dark:text-slate-700 hover:text-white cursor-pointer whitespace-nowrap shrink-0"
                     >
                       {copiedId === 'revert-sql' ? (
                         <>
@@ -1060,19 +1128,19 @@ export function TargetDetailView({
 
           {/* TAB 2: Live Catalog + JSON/CSV Export */}
           {activeTab === 'catalog' && (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-900">
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {tr(
                       'Live System Catalog Columns',
                       'လက်ရှိ System Catalog ကော်လံများ'
                     )}
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     {locale === 'my' ? (
                       <>
-                        <code className="font-mono text-slate-700">
+                        <code className="font-mono text-slate-700 dark:text-slate-300">
                           information_schema.columns
                         </code>{' '}
                         မှ ထုတ်ယူနိုင်သော လက်ရှိ မှတ်တမ်းဖြစ်ပါသည်။
@@ -1080,7 +1148,7 @@ export function TargetDetailView({
                     ) : (
                       <>
                         Exportable snapshot from{' '}
-                        <code className="font-mono text-slate-700">
+                        <code className="font-mono text-slate-700 dark:text-slate-300">
                           information_schema.columns
                         </code>
                         .
@@ -1090,7 +1158,7 @@ export function TargetDetailView({
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="relative w-full sm:w-56">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={catalogSearch}
@@ -1099,7 +1167,7 @@ export function TargetDetailView({
                         'Filter table, column, type…',
                         'ဇယား၊ ကော်လံ၊ အမျိုးအစား ရှာရန်…'
                       )}
-                      className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-slate-900"
+                      className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                     />
                   </div>
                   {latestSnapshot && (
@@ -1107,7 +1175,7 @@ export function TargetDetailView({
                       <button
                         type="button"
                         onClick={handleExportCatalogJson}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg cursor-pointer whitespace-nowrap"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg cursor-pointer whitespace-nowrap"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>JSON</span>
@@ -1115,7 +1183,7 @@ export function TargetDetailView({
                       <button
                         type="button"
                         onClick={handleExportCatalogCsv}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg cursor-pointer whitespace-nowrap"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg cursor-pointer whitespace-nowrap"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>CSV</span>
@@ -1126,7 +1194,7 @@ export function TargetDetailView({
               </div>
 
               {groupedCatalog.length === 0 ? (
-                <div className="p-8 text-center text-sm text-slate-500">
+                <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
                   {latestSnapshot
                     ? tr(
                         'No catalog columns match your filter.',
@@ -1138,14 +1206,14 @@ export function TargetDetailView({
                       )}
                 </div>
               ) : (
-                <div className="divide-y divide-slate-200">
+                <div className="divide-y divide-slate-200 dark:divide-slate-800">
                   {groupedCatalog.map(([tableKey, cols]) => (
                     <div key={tableKey}>
-                      <div className="px-5 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                        <span className="text-xs font-mono font-semibold text-slate-900">
+                      <div className="px-5 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                        <span className="text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">
                           {tableKey}
                         </span>
-                        <span className="text-xs text-slate-500 tabular-nums">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                           {locale === 'my'
                             ? `ကော်လံ ${cols.length} ခု`
                             : `${cols.length} column${cols.length === 1 ? '' : 's'}`}
@@ -1154,7 +1222,7 @@ export function TargetDetailView({
                       <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                           <thead>
-                            <tr className="border-b border-slate-100 text-[11px] font-medium text-slate-500">
+                            <tr className="border-b border-slate-100 dark:border-slate-800/80 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                               <th className="py-2 px-5 w-14">#</th>
                               <th className="py-2 px-4">
                                 {tr('Column', 'ကော်လံ')}
@@ -1170,27 +1238,27 @@ export function TargetDetailView({
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100 text-xs">
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
                             {cols.map((col, idx) => (
                               <tr
                                 key={col.column_name}
-                                className="hover:bg-slate-50"
+                                className="hover:bg-slate-50 dark:hover:bg-slate-800/60"
                               >
-                                <td className="py-2 px-5 font-mono text-slate-400 tabular-nums">
+                                <td className="py-2 px-5 font-mono text-slate-400 dark:text-slate-500 tabular-nums">
                                   {col.ordinal_position ?? idx + 1}
                                 </td>
-                                <td className="py-2 px-4 font-mono font-medium text-slate-900">
+                                <td className="py-2 px-4 font-mono font-medium text-slate-900 dark:text-slate-100">
                                   {col.column_name}
                                 </td>
-                                <td className="py-2 px-4 font-mono text-slate-700">
+                                <td className="py-2 px-4 font-mono text-slate-700 dark:text-slate-300">
                                   {col.data_type}
                                 </td>
-                                <td className="py-2 px-4 font-mono text-slate-600">
+                                <td className="py-2 px-4 font-mono text-slate-600 dark:text-slate-300">
                                   {col.is_nullable === 'YES'
                                     ? 'NULL'
                                     : 'NOT NULL'}
                                 </td>
-                                <td className="py-2 px-4 font-mono text-slate-500 truncate max-w-xs">
+                                <td className="py-2 px-4 font-mono text-slate-500 dark:text-slate-400 truncate max-w-xs">
                                   {col.column_default ?? '—'}
                                 </td>
                               </tr>
@@ -1207,18 +1275,18 @@ export function TargetDetailView({
 
           {/* TAB 3: Table & Vacuum Health */}
           {activeTab === 'health' && (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-200">
-                <h2 className="text-sm font-semibold text-slate-900">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {tr(
                     'Table Size, Dead Tuples & Autovacuum Health',
                     'ဇယား အရွယ်အစား၊ Dead Tuple နှင့် Autovacuum ကျန်းမာရေး'
                   )}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {locale === 'my' ? (
                     <>
-                      <code className="font-mono text-slate-700">
+                      <code className="font-mono text-slate-700 dark:text-slate-300">
                         pg_stat_user_tables
                       </code>{' '}
                       မှတစ်ဆင့် dead-row စုပုံမှုနှင့် sequential / index scan
@@ -1228,7 +1296,7 @@ export function TargetDetailView({
                     <>
                       Tracks dead-row buildup and sequential vs. index scan
                       ratios from{' '}
-                      <code className="font-mono text-slate-700">
+                      <code className="font-mono text-slate-700 dark:text-slate-300">
                         pg_stat_user_tables
                       </code>
                       .
@@ -1238,7 +1306,7 @@ export function TargetDetailView({
               </div>
 
               {!health || health.table_health.length === 0 ? (
-                <div className="p-8 text-center text-sm text-slate-500">
+                <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
                   {tr(
                     'Click "Run Inspection" to collect live table vacuum and scan telemetry.',
                     'ဇယား VACUUM နှင့် scan အချက်အလက်များကို ရယူရန် "စစ်ဆေးမှု ပြုလုပ်ရန်" ကို နှိပ်ပါ။'
@@ -1248,7 +1316,7 @@ export function TargetDetailView({
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium">
                         <th className="py-2.5 px-4">{tr('Table', 'ဇယား')}</th>
                         <th className="py-2.5 px-4 text-right">
                           {tr('Total Size', 'စုစုပေါင်း အရွယ်အစား')}
@@ -1270,36 +1338,36 @@ export function TargetDetailView({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                       {health.table_health.map((row) => (
                         <tr
                           key={`${row.schemaname}.${row.relname}`}
-                          className="hover:bg-slate-50"
+                          className="hover:bg-slate-50 dark:hover:bg-slate-800/60"
                         >
-                          <td className="py-3 px-4 font-mono font-medium text-slate-900">
+                          <td className="py-3 px-4 font-mono font-medium text-slate-900 dark:text-slate-100">
                             {row.schemaname}.{row.relname}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-700">
+                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
                             {row.total_size_pretty}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-700">
+                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
                             {row.n_live_tup.toLocaleString()} /{' '}
                             {row.n_dead_tup.toLocaleString()}
                           </td>
                           <td
                             className={`py-3 px-4 text-right font-mono tabular-nums font-semibold ${
                               row.dead_tuple_pct > 20
-                                ? 'text-amber-700'
-                                : 'text-emerald-700'
+                                ? 'text-amber-700 dark:text-amber-400'
+                                : 'text-emerald-700 dark:text-emerald-400'
                             }`}
                           >
                             {row.dead_tuple_pct.toFixed(1)}%
                           </td>
-                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-600">
+                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
                             {row.seq_scan.toLocaleString()} /{' '}
                             {row.idx_scan.toLocaleString()}
                           </td>
-                          <td className="py-3 px-4 text-slate-500 tabular-nums whitespace-nowrap">
+                          <td className="py-3 px-4 text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">
                             {formatTimestamp(row.last_autovacuum)}
                           </td>
                           <td className="py-3 px-4 text-right">
@@ -1311,11 +1379,11 @@ export function TargetDetailView({
                                   row.remediation_sql
                                 )
                               }
-                              className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 hover:text-blue-900 cursor-pointer whitespace-nowrap"
+                              className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 cursor-pointer whitespace-nowrap"
                             >
                               {copiedId === `vac-${row.relname}` ? (
                                 <>
-                                  <Check className="w-3.5 h-3.5 text-emerald-700" />
+                                  <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                                   <span>
                                     {tr('Copied VACUUM', 'VACUUM ကူးယူပြီး')}
                                   </span>
@@ -1341,15 +1409,15 @@ export function TargetDetailView({
 
           {/* TAB 4: Unused Indexes */}
           {activeTab === 'unused-idx' && (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-200">
-                <h2 className="text-sm font-semibold text-slate-900">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {tr(
                     'Unused Non-Unique Indexes (Zero Scans)',
                     'အသုံးမပြုသော Non-Unique အညွှန်းများ (Scan သုည)'
                   )}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {tr(
                     'Indexes with zero reads since stats reset slow down every INSERT and UPDATE while consuming storage.',
                     'စာရင်းအင်း ပြန်လည်စတင်ချိန်မှစ၍ တစ်ကြိမ်မျှ အသုံးမပြုရသေးသော အညွှန်းများသည် သိုလှောင်မှု နေရာယူပြီး INSERT နှင့် UPDATE များကို နှေးကွေးစေပါသည်။'
@@ -1359,13 +1427,13 @@ export function TargetDetailView({
 
               {!health || health.unused_indexes.length === 0 ? (
                 <div className="p-8 text-center space-y-1">
-                  <p className="text-sm font-medium text-emerald-700">
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
                     {tr(
                       'No Unused Indexes Detected',
                       'အသုံးမပြုသော အညွှန်းများ မတွေ့ရှိပါ'
                     )}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {tr(
                       'Every non-unique index on this database has active scan usage.',
                       'ဤဒေတာဘေ့စ်ရှိ non-unique အညွှန်းအားလုံးကို ပုံမှန် အသုံးပြုလျက်ရှိပါသည်။'
@@ -1376,7 +1444,7 @@ export function TargetDetailView({
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium">
                         <th className="py-2.5 px-4">
                           {tr('Index Name', 'အညွှန်း အမည်')}
                         </th>
@@ -1392,24 +1460,24 @@ export function TargetDetailView({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                       {health.unused_indexes.map((idx) => (
                         <tr key={`${idx.schemaname}.${idx.indexname}`}>
-                          <td className="py-3 px-4 font-mono font-medium text-slate-900">
+                          <td className="py-3 px-4 font-mono font-medium text-slate-900 dark:text-slate-100">
                             {idx.schemaname}.{idx.indexname}
                           </td>
-                          <td className="py-3 px-4 font-mono text-slate-700">
+                          <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300">
                             {idx.tablename}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-600">
+                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
                             {idx.idx_scan}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono tabular-nums font-semibold text-slate-900">
+                          <td className="py-3 px-4 text-right font-mono tabular-nums font-semibold text-slate-900 dark:text-slate-100">
                             {idx.index_size_pretty}
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
-                              <code className="text-xs font-mono text-slate-700 truncate max-w-xs">
+                              <code className="text-xs font-mono text-slate-700 dark:text-slate-300 truncate max-w-xs">
                                 {idx.remediation_sql}
                               </code>
                               <button
@@ -1420,14 +1488,14 @@ export function TargetDetailView({
                                     idx.remediation_sql
                                   )
                                 }
-                                className="text-slate-400 hover:text-slate-800 cursor-pointer shrink-0"
+                                className="text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer shrink-0"
                                 aria-label={tr(
                                   'Copy DROP INDEX SQL',
                                   'DROP INDEX SQL ကူးယူရန်'
                                 )}
                               >
                                 {copiedId === `drop-${idx.indexname}` ? (
-                                  <Check className="w-3.5 h-3.5 text-emerald-700" />
+                                  <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                                 ) : (
                                   <Copy className="w-3.5 h-3.5" />
                                 )}
@@ -1445,15 +1513,15 @@ export function TargetDetailView({
 
           {/* TAB 5: Recursive Lock Tree */}
           {activeTab === 'locks' && (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-200">
-                <h2 className="text-sm font-semibold text-slate-900">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {tr(
                     'Active Blocking Lock Tree (> 5s Wait Threshold)',
                     'လက်ရှိ Lock ပိတ်ဆို့မှု အဆင့်ဆင့် (စောင့်ဆိုင်းချိန် ၅ စက္ကန့်အထက်)'
                   )}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {tr(
                     'Pinpoints queries blocking other sessions with sensitive values automatically redacted.',
                     'အခြား session များကို ပိတ်ဆို့နေသော query များကို အရေးကြီး တန်ဖိုးများ အလိုအလျောက် ဖုံးအုပ်၍ ဖော်ပြပါသည်။'
@@ -1463,13 +1531,13 @@ export function TargetDetailView({
 
               {!latestSnapshot || latestSnapshot.locksJson.length === 0 ? (
                 <div className="p-8 text-center space-y-1.5">
-                  <p className="text-sm font-medium text-emerald-700">
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
                     {tr(
                       'No Database Traffic Jams Active',
                       'လက်ရှိ ဒေတာဘေ့စ် Lock ပိတ်ဆို့မှု မရှိပါ'
                     )}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {tr(
                       'Zero sessions waiting on exclusive locks for more than 5 seconds during the latest poll.',
                       'နောက်ဆုံး စစ်ဆေးမှုအတွင်း exclusive lock ကြောင့် ၅ စက္ကန့်ထက်ပို၍ စောင့်ဆိုင်းနေသော session မရှိပါ။'
@@ -1480,7 +1548,7 @@ export function TargetDetailView({
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
+                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs font-medium text-slate-500 dark:text-slate-400">
                         <th className="py-2.5 px-4">
                           {tr('Blocking PID', 'ပိတ်ဆို့နေသော PID')}
                         </th>
@@ -1504,24 +1572,24 @@ export function TargetDetailView({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 text-xs">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
                       {latestSnapshot.locksJson.map((lock, idx) => (
                         <tr
                           key={`${lock.blocking_pid}-${lock.blocked_pid}-${idx}`}
                         >
-                          <td className="py-3 px-4 font-mono text-slate-900 tabular-nums">
+                          <td className="py-3 px-4 font-mono text-slate-900 dark:text-slate-100 tabular-nums">
                             {lock.blocking_pid} · {lock.blocking_user}
                           </td>
-                          <td className="py-3 px-4 font-mono text-slate-700 tabular-nums">
+                          <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 tabular-nums">
                             {lock.blocked_pid} · {lock.blocked_user}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono font-semibold text-amber-700 tabular-nums">
+                          <td className="py-3 px-4 text-right font-mono font-semibold text-amber-700 dark:text-amber-400 tabular-nums">
                             {lock.wait_duration_seconds}s
                           </td>
-                          <td className="py-3 px-4 font-mono text-slate-700 max-w-xs truncate">
+                          <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 max-w-xs truncate">
                             {lock.blocking_statement}
                           </td>
-                          <td className="py-3 px-4 font-mono text-slate-600 max-w-xs truncate">
+                          <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 max-w-xs truncate">
                             {lock.blocked_statement}
                           </td>
                         </tr>
@@ -1535,15 +1603,15 @@ export function TargetDetailView({
 
           {/* TAB 6: Index Bloat */}
           {activeTab === 'bloat' && (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-200">
-                <h2 className="text-sm font-semibold text-slate-900">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {tr(
                     'Index Bloat Telemetry (> 10 MB Relations)',
                     'အညွှန်း ဖောင်းပွမှု စစ်ဆေးချက် (10 MB အထက် ဇယားများ)'
                   )}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {tr(
                     'Indexes exceeding your configured bloat thresholds include copy-paste online reindex commands.',
                     'သတ်မှတ်ထားသော ဖောင်းပွမှု ကန့်သတ်ချက်ထက် ကျော်လွန်သော အညွှန်းများအတွက် ချက်ချင်းကူးယူနိုင်သော online REINDEX အမိန့်များ ပါဝင်ပါသည်။'
@@ -1553,13 +1621,13 @@ export function TargetDetailView({
 
               {!latestSnapshot || latestSnapshot.bloatJson.length === 0 ? (
                 <div className="p-8 text-center space-y-1.5">
-                  <p className="text-sm font-medium text-emerald-700">
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
                     {tr(
                       'No Bloated Indexes Above 10 MB Detected',
                       '10 MB အထက် ဖောင်းပွနေသော အညွှန်း မတွေ့ရှိပါ'
                     )}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {tr(
                       'All scanned user indexes are within healthy tuple-fetch ratios.',
                       'စစ်ဆေးပြီးသော အညွှန်းအားလုံးသည် ပုံမှန် ကျန်းမာသော အချိုးအစားအတွင်း ရှိပါသည်။'
@@ -1570,7 +1638,7 @@ export function TargetDetailView({
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
+                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs font-medium text-slate-500 dark:text-slate-400">
                         <th className="py-2.5 px-4">{tr('Index', 'အညွှန်း')}</th>
                         <th className="py-2.5 px-4">{tr('Table', 'ဇယား')}</th>
                         <th className="py-2.5 px-4 text-right">
@@ -1584,24 +1652,24 @@ export function TargetDetailView({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 text-xs">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
                       {latestSnapshot.bloatJson.map((idx) => (
                         <tr key={`${idx.schemaname}.${idx.indexname}`}>
-                          <td className="py-3 px-4 font-mono font-medium text-slate-900">
+                          <td className="py-3 px-4 font-mono font-medium text-slate-900 dark:text-slate-100">
                             {idx.schemaname}.{idx.indexname}
                           </td>
-                          <td className="py-3 px-4 font-mono text-slate-700">
+                          <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300">
                             {idx.tablename}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-900">
+                          <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-900 dark:text-slate-100">
                             {idx.index_size_pretty}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono tabular-nums font-semibold text-amber-700">
+                          <td className="py-3 px-4 text-right font-mono tabular-nums font-semibold text-amber-700 dark:text-amber-400">
                             {idx.estimated_bloat_pct.toFixed(1)}%
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
-                              <code className="text-xs font-mono text-slate-700 truncate max-w-xs">
+                              <code className="text-xs font-mono text-slate-700 dark:text-slate-300 truncate max-w-xs">
                                 {idx.remediation_sql}
                               </code>
                               <button
@@ -1609,14 +1677,14 @@ export function TargetDetailView({
                                 onClick={() =>
                                   copyText(idx.indexname, idx.remediation_sql)
                                 }
-                                className="text-slate-400 hover:text-slate-800 cursor-pointer shrink-0"
+                                className="text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer shrink-0"
                                 aria-label={tr(
                                   'Copy REINDEX SQL',
                                   'REINDEX SQL ကူးယူရန်'
                                 )}
                               >
                                 {copiedId === idx.indexname ? (
-                                  <Check className="w-3.5 h-3.5 text-emerald-700" />
+                                  <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                                 ) : (
                                   <Copy className="w-3.5 h-3.5" />
                                 )}
@@ -1635,18 +1703,18 @@ export function TargetDetailView({
           {/* TAB 7: Baselines History + Restore + Time-Travel Diff */}
           {activeTab === 'baselines' && (
             <div className="space-y-4">
-              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-200">
-                  <h2 className="text-sm font-semibold text-slate-900">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {tr(
                       'Stored Schema Baselines',
                       'သိမ်းဆည်းထားသော ဖွဲ့စည်းပုံ မူလစံ မှတ်တမ်းများ'
                     )}
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     {locale === 'my' ? (
                       <>
-                        <code className="font-mono text-slate-700">
+                        <code className="font-mono text-slate-700 dark:text-slate-300">
                           schema_baselines
                         </code>{' '}
                         တွင် မပြောင်းလဲနိုင်သော မှတ်တမ်းများအဖြစ် သိမ်းဆည်းထားပြီး
@@ -1655,7 +1723,7 @@ export function TargetDetailView({
                     ) : (
                       <>
                         Immutable schema snapshots stored in{' '}
-                        <code className="font-mono text-slate-700">
+                        <code className="font-mono text-slate-700 dark:text-slate-300">
                           schema_baselines
                         </code>
                         . Restore any archived snapshot as active.
@@ -1664,7 +1732,7 @@ export function TargetDetailView({
                   </p>
                 </div>
                 {baselines.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-slate-500">
+                  <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
                     {tr(
                       'No baselines have been captured for this target yet.',
                       'ဤပစ်မှတ်အတွက် မူလစံ မှတ်တမ်း မသိမ်းဆည်းရသေးပါ။'
@@ -1674,7 +1742,7 @@ export function TargetDetailView({
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
+                        <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs font-medium text-slate-500 dark:text-slate-400">
                           <th className="py-2.5 px-4">
                             {tr('Captured', 'သိမ်းဆည်းချိန်')}
                           </th>
@@ -1695,30 +1763,30 @@ export function TargetDetailView({
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 text-xs">
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
                         {baselines.map((b, index) => (
-                          <tr key={b.id} className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-slate-700 tabular-nums">
+                          <tr key={b.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                            <td className="py-3 px-4 text-slate-700 dark:text-slate-300 tabular-nums">
                               {formatTimestamp(b.createdAt)}
                             </td>
-                            <td className="py-3 px-4 font-mono text-slate-900 tabular-nums">
+                            <td className="py-3 px-4 font-mono text-slate-900 dark:text-slate-100 tabular-nums">
                               {b.schemaHash.slice(0, 20)}…
                             </td>
-                            <td className="py-3 px-4 font-mono text-slate-600">
+                            <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">
                               {b.gitCommitSha
                                 ? b.gitCommitSha.slice(0, 10)
                                 : '—'}
                             </td>
-                            <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-900">
+                            <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-900 dark:text-slate-100">
                               {b.tablesJson.length}
                             </td>
                             <td className="py-3 px-4 font-medium">
                               {index === 0 ? (
-                                <span className="text-blue-700">
+                                <span className="text-blue-700 dark:text-blue-400">
                                   {tr('Active Baseline', 'လက်ရှိ မူလစံ')}
                                 </span>
                               ) : (
-                                <span className="text-slate-500">
+                                <span className="text-slate-500 dark:text-slate-400">
                                   {tr('Archived', 'မှတ်တမ်းဟောင်း')}
                                 </span>
                               )}
@@ -1729,7 +1797,7 @@ export function TargetDetailView({
                                   type="button"
                                   disabled={busyAction !== null}
                                   onClick={() => handleRestoreBaseline(b.id)}
-                                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-700 hover:text-blue-700 cursor-pointer whitespace-nowrap"
+                                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400 cursor-pointer whitespace-nowrap"
                                 >
                                   <RotateCcw className="w-3 h-3" />
                                   <span>{tr('Restore', 'ပြန်သုံးရန်')}</span>
@@ -1745,16 +1813,16 @@ export function TargetDetailView({
               </div>
 
               {baselines.length >= 2 && (
-                <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-900">
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                         {tr(
                           'Time-Travel Baseline Comparison',
                           'သမိုင်းကြောင်း မူလစံ နှိုင်းယှဉ်ခြင်း'
                         )}
                       </h3>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         {locale === 'my'
                           ? `${database.name} ၏ မည်သည့် မှတ်တမ်းဟောင်း နှစ်ခုကိုမဆို နှိုင်းယှဉ်ကြည့်ရှုနိုင်ပါသည်။`
                           : `Compare any two historical snapshots of ${database.name}.`}
@@ -1765,7 +1833,7 @@ export function TargetDetailView({
                         value={compareFromId}
                         onChange={(e) => setCompareFromId(e.target.value)}
                         aria-label={tr('Older baseline', 'မူလစံ အဟောင်း')}
-                        className="px-2.5 py-1.5 text-xs font-mono border border-slate-300 rounded-lg bg-white"
+                        className="px-2.5 py-1.5 text-xs font-mono border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900"
                       >
                         {baselines.map((b) => (
                           <option key={b.id} value={b.id}>
@@ -1774,12 +1842,12 @@ export function TargetDetailView({
                           </option>
                         ))}
                       </select>
-                      <span className="text-xs text-slate-400">→</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500">→</span>
                       <select
                         value={compareToId}
                         onChange={(e) => setCompareToId(e.target.value)}
                         aria-label={tr('Newer baseline', 'မူလစံ အသစ်')}
-                        className="px-2.5 py-1.5 text-xs font-mono border border-slate-300 rounded-lg bg-white"
+                        className="px-2.5 py-1.5 text-xs font-mono border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900"
                       >
                         {baselines.map((b) => (
                           <option key={b.id} value={b.id}>
@@ -1792,7 +1860,7 @@ export function TargetDetailView({
                         type="button"
                         onClick={handleCompareHistoricalBaselines}
                         disabled={busyAction === 'compare-baselines'}
-                        className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg cursor-pointer whitespace-nowrap"
+                        className="px-3 py-1.5 text-xs font-medium text-white dark:text-slate-900 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white rounded-lg cursor-pointer whitespace-nowrap"
                       >
                         {tr('Compare', 'နှိုင်းယှဉ်ရန်')}
                       </button>
@@ -1800,8 +1868,8 @@ export function TargetDetailView({
                   </div>
 
                   {historicalDiff && (
-                    <div className="space-y-3 pt-2 border-t border-slate-200">
-                      <p className="text-xs font-medium text-slate-700">
+                    <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+                      <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
                         {historicalDiff.diffs.length === 0
                           ? tr(
                               'Both selected snapshots have identical schemas.',
@@ -1812,7 +1880,7 @@ export function TargetDetailView({
                             : `${historicalDiff.diffs.length} column change(s) between ${historicalDiff.fromHash.slice(0, 10)} and ${historicalDiff.toHash.slice(0, 10)}.`}
                       </p>
                       {historicalDiff.diffs.length > 0 && (
-                        <pre className="p-3.5 bg-slate-900 rounded-lg text-xs font-mono text-slate-100 overflow-x-auto">
+                        <pre className="p-3.5 bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 rounded-lg text-xs font-mono text-slate-100 overflow-x-auto">
                           {historicalDiff.syncSql}
                         </pre>
                       )}
@@ -1823,25 +1891,38 @@ export function TargetDetailView({
             </div>
           )}
 
+          {/* NEW ENTERPRISE TABS: ERD Graph, Time Machine, Security Audit */}
+          {activeTab === 'erd' && (
+            <SchemaErdPanel api={api} databaseId={databaseId} />
+          )}
+
+          {activeTab === 'time-machine' && (
+            <SchemaTimeMachinePanel api={api} databaseId={databaseId} />
+          )}
+
+          {activeTab === 'security' && (
+            <SecurityAuditPanel api={api} databaseId={databaseId} />
+          )}
+
           {/* Recent Target Incidents */}
           {incidents.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <div className="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-slate-500" />
-                  <h2 className="text-sm font-semibold text-slate-900">
+                  <ShieldAlert className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {locale === 'my'
                       ? `${database.name} အတွက် လတ်တလော သတိပေးချက်များ`
                       : `Recent Telemetry Incidents for ${database.name}`}
                   </h2>
                 </div>
-                <span className="text-xs text-slate-500 tabular-nums">
+                <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                   {locale === 'my'
                     ? `မှတ်တမ်း ${incidents.length} ခု`
                     : `${incidents.length} recorded`}
                 </span>
               </div>
-              <div className="divide-y divide-slate-200">
+              <div className="divide-y divide-slate-200 dark:divide-slate-800">
                 {incidents.slice(0, 5).map((inc) => (
                   <div
                     key={inc.id}
@@ -1852,30 +1933,30 @@ export function TargetDetailView({
                         <span
                           className={`font-semibold ${
                             inc.severity === 'CRITICAL'
-                              ? 'text-red-700'
+                              ? 'text-red-700 dark:text-red-400'
                               : inc.severity === 'WARNING'
-                                ? 'text-amber-700'
-                                : 'text-blue-700'
+                                ? 'text-amber-700 dark:text-amber-400'
+                                : 'text-blue-700 dark:text-blue-400'
                           }`}
                         >
                           {formatSeverity(inc.severity)}
                         </span>
-                        <span className="text-slate-300" aria-hidden="true">
+                        <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                           ·
                         </span>
-                        <span className="font-mono text-slate-700">
+                        <span className="font-mono text-slate-700 dark:text-slate-300">
                           {formatIncidentType(inc.incidentType)}
                         </span>
-                        <span className="text-slate-300" aria-hidden="true">
+                        <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                           ·
                         </span>
-                        <span className="text-slate-500">
+                        <span className="text-slate-500 dark:text-slate-400">
                           {formatIncidentStatus(inc.status)}
                         </span>
                       </div>
-                      <p className="text-slate-700">{inc.details.summary}</p>
+                      <p className="text-slate-700 dark:text-slate-300">{inc.details.summary}</p>
                     </div>
-                    <span className="text-slate-500 tabular-nums shrink-0">
+                    <span className="text-slate-500 dark:text-slate-400 tabular-nums shrink-0">
                       {formatTimestamp(inc.createdAt)}
                     </span>
                   </div>

@@ -3,6 +3,8 @@ import {
   Check,
   Copy,
   Eye,
+  GitFork,
+  ListTree,
   Play,
   RefreshCw,
 } from 'lucide-react';
@@ -14,6 +16,7 @@ import type {
   MonitoredDatabaseDto,
   QueryPlanNodeDto,
 } from '../types/telemetry.ts';
+import { VisualExplainTree } from './VisualExplainTree.tsx';
 import { useI18n } from '../i18n/LocaleContext.tsx';
 
 interface IndexAdvisorPanelProps {
@@ -29,11 +32,11 @@ type KindFilter = 'all' | 'COMPOSITE' | 'SINGLE_COLUMN';
 function severityClass(severity: IndexAdvisorRecommendation['severity']): string {
   switch (severity) {
     case 'CRITICAL':
-      return 'text-red-700';
+      return 'text-red-700 dark:text-red-400';
     case 'WARNING':
-      return 'text-amber-700';
+      return 'text-amber-700 dark:text-amber-400';
     default:
-      return 'text-blue-700';
+      return 'text-blue-700 dark:text-blue-400';
   }
 }
 
@@ -187,17 +190,17 @@ function PlanTreeNode({
 
   return (
     <div
-      className={depth > 0 ? 'ml-5 pl-4 border-l border-slate-200 mt-2.5' : ''}
+      className={depth > 0 ? 'ml-5 pl-4 border-l border-slate-200 dark:border-slate-800 mt-2.5' : ''}
     >
       <div
         className={`rounded-lg border px-3.5 py-2.5 text-xs ${
           isSeqScan
-            ? 'bg-red-50/50 border-red-200'
+            ? 'bg-red-50/50 dark:bg-red-950/35 border-red-200 dark:border-red-900/70'
             : isSort
-              ? 'bg-amber-50/50 border-amber-200'
+              ? 'bg-amber-50/50 dark:bg-amber-950/35 border-amber-200 dark:border-amber-900/70'
               : isIndexScan
-                ? 'bg-emerald-50/40 border-emerald-200'
-                : 'bg-slate-50/60 border-slate-200'
+                ? 'bg-emerald-50/40 dark:bg-emerald-950/35 border-emerald-200 dark:border-emerald-900/70'
+                : 'bg-slate-50/60 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800'
         }`}
       >
         <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -205,22 +208,22 @@ function PlanTreeNode({
             <span
               className={`font-semibold ${
                 isSeqScan
-                  ? 'text-red-700'
+                  ? 'text-red-700 dark:text-red-400'
                   : isSort
-                    ? 'text-amber-800'
+                    ? 'text-amber-800 dark:text-amber-300'
                     : isIndexScan
-                      ? 'text-emerald-700'
-                      : 'text-slate-900'
+                      ? 'text-emerald-700 dark:text-emerald-400'
+                      : 'text-slate-900 dark:text-slate-100'
               }`}
             >
               {node.nodeType}
             </span>
             {node.relationName && (
               <>
-                <span className="text-slate-300" aria-hidden="true">
+                <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                   ·
                 </span>
-                <span className="font-mono font-medium text-slate-800">
+                <span className="font-mono font-medium text-slate-800 dark:text-slate-200">
                   {node.schema ? `${node.schema}.` : ''}
                   {node.relationName}
                   {node.alias && node.alias !== node.relationName
@@ -231,32 +234,32 @@ function PlanTreeNode({
             )}
             {node.indexName && (
               <>
-                <span className="text-slate-300" aria-hidden="true">
+                <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                   ·
                 </span>
-                <span className="font-mono text-emerald-700">
+                <span className="font-mono text-emerald-700 dark:text-emerald-400">
                   {tr('using', 'အသုံးပြု အညွှန်း')} {node.indexName}
                 </span>
               </>
             )}
             {isSeqScan && (
               <>
-                <span className="text-slate-300" aria-hidden="true">
+                <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                   ·
                 </span>
-                <span className="font-semibold text-red-700">
+                <span className="font-semibold text-red-700 dark:text-red-400">
                   {tr('Full Table Scan', 'ဇယားတစ်ခုလုံး ဖတ်ခြင်း')}
                 </span>
               </>
             )}
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-[11px] text-slate-600 tabular-nums">
+          <div className="flex items-center gap-2 font-mono text-[11px] text-slate-600 dark:text-slate-300 tabular-nums">
             <span>
               {tr('cost', 'ကုန်ကျစရိတ်')} {node.startupCost.toFixed(2)}..
               {node.totalCost.toFixed(2)}
             </span>
-            <span className="text-slate-300" aria-hidden="true">
+            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
               ·
             </span>
             <span>
@@ -271,10 +274,10 @@ function PlanTreeNode({
           node.indexCond ||
           node.sortKey?.length ||
           node.hashCond) && (
-          <div className="mt-1.5 space-y-1 font-mono text-[11px] text-slate-600">
+          <div className="mt-1.5 space-y-1 font-mono text-[11px] text-slate-600 dark:text-slate-300">
             {node.filter && (
               <p className="break-words">
-                <span className="text-slate-500 font-sans font-medium">
+                <span className="text-slate-500 dark:text-slate-400 font-sans font-medium">
                   {tr('Filter:', 'စစ်ထုတ်ချက်:')}{' '}
                 </span>
                 {node.filter}
@@ -282,7 +285,7 @@ function PlanTreeNode({
             )}
             {node.indexCond && (
               <p className="break-words">
-                <span className="text-slate-500 font-sans font-medium">
+                <span className="text-slate-500 dark:text-slate-400 font-sans font-medium">
                   {tr('Index Cond:', 'အညွှန်း အခြေအနေ:')}{' '}
                 </span>
                 {node.indexCond}
@@ -290,7 +293,7 @@ function PlanTreeNode({
             )}
             {node.sortKey && node.sortKey.length > 0 && (
               <p className="break-words">
-                <span className="text-slate-500 font-sans font-medium">
+                <span className="text-slate-500 dark:text-slate-400 font-sans font-medium">
                   {tr('Sort Key:', 'စီစဉ်ကော်လံ:')}{' '}
                 </span>
                 {node.sortKey.join(', ')}
@@ -298,7 +301,7 @@ function PlanTreeNode({
             )}
             {node.hashCond && (
               <p className="break-words">
-                <span className="text-slate-500 font-sans font-medium">
+                <span className="text-slate-500 dark:text-slate-400 font-sans font-medium">
                   {tr('Hash Cond:', 'Hash အခြေအနေ:')}{' '}
                 </span>
                 {node.hashCond}
@@ -343,6 +346,128 @@ export function IndexAdvisorPanel({
   const [explainError, setExplainError] = useState<string | null>(null);
   const [explainResult, setExplainResult] =
     useState<ExplainPlanAnalysisResponse | null>(null);
+  const [planViewMode, setPlanViewMode] = useState<'visual' | 'tree'>('visual');
+
+  const handleLoadSampleVisualPlan = () => {
+    const sampleSql = `SELECT o.id, o.account_id, o.total_cents, o.created_at, a.plan_tier
+FROM public.orders o
+JOIN public.accounts a ON a.id = o.account_id
+WHERE o.status = 'settled'
+  AND o.created_at >= NOW() - INTERVAL '30 days'
+ORDER BY o.created_at DESC
+LIMIT 100;`;
+    setExplainSql(sampleSql);
+    setExplainError(null);
+    setPlanViewMode('visual');
+    setExplainResult({
+      targetLabel:
+        liveReport?.targetLabel ??
+        tr('Workspace PostgreSQL (Sample Plan)', 'လုပ်ငန်းခွင် PostgreSQL (နမူနာ Plan)'),
+      databaseId: selectedTargetId || null,
+      analyzedSql: sampleSql,
+      totalCost: 28412.65,
+      estimatedRows: 100,
+      seqScanCount: 1,
+      sortNodeCount: 1,
+      recommendations: [
+        {
+          id: 'sample-visual-rec-1',
+          kind: 'COMPOSITE',
+          severity: 'CRITICAL',
+          source: 'EXPLAIN_ANALYZER',
+          schemaName: 'public',
+          tableName: 'orders',
+          columns: ['status', 'created_at'],
+          indexName: 'idx_orders_status_created_at',
+          createIndexSql:
+            'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_status_created_at\n  ON public.orders (status, created_at DESC);',
+          rationale: tr(
+            'Sequential scan on public.orders accounts for 78.6% of total query cost due to unindexed equality filter (status) and range/order predicate (created_at). Adding a composite B-tree index eliminates both the Seq Scan and external Sort.',
+            'public.orders ဇယားပေါ်ရှိ Sequential Scan သည် စုစုပေါင်း ကုန်ကျစရိတ်၏ 78.6% ကို ယူနေပါသည်။ (status, created_at DESC) ပေါင်းစပ် B-tree အညွှန်း ထည့်သွင်းခြင်းဖြင့် Seq Scan နှင့် Sort ပိတ်ဆို့မှု နှစ်ခုလုံးကို ဖယ်ရှားနိုင်ပါသည်။'
+          ),
+          estimatedSpeedupLabel: tr(
+            'Est. 18x–40x faster · eliminates Seq Scan + Sort',
+            'ခန့်မှန်း ၁၈ဆ–၄၀ဆ ပိုမြန် · Seq Scan + Sort ဖယ်ရှားပေးမည်'
+          ),
+          evidence: {
+            seqScans: 1842,
+            seqScanPct: 85.6,
+            planCost: 22340.15,
+            sampleQuery: sampleSql,
+          },
+        },
+      ],
+      planRoot: {
+        nodeType: 'Limit',
+        startupCost: 28412.15,
+        totalCost: 28412.65,
+        planRows: 100,
+        planWidth: 64,
+        isSeqScanBottleneck: false,
+        children: [
+          {
+            nodeType: 'Sort',
+            startupCost: 28412.15,
+            totalCost: 28490.4,
+            planRows: 31300,
+            planWidth: 64,
+            sortKey: ['o.created_at DESC'],
+            isSeqScanBottleneck: false,
+            children: [
+              {
+                nodeType: 'Hash Join',
+                startupCost: 1120.45,
+                totalCost: 26810.9,
+                planRows: 31300,
+                planWidth: 64,
+                hashCond: '(o.account_id = a.id)',
+                isSeqScanBottleneck: false,
+                children: [
+                  {
+                    nodeType: 'Seq Scan',
+                    relationName: 'orders',
+                    schema: 'public',
+                    alias: 'o',
+                    startupCost: 0,
+                    totalCost: 22340.15,
+                    planRows: 31300,
+                    planWidth: 48,
+                    filter:
+                      "((status = 'settled'::text) AND (created_at >= (now() - '30 days'::interval)))",
+                    isSeqScanBottleneck: true,
+                    children: [],
+                  },
+                  {
+                    nodeType: 'Hash',
+                    startupCost: 842.2,
+                    totalCost: 842.2,
+                    planRows: 22260,
+                    planWidth: 24,
+                    isSeqScanBottleneck: false,
+                    children: [
+                      {
+                        nodeType: 'Index Scan',
+                        relationName: 'accounts',
+                        schema: 'public',
+                        alias: 'a',
+                        indexName: 'accounts_pkey',
+                        startupCost: 0.29,
+                        totalCost: 842.2,
+                        planRows: 22260,
+                        planWidth: 24,
+                        isSeqScanBottleneck: false,
+                        children: [],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    });
+  };
 
   const loadAdvisor = useCallback(
     async (dbId: string) => {
@@ -456,29 +581,29 @@ export function IndexAdvisorPanel({
   return (
     <section
       aria-labelledby="index-advisor-heading"
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden"
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden"
     >
       {/* Panel Header */}
-      <div className="px-6 py-5 border-b border-slate-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2
               id="index-advisor-heading"
-              className="text-base font-semibold text-slate-900"
+              className="text-base font-semibold text-slate-900 dark:text-slate-100"
             >
               {tr('Index Advisor', 'အညွှန်း အကြံပေးစနစ်')}
             </h2>
-            <span className="text-slate-300" aria-hidden="true">
+            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
               ·
             </span>
-            <span className="text-xs font-mono text-slate-500">
+            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
               {tr(
                 'Query plan & sequential scan analysis',
                 'Query plan နှင့် sequential scan ခွဲခြမ်းစိတ်ဖြာခြင်း'
               )}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {tr(
               'Inspects PostgreSQL query plans and sequential scan hotspots to recommend missing single-column and ESR composite B-Tree indexes.',
               'PostgreSQL query plan များနှင့် sequential scan များပြားသော ဇယားများကို စစ်ဆေး၍ လိုအပ်နေသော ကော်လံတစ်ခုနှင့် ESR ပေါင်းစပ် B-Tree အညွှန်းများကို အကြံပြုပေးပါသည်။'
@@ -487,7 +612,7 @@ export function IndexAdvisorPanel({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <label className="flex items-center gap-2 text-xs text-slate-600">
+          <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
             <span className="whitespace-nowrap">
               {tr('Source', 'အရင်းအမြစ်')}
             </span>
@@ -501,7 +626,7 @@ export function IndexAdvisorPanel({
                 'Select PostgreSQL target for Index Advisor',
                 'အညွှန်း အကြံပေးစနစ်အတွက် PostgreSQL ပစ်မှတ် ရွေးချယ်ရန်'
               )}
-              className="px-2.5 py-1.5 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700 max-w-[200px] truncate"
+              className="px-2.5 py-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500 max-w-[200px] truncate"
             >
               <option value="">
                 {tr(
@@ -524,7 +649,7 @@ export function IndexAdvisorPanel({
               setPreviewMode(false);
               loadAdvisor(selectedTargetId);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`}
@@ -544,8 +669,8 @@ export function IndexAdvisorPanel({
             }}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               previewMode
-                ? 'text-amber-900 bg-amber-50 border-amber-300 hover:bg-amber-100'
-                : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50'
+                ? 'text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800/70 hover:bg-amber-100 dark:hover:bg-amber-950/70'
+                : 'text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -560,7 +685,7 @@ export function IndexAdvisorPanel({
 
       {/* Explicit Simulated Preview Banner */}
       {previewMode && (
-        <div className="px-6 py-2.5 bg-amber-50 border-b border-amber-200 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900">
+        <div className="px-6 py-2.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-900/70 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200">
           <span>
             {tr(
               'Showing simulated high-latency sequential-scan workload to preview composite and single-column index recommendations.',
@@ -570,7 +695,7 @@ export function IndexAdvisorPanel({
           <button
             type="button"
             onClick={() => setPreviewMode(false)}
-            className="font-semibold underline hover:text-amber-950 whitespace-nowrap cursor-pointer"
+            className="font-semibold underline hover:text-amber-950 dark:hover:text-amber-200 whitespace-nowrap cursor-pointer"
           >
             {tr('Return to live telemetry', 'တိုက်ရိုက် ဒေတာသို့ ပြန်သွားရန်')}
           </button>
@@ -579,21 +704,21 @@ export function IndexAdvisorPanel({
 
       {/* 4-Column Summary Strip */}
       {!loading && (!error || previewMode) && activeReport && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 border-b border-slate-200 bg-slate-50/50">
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
           <div className="px-6 py-4">
-            <p className="text-xs font-medium text-slate-500">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {tr('Index Opportunities', 'အညွှန်း အကြံပြုချက်များ')}
             </p>
             <p
               className={`mt-1 text-xl font-bold font-mono tabular-nums ${
                 recommendations.length > 0
-                  ? 'text-blue-700'
-                  : 'text-emerald-700'
+                  ? 'text-blue-700 dark:text-blue-400'
+                  : 'text-emerald-700 dark:text-emerald-400'
               }`}
             >
               {recommendations.length}
             </p>
-            <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
               {locale === 'my'
                 ? `ပေါင်းစပ် ${compositeCount} ခု · ကော်လံတစ်ခု ${singleCount} ခု`
                 : `${compositeCount} composite · ${singleCount} single-column`}
@@ -601,13 +726,13 @@ export function IndexAdvisorPanel({
           </div>
 
           <div className="px-6 py-4">
-            <p className="text-xs font-medium text-slate-500">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {tr('Composite Indexes (ESR)', 'ပေါင်းစပ် အညွှန်းများ (ESR)')}
             </p>
-            <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900">
+            <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
               {compositeCount}
             </p>
-            <p className="mt-0.5 text-xs text-slate-500">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {tr(
                 'Multi-column Equality → Sort → Range',
                 'ကော်လံများစွာ Equality → Sort → Range'
@@ -616,19 +741,19 @@ export function IndexAdvisorPanel({
           </div>
 
           <div className="px-6 py-4">
-            <p className="text-xs font-medium text-slate-500">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {tr('Seq-Scan Hotspots', 'Seq-Scan များပြားသော ဇယားများ')}
             </p>
             <p
               className={`mt-1 text-xl font-bold font-mono tabular-nums ${
                 elevatedHotspotsCount > 0
-                  ? 'text-amber-700'
-                  : 'text-emerald-700'
+                  ? 'text-amber-700 dark:text-amber-400'
+                  : 'text-emerald-700 dark:text-emerald-400'
               }`}
             >
               {elevatedHotspotsCount}
             </p>
-            <p className="mt-0.5 text-xs text-slate-500">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {tr(
                 'Tables with ≥ 50% sequential scans',
                 'Sequential scan 50% နှင့်အထက် ရှိသော ဇယားများ'
@@ -637,15 +762,15 @@ export function IndexAdvisorPanel({
           </div>
 
           <div className="px-6 py-4">
-            <p className="text-xs font-medium text-slate-500">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {tr('Catalog Coverage', 'စစ်ဆေးပြီး Catalog ပမာဏ')}
             </p>
-            <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900">
+            <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
               {locale === 'my'
                 ? `ဇယား ${activeReport.tablesAnalyzed} ခု`
                 : `${activeReport.tablesAnalyzed} tables`}
             </p>
-            <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
               {locale === 'my'
                 ? `နှေးကွေးသော SELECT query ${activeReport.highLatencyQueriesAnalyzed} ခု စစ်ဆေးပြီး`
                 : `${activeReport.highLatencyQueriesAnalyzed} slow SELECT queries checked`}
@@ -655,11 +780,11 @@ export function IndexAdvisorPanel({
       )}
 
       {/* Sub-Tabs Bar */}
-      <div className="px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 bg-white">
+      <div className="px-6 py-3 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900">
         <div
           role="tablist"
           aria-label={tr('Index Advisor views', 'အညွှန်း အကြံပေး မြင်ကွင်းများ')}
-          className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-lg"
+          className="inline-flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg"
         >
           <button
             type="button"
@@ -668,8 +793,8 @@ export function IndexAdvisorPanel({
             onClick={() => setSubTab('recommendations')}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               subTab === 'recommendations'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             {tr(
@@ -685,8 +810,8 @@ export function IndexAdvisorPanel({
             onClick={() => setSubTab('explain')}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               subTab === 'explain'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             {tr(
@@ -697,7 +822,7 @@ export function IndexAdvisorPanel({
         </div>
 
         {subTab === 'recommendations' && recommendations.length > 0 && (
-          <div className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
+          <div className="inline-flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
             {(
               [
                 {
@@ -720,8 +845,8 @@ export function IndexAdvisorPanel({
                 onClick={() => setKindFilter(opt.id)}
                 className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 tabular-nums cursor-pointer ${
                   kindFilter === opt.id
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
                 {opt.label}
@@ -739,25 +864,25 @@ export function IndexAdvisorPanel({
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="h-24 bg-slate-100 rounded-lg animate-pulse"
+                  className="h-24 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse"
                 />
               ))}
             </div>
           ) : error && !previewMode ? (
             <div className="p-8 text-center space-y-3">
-              <p className="text-sm font-medium text-red-700">{error}</p>
+              <p className="text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
               <div className="flex items-center justify-center gap-2">
                 <button
                   type="button"
                   onClick={() => loadAdvisor(selectedTargetId)}
-                  className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg cursor-pointer"
+                  className="px-3.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg cursor-pointer"
                 >
                   {tr('Retry', 'ပြန်စမ်းရန်')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setPreviewMode(true)}
-                  className="px-3.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg cursor-pointer"
+                  className="px-3.5 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/70 hover:bg-blue-100 dark:hover:bg-blue-950/75 rounded-lg cursor-pointer"
                 >
                   {tr('Preview Workload', 'နမူနာ အစမ်းကြည့်ရန်')}
                 </button>
@@ -766,23 +891,23 @@ export function IndexAdvisorPanel({
           ) : (
             <div>
               {filteredRecommendations.length === 0 ? (
-                <div className="px-6 py-8 text-center space-y-2 border-b border-slate-200">
-                  <p className="text-sm font-semibold text-emerald-700">
+                <div className="px-6 py-8 text-center space-y-2 border-b border-slate-200 dark:border-slate-800">
+                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                     {tr(
                       'No Missing Index Opportunities Detected',
                       'လိုအပ်နေသော အညွှန်း အကြံပြုချက် မတွေ့ရှိပါ'
                     )}
                   </p>
-                  <p className="text-xs text-slate-500 max-w-lg mx-auto">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
                     {locale === 'my' ? (
                       <>
-                        <span className="font-medium text-slate-700">
+                        <span className="font-medium text-slate-700 dark:text-slate-300">
                           {activeReport?.targetLabel}
                         </span>{' '}
                         ရှိ စစ်ဆေးပြီး query များနှင့် ဇယားအားလုံးတွင် လက်ရှိ
                         အညွှန်းများ လုံလောက်စွာ ရှိနေပါသည်။ ကိုယ်ပိုင် SELECT
                         query ကို စမ်းသပ်ရန်{' '}
-                        <strong className="font-semibold text-slate-800">
+                        <strong className="font-semibold text-slate-800 dark:text-slate-200">
                           Query Plan ခွဲခြမ်းစိတ်ဖြာစက် (EXPLAIN)
                         </strong>{' '}
                         သို့ ပြောင်းလဲကြည့်ရှုနိုင်ပါသည်။
@@ -790,11 +915,11 @@ export function IndexAdvisorPanel({
                     ) : (
                       <>
                         All analyzed queries and sequential-scan tables on{' '}
-                        <span className="font-medium text-slate-700">
+                        <span className="font-medium text-slate-700 dark:text-slate-300">
                           {activeReport?.targetLabel}
                         </span>{' '}
                         are covered by existing indexes. Switch to the{' '}
-                        <strong className="font-semibold text-slate-800">
+                        <strong className="font-semibold text-slate-800 dark:text-slate-200">
                           Query Plan Analyzer (EXPLAIN)
                         </strong>{' '}
                         tab to test a custom SELECT statement directly against
@@ -806,7 +931,7 @@ export function IndexAdvisorPanel({
                     <button
                       type="button"
                       onClick={() => setSubTab('explain')}
-                      className="px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer"
+                      className="px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-lg transition-colors cursor-pointer"
                     >
                       {tr(
                         'Open EXPLAIN Analyzer',
@@ -816,14 +941,14 @@ export function IndexAdvisorPanel({
                     <button
                       type="button"
                       onClick={() => setPreviewMode(true)}
-                      className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                      className="px-3.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer"
                     >
                       {tr('Preview Workload', 'နမူနာ အစမ်းကြည့်ရန်')}
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-200 border-b border-slate-200">
+                <div className="divide-y divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800">
                   {filteredRecommendations.map((rec) => (
                     <div key={rec.id} className="px-6 py-5 space-y-3">
                       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
@@ -836,10 +961,10 @@ export function IndexAdvisorPanel({
                             >
                               {formatSeverity(rec.severity)}
                             </span>
-                            <span className="text-slate-300" aria-hidden="true">
+                            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                               ·
                             </span>
-                            <span className="font-semibold text-slate-900">
+                            <span className="font-semibold text-slate-900 dark:text-slate-100">
                               {rec.kind === 'COMPOSITE'
                                 ? tr(
                                     'Composite Index Opportunity',
@@ -850,22 +975,22 @@ export function IndexAdvisorPanel({
                                     'လိုအပ်နေသော ကော်လံတစ်ခု အညွှန်း'
                                   )}
                             </span>
-                            <span className="text-slate-300" aria-hidden="true">
+                            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                               ·
                             </span>
-                            <span className="font-mono text-slate-700">
+                            <span className="font-mono text-slate-700 dark:text-slate-300">
                               {rec.schemaName}.{rec.tableName}
                             </span>
-                            <span className="text-slate-300" aria-hidden="true">
+                            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                               ·
                             </span>
-                            <span className="text-emerald-700 font-medium">
+                            <span className="text-emerald-700 dark:text-emerald-400 font-medium">
                               {rec.estimatedSpeedupLabel}
                             </span>
                           </div>
 
-                          <p className="text-xs font-mono text-slate-800">
-                            <span className="font-sans text-slate-500">
+                          <p className="text-xs font-mono text-slate-800 dark:text-slate-200">
+                            <span className="font-sans text-slate-500 dark:text-slate-400">
                               {tr(
                                 'Recommended Key Columns:',
                                 'အကြံပြု အဓိက ကော်လံများ:'
@@ -874,7 +999,7 @@ export function IndexAdvisorPanel({
                             ({rec.columns.join(', ')})
                           </p>
 
-                          <p className="text-xs text-slate-600 leading-relaxed max-w-4xl">
+                          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
                             {rec.rationale}
                           </p>
                         </div>
@@ -888,7 +1013,7 @@ export function IndexAdvisorPanel({
                                 setSubTab('explain');
                                 runExplain(rec.evidence.sampleQuery!);
                               }}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/70 hover:bg-blue-100 dark:hover:bg-blue-950/75 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                             >
                               <Play className="w-3 h-3" />
                               <span>
@@ -902,11 +1027,11 @@ export function IndexAdvisorPanel({
                             onClick={() =>
                               handleCopy(`rec-${rec.id}`, rec.createIndexSql)
                             }
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                           >
                             {copiedId === `rec-${rec.id}` ? (
                               <>
-                                <Check className="w-3.5 h-3.5 text-emerald-700" />
+                                <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                                 <span>
                                   {tr('Copied DDL', 'DDL ကူးယူပြီး')}
                                 </span>
@@ -921,7 +1046,7 @@ export function IndexAdvisorPanel({
                         </div>
                       </div>
 
-                      <pre className="p-3.5 bg-slate-900 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto leading-relaxed">
+                      <pre className="p-3.5 bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto leading-relaxed">
                         {rec.createIndexSql}
                       </pre>
                     </div>
@@ -932,14 +1057,14 @@ export function IndexAdvisorPanel({
               {/* Sequential Scan Hotspots Table */}
               {activeReport && activeReport.seqScanHotspots.length > 0 && (
                 <div>
-                  <div className="px-6 py-3.5 bg-slate-50/70 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="text-xs font-semibold text-slate-900">
+                  <div className="px-6 py-3.5 bg-slate-50/70 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                       {tr(
                         'Sequential Scan Hotspots (pg_stat_user_tables)',
                         'Sequential Scan များပြားသော ဇယားများ (pg_stat_user_tables)'
                       )}
                     </h3>
-                    <span className="text-xs text-slate-500 tabular-nums">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                       {locale === 'my'
                         ? `Sequential ဖတ်ရှုမှု အများဆုံး ဇယား ${activeReport.seqScanHotspots.length} ခု`
                         : `Top ${activeReport.seqScanHotspots.length} relations by sequential rows read`}
@@ -948,7 +1073,7 @@ export function IndexAdvisorPanel({
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                        <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium">
                           <th className="py-2.5 pl-6 pr-3">
                             {tr('Table', 'ဇယား')}
                           </th>
@@ -972,39 +1097,39 @@ export function IndexAdvisorPanel({
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200">
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                         {activeReport.seqScanHotspots.map((h) => (
                           <tr
                             key={`${h.schemaname}.${h.relname}`}
-                            className="hover:bg-slate-50"
+                            className="hover:bg-slate-50 dark:hover:bg-slate-800/60"
                           >
-                            <td className="py-2.5 pl-6 pr-3 font-mono font-medium text-slate-900">
+                            <td className="py-2.5 pl-6 pr-3 font-mono font-medium text-slate-900 dark:text-slate-100">
                               {h.schemaname}.{h.relname}
                             </td>
-                            <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-700">
+                            <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
                               {h.seq_scan.toLocaleString()}
                             </td>
-                            <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-600">
+                            <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
                               {h.idx_scan.toLocaleString()}
                             </td>
                             <td
                               className={`py-2.5 px-3 text-right font-mono tabular-nums font-semibold ${
                                 h.seq_scan_pct >= 75 && h.seq_scan >= 10
-                                  ? 'text-red-700'
+                                  ? 'text-red-700 dark:text-red-400'
                                   : h.seq_scan_pct >= 50 && h.seq_scan >= 5
-                                    ? 'text-amber-700'
-                                    : 'text-emerald-700'
+                                    ? 'text-amber-700 dark:text-amber-400'
+                                    : 'text-emerald-700 dark:text-emerald-400'
                               }`}
                             >
                               {h.seq_scan_pct.toFixed(1)}%
                             </td>
-                            <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-700">
+                            <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
                               {h.seq_tup_read.toLocaleString()}
                             </td>
-                            <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-600">
+                            <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
                               {h.table_size_pretty}
                             </td>
-                            <td className="py-2.5 pl-3 pr-6 text-right font-mono tabular-nums text-slate-600">
+                            <td className="py-2.5 pl-3 pr-6 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
                               {h.existing_index_count}
                             </td>
                           </tr>
@@ -1024,7 +1149,7 @@ export function IndexAdvisorPanel({
         <div className="p-6 space-y-5">
           {liveReport && liveReport.sampleQueriesForExplain.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="text-slate-500 font-medium">
+              <span className="text-slate-500 dark:text-slate-400 font-medium">
                 {tr('Load sample query:', 'နမူနာ query ထည့်ရန်:')}
               </span>
               {liveReport.sampleQueriesForExplain.map((sample) => (
@@ -1035,7 +1160,7 @@ export function IndexAdvisorPanel({
                     setExplainSql(sample.sql);
                     setExplainError(null);
                   }}
-                  className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                  className="px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   {sample.label}
                 </button>
@@ -1046,7 +1171,7 @@ export function IndexAdvisorPanel({
           <div className="space-y-2.5">
             <label
               htmlFor="index-advisor-explain-sql"
-              className="block text-xs font-medium text-slate-700"
+              className="block text-xs font-medium text-slate-700 dark:text-slate-300"
             >
               {tr(
                 'Read-Only SELECT Query to Inspect via PostgreSQL Planner',
@@ -1059,16 +1184,16 @@ export function IndexAdvisorPanel({
               value={explainSql}
               onChange={(e) => setExplainSql(e.target.value)}
               placeholder="SELECT * FROM public.audit_logs WHERE action = 'INSPECTION_RUN' ORDER BY created_at DESC LIMIT 50;"
-              className="w-full p-3.5 text-xs font-mono bg-slate-950 text-slate-100 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/30 leading-relaxed"
+              className="w-full p-3.5 text-xs font-mono bg-slate-950 text-slate-100 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/30 dark:focus:ring-blue-500/30 leading-relaxed"
             />
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {locale === 'my' ? (
                   <>
                     ပြန်လည်ပယ်ဖျက်မည့်{' '}
-                    <code className="font-mono text-slate-700">READ ONLY</code>{' '}
+                    <code className="font-mono text-slate-700 dark:text-slate-300">READ ONLY</code>{' '}
                     transaction အတွင်း{' '}
-                    <code className="font-mono text-slate-700">
+                    <code className="font-mono text-slate-700 dark:text-slate-300">
                       EXPLAIN (FORMAT JSON, COSTS true)
                     </code>{' '}
                     ကိုသာ လုပ်ဆောင်သဖြင့် ဒေတာ ပြောင်းလဲမှု လုံးဝမရှိပါ။
@@ -1076,83 +1201,95 @@ export function IndexAdvisorPanel({
                 ) : (
                   <>
                     Runs planner-only{' '}
-                    <code className="font-mono text-slate-700">
+                    <code className="font-mono text-slate-700 dark:text-slate-300">
                       EXPLAIN (FORMAT JSON, COSTS true)
                     </code>{' '}
                     inside a rolled-back{' '}
-                    <code className="font-mono text-slate-700">READ ONLY</code>{' '}
+                    <code className="font-mono text-slate-700 dark:text-slate-300">READ ONLY</code>{' '}
                     transaction (zero writes or side-effects).
                   </>
                 )}
               </p>
-              <button
-                type="button"
-                disabled={explainLoading || !explainSql.trim()}
-                onClick={() => runExplain()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-              >
-                <Play className="w-3.5 h-3.5" />
-                <span>
-                  {explainLoading
-                    ? tr('Analyzing Plan…', 'Plan ခွဲခြမ်းစိတ်ဖြာနေသည်…')
-                    : tr('Analyze Query Plan', 'Query Plan စစ်ဆေးရန်')}
-                </span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleLoadSampleVisualPlan}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                >
+                  <GitFork className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                  <span>
+                    {tr('Preview Sample Plan', 'နမူနာ Plan ကြည့်ရန်')}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  disabled={explainLoading || !explainSql.trim()}
+                  onClick={() => runExplain()}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                >
+                  <Play className="w-3.5 h-3.5" />
+                  <span>
+                    {explainLoading
+                      ? tr('Analyzing Plan…', 'Plan ခွဲခြမ်းစိတ်ဖြာနေသည်…')
+                      : tr('Analyze Query Plan', 'Query Plan စစ်ဆေးရန်')}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 
           {explainError && (
             <div
               role="alert"
-              className="px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-xs text-red-800"
+              className="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-xs text-red-800 dark:text-red-300"
             >
               {explainError}
             </div>
           )}
 
           {explainResult && (
-            <div className="space-y-5 pt-2 border-t border-slate-200">
+            <div className="space-y-5 pt-2 border-t border-slate-200 dark:border-slate-800">
               {/* Plan Summary Strip */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 border border-slate-200 rounded-xl bg-slate-50/50">
+              <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-800/50">
                 <div className="px-4 py-3">
-                  <p className="text-[11px] font-medium text-slate-500">
+                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                     {tr('Total Plan Cost', 'စုစုပေါင်း Plan ကုန်ကျစရိတ်')}
                   </p>
-                  <p className="mt-0.5 text-base font-bold font-mono tabular-nums text-slate-900">
+                  <p className="mt-0.5 text-base font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                     {explainResult.totalCost.toFixed(2)}
                   </p>
                 </div>
                 <div className="px-4 py-3">
-                  <p className="text-[11px] font-medium text-slate-500">
+                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                     {tr('Estimated Rows', 'ခန့်မှန်း အတန်းအရေအတွက်')}
                   </p>
-                  <p className="mt-0.5 text-base font-bold font-mono tabular-nums text-slate-900">
+                  <p className="mt-0.5 text-base font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                     {explainResult.estimatedRows.toLocaleString()}
                   </p>
                 </div>
                 <div className="px-4 py-3">
-                  <p className="text-[11px] font-medium text-slate-500">
+                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                     {tr('Seq Scan Nodes', 'Seq Scan အဆင့်များ')}
                   </p>
                   <p
                     className={`mt-0.5 text-base font-bold font-mono tabular-nums ${
                       explainResult.seqScanCount > 0
-                        ? 'text-red-700'
-                        : 'text-emerald-700'
+                        ? 'text-red-700 dark:text-red-400'
+                        : 'text-emerald-700 dark:text-emerald-400'
                     }`}
                   >
                     {explainResult.seqScanCount}
                   </p>
                 </div>
                 <div className="px-4 py-3">
-                  <p className="text-[11px] font-medium text-slate-500">
+                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                     {tr('Sort Nodes', 'Sort အဆင့်များ')}
                   </p>
                   <p
                     className={`mt-0.5 text-base font-bold font-mono tabular-nums ${
                       explainResult.sortNodeCount > 0
-                        ? 'text-amber-700'
-                        : 'text-slate-900'
+                        ? 'text-amber-700 dark:text-amber-400'
+                        : 'text-slate-900 dark:text-slate-100'
                     }`}
                   >
                     {explainResult.sortNodeCount}
@@ -1162,7 +1299,7 @@ export function IndexAdvisorPanel({
 
               {/* Plan-Derived Recommendations */}
               <div className="space-y-3">
-                <h3 className="text-xs font-semibold text-slate-900">
+                <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                   {tr(
                     'Index Suggestions From This Query Plan',
                     'ဤ Query Plan မှ အညွှန်း အကြံပြုချက်များ'
@@ -1170,7 +1307,7 @@ export function IndexAdvisorPanel({
                   ({explainResult.recommendations.length})
                 </h3>
                 {explainResult.recommendations.length === 0 ? (
-                  <p className="text-xs text-emerald-700 font-medium">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
                     {tr(
                       'No unindexed Seq Scan filter or sort bottlenecks were found in this plan (or existing indexes already cover the predicates).',
                       'ဤ plan တွင် အညွှန်းမရှိသော Seq Scan သို့မဟုတ် Sort ပိတ်ဆို့မှု မတွေ့ရှိပါ (သို့မဟုတ် လက်ရှိ အညွှန်းများက လုံလောက်စွာ လွှမ်းခြုံထားပါသည်)။'
@@ -1181,7 +1318,7 @@ export function IndexAdvisorPanel({
                     {explainResult.recommendations.map((rec) => (
                       <div
                         key={rec.id}
-                        className="border border-slate-200 rounded-xl p-4 space-y-2.5 bg-white"
+                        className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2.5 bg-white dark:bg-slate-900"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -1192,10 +1329,10 @@ export function IndexAdvisorPanel({
                             >
                               {formatSeverity(rec.severity)}
                             </span>
-                            <span className="text-slate-300" aria-hidden="true">
+                            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                               ·
                             </span>
-                            <span className="font-semibold text-slate-900">
+                            <span className="font-semibold text-slate-900 dark:text-slate-100">
                               {rec.kind === 'COMPOSITE'
                                 ? tr(
                                     'Composite Index',
@@ -1206,10 +1343,10 @@ export function IndexAdvisorPanel({
                                     'ကော်လံတစ်ခု အညွှန်း'
                                   )}
                             </span>
-                            <span className="text-slate-300" aria-hidden="true">
+                            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                               ·
                             </span>
-                            <span className="font-mono text-slate-700">
+                            <span className="font-mono text-slate-700 dark:text-slate-300">
                               {rec.schemaName}.{rec.tableName} (
                               {rec.columns.join(', ')})
                             </span>
@@ -1219,11 +1356,11 @@ export function IndexAdvisorPanel({
                             onClick={() =>
                               handleCopy(`exp-${rec.id}`, rec.createIndexSql)
                             }
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-md cursor-pointer whitespace-nowrap shrink-0"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-md cursor-pointer whitespace-nowrap shrink-0"
                           >
                             {copiedId === `exp-${rec.id}` ? (
                               <>
-                                <Check className="w-3.5 h-3.5 text-emerald-700" />
+                                <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                                 <span>
                                   {tr('Copied DDL', 'DDL ကူးယူပြီး')}
                                 </span>
@@ -1236,10 +1373,10 @@ export function IndexAdvisorPanel({
                             )}
                           </button>
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed">
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                           {rec.rationale}
                         </p>
-                        <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto leading-relaxed">
+                        <pre className="p-3 bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto leading-relaxed">
                           {rec.createIndexSql}
                         </pre>
                       </div>
@@ -1248,16 +1385,51 @@ export function IndexAdvisorPanel({
                 )}
               </div>
 
-              {/* Execution Plan Tree */}
-              <div className="space-y-2.5">
-                <h3 className="text-xs font-semibold text-slate-900">
-                  {tr(
-                    'PostgreSQL Execution Plan Tree',
-                    'PostgreSQL လုပ်ဆောင်မှု အဆင့်ဆင့် (Execution Plan Tree)'
-                  )}{' '}
-                  ({explainResult.targetLabel})
-                </h3>
-                <PlanTreeNode node={explainResult.planRoot} />
+              {/* Execution Plan Tree & Interactive Visual Graph */}
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                    {tr(
+                      'PostgreSQL Execution Plan Tree',
+                      'PostgreSQL လုပ်ဆောင်မှု အဆင့်ဆင့် (Execution Plan Tree)'
+                    )}{' '}
+                    ({explainResult.targetLabel})
+                  </h3>
+                  <div className="inline-flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                    <button
+                      type="button"
+                      onClick={() => setPlanViewMode('visual')}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                        planViewMode === 'visual'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
+                      }`}
+                    >
+                      <GitFork className="w-3.5 h-3.5" />
+                      <span>{tr('Visual Flow Graph', 'ပုံပြ စီးဆင်းမှု')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPlanViewMode('tree')}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                        planViewMode === 'tree'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
+                      }`}
+                    >
+                      <ListTree className="w-3.5 h-3.5" />
+                      <span>{tr('Indented Tree', 'စာရင်းပုံစံ')}</span>
+                    </button>
+                  </div>
+                </div>
+                {planViewMode === 'visual' ? (
+                  <VisualExplainTree
+                    root={explainResult.planRoot}
+                    totalCost={explainResult.totalCost}
+                  />
+                ) : (
+                  <PlanTreeNode node={explainResult.planRoot} />
+                )}
               </div>
             </div>
           )}

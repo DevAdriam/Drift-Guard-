@@ -1,6 +1,7 @@
 import { useId, useMemo, useState } from 'react';
 import type { HealthStatus, HealthTrendDayPoint } from '../types/telemetry.ts';
 import { useI18n } from '../i18n/LocaleContext.tsx';
+import { useTheme } from '../context/ThemeContext.tsx';
 
 interface HealthTrendSparklineProps {
   points?: HealthTrendDayPoint[];
@@ -38,6 +39,7 @@ export function HealthTrendSparkline({
   variant = 'card',
 }: HealthTrendSparklineProps) {
   const { locale, tr } = useI18n();
+  const { isDark } = useTheme();
   const gradientId = useId().replace(/:/g, '');
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
@@ -100,7 +102,7 @@ export function HealthTrendSparkline({
       return {
         stroke: '#94A3B8',
         fillTop: '#94A3B8',
-        textClass: 'text-slate-500',
+        textClass: 'text-slate-500 dark:text-slate-400',
       };
     }
     if (
@@ -111,7 +113,7 @@ export function HealthTrendSparkline({
       return {
         stroke: '#DC2626',
         fillTop: '#EF4444',
-        textClass: 'text-red-700',
+        textClass: 'text-red-700 dark:text-red-400',
       };
     }
     if (
@@ -122,13 +124,13 @@ export function HealthTrendSparkline({
       return {
         stroke: '#D97706',
         fillTop: '#F59E0B',
-        textClass: 'text-amber-700',
+        textClass: 'text-amber-700 dark:text-amber-400',
       };
     }
     return {
       stroke: '#059669',
       fillTop: '#10B981',
-      textClass: 'text-emerald-700',
+      textClass: 'text-emerald-700 dark:text-emerald-400',
     };
   }, [observedPoints.length, currentStatus, minScore, totalIncidents7d]);
 
@@ -240,7 +242,7 @@ export function HealthTrendSparkline({
             y1={height - 2}
             x2={width - padX}
             y2={height - 2}
-            stroke="#E2E8F0"
+            stroke={isDark ? '#1E293B' : '#E2E8F0'}
             strokeWidth="1"
           />
 
@@ -270,8 +272,22 @@ export function HealthTrendSparkline({
                   cx={c.x}
                   cy={c.y}
                   r={isHovered ? 3.5 : observed ? 2.25 : 1.5}
-                  fill={observed ? pointDotColor(c.point.status) : '#CBD5E1'}
-                  stroke={isHovered ? '#0F172A' : '#FFFFFF'}
+                  fill={
+                    observed
+                      ? pointDotColor(c.point.status)
+                      : isDark
+                        ? '#475569'
+                        : '#CBD5E1'
+                  }
+                  stroke={
+                    isHovered
+                      ? isDark
+                        ? '#F8FAFC'
+                        : '#0F172A'
+                      : isDark
+                        ? '#0F172A'
+                        : '#FFFFFF'
+                  }
                   strokeWidth={isHovered ? 1.25 : 0.75}
                 />
                 <rect
@@ -297,10 +313,10 @@ export function HealthTrendSparkline({
           className={`text-[11px] font-mono tabular-nums whitespace-nowrap ${
             activePoint
               ? activePoint.status === 'DRIFT' || activePoint.status === 'ERROR'
-                ? 'text-red-700 font-semibold'
+                ? 'text-red-700 dark:text-red-400 font-semibold'
                 : activePoint.status === 'WARNING'
-                  ? 'text-amber-700 font-semibold'
-                  : 'text-slate-700'
+                  ? 'text-amber-700 dark:text-amber-400 font-semibold'
+                  : 'text-slate-700 dark:text-slate-300'
               : palette.textClass
           }`}
         >
@@ -322,25 +338,25 @@ export function HealthTrendSparkline({
       onMouseLeave={() => setHoveredIdx(null)}
     >
       <div className="flex items-center justify-between gap-2 text-[11px]">
-        <span className="font-medium text-slate-500">
+        <span className="font-medium text-slate-500 dark:text-slate-400">
           {tr('7-Day Health Trend', '၇ ရက် ကျန်းမာရေး လမ်းကြောင်း')}
         </span>
 
         {activePoint ? (
-          <span className="font-mono tabular-nums text-slate-700 truncate">
+          <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300 truncate">
             {formatDayShort(activePoint.dateKey, locale)}
-            <span className="text-slate-300 mx-1" aria-hidden="true">
+            <span className="text-slate-300 dark:text-slate-700 mx-1" aria-hidden="true">
               ·
             </span>
             <span
               className={
                 activePoint.status === 'DRIFT' || activePoint.status === 'ERROR'
-                  ? 'font-semibold text-red-700'
+                  ? 'font-semibold text-red-700 dark:text-red-400'
                   : activePoint.status === 'WARNING'
-                    ? 'font-semibold text-amber-700'
+                    ? 'font-semibold text-amber-700 dark:text-amber-400'
                     : activePoint.status === 'HEALTHY'
-                      ? 'font-semibold text-emerald-700'
-                      : 'text-slate-400'
+                      ? 'font-semibold text-emerald-700 dark:text-emerald-400'
+                      : 'text-slate-400 dark:text-slate-500'
               }
             >
               {activePoint.score !== null
@@ -349,10 +365,10 @@ export function HealthTrendSparkline({
             </span>
             {activePoint.incidentsCount > 0 && (
               <>
-                <span className="text-slate-300 mx-1" aria-hidden="true">
+                <span className="text-slate-300 dark:text-slate-700 mx-1" aria-hidden="true">
                   ·
                 </span>
-                <span className="text-red-700">
+                <span className="text-red-700 dark:text-red-400">
                   {locale === 'my'
                     ? `${activePoint.incidentsCount} သတိပေးချက်`
                     : `${activePoint.incidentsCount} alert${activePoint.incidentsCount === 1 ? '' : 's'}`}
@@ -408,7 +424,7 @@ export function HealthTrendSparkline({
             y1={padY}
             x2={width - padX}
             y2={padY}
-            stroke="#F1F5F9"
+            stroke={isDark ? '#1E293B' : '#F1F5F9'}
             strokeWidth="1"
           />
           <line
@@ -416,7 +432,7 @@ export function HealthTrendSparkline({
             y1={padY + plotH * 0.5}
             x2={width - padX}
             y2={padY + plotH * 0.5}
-            stroke="#E2E8F0"
+            stroke={isDark ? '#334155' : '#E2E8F0'}
             strokeWidth="0.75"
             strokeDasharray="2 3"
           />
@@ -425,7 +441,7 @@ export function HealthTrendSparkline({
             y1={height - 2}
             x2={width - padX}
             y2={height - 2}
-            stroke="#E2E8F0"
+            stroke={isDark ? '#1E293B' : '#E2E8F0'}
             strokeWidth="1"
           />
 
@@ -467,8 +483,22 @@ export function HealthTrendSparkline({
                   cx={c.x}
                   cy={c.y}
                   r={isHovered ? 3.75 : observed ? 2.6 : 1.75}
-                  fill={observed ? pointDotColor(c.point.status) : '#CBD5E1'}
-                  stroke={isHovered ? '#0F172A' : '#FFFFFF'}
+                  fill={
+                    observed
+                      ? pointDotColor(c.point.status)
+                      : isDark
+                        ? '#475569'
+                        : '#CBD5E1'
+                  }
+                  stroke={
+                    isHovered
+                      ? isDark
+                        ? '#F8FAFC'
+                        : '#0F172A'
+                      : isDark
+                        ? '#0F172A'
+                        : '#FFFFFF'
+                  }
                   strokeWidth={isHovered ? 1.25 : 0.9}
                 />
                 <rect
@@ -491,7 +521,7 @@ export function HealthTrendSparkline({
         </svg>
 
         {/* Minimal 7-day start / midpoint / today axis labels */}
-        <div className="flex items-center justify-between text-[10px] font-mono tabular-nums text-slate-400 mt-0.5">
+        <div className="flex items-center justify-between text-[10px] font-mono tabular-nums text-slate-400 dark:text-slate-500 mt-0.5">
           <span>{formatDayShort(normalizedPoints[0].dateKey, locale)}</span>
           <span>{formatDayShort(normalizedPoints[3].dateKey, locale)}</span>
           <span>{tr('Today', 'ယနေ့')}</span>

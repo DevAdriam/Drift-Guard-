@@ -286,7 +286,13 @@ export interface TargetThresholdEvaluationItem {
   minHealthScore: number;
   breached: boolean;
   triggered: boolean;
-  skippedReason?: 'disabled' | 'healthy' | 'cooldown' | 'inactive' | 'in_progress';
+  skippedReason?:
+    | 'disabled'
+    | 'healthy'
+    | 'cooldown'
+    | 'inactive'
+    | 'in_progress'
+    | 'maintenance_window';
   newHealthStatus?: HealthStatus;
   newIncidentsCount?: number;
   error?: string;
@@ -759,6 +765,395 @@ export interface ActivityHeatmapResponse {
   fleetTotals: ActivityHeatmapCell[];
   summary: ActivityHeatmapSummary;
 }
+
+// 1. Interactive ERD & Schema Dependency Graph
+export interface ErdColumnNode {
+  name: string;
+  dataType: string;
+  isNullable: boolean;
+  defaultValue: string | null;
+  isPrimaryKey: boolean;
+  isForeignKey: boolean;
+  driftKind?: 'ADDED' | 'MODIFIED' | 'REMOVED' | null;
+}
+
+export interface ErdTableNode {
+  id: string; // schema.table
+  schema: string;
+  name: string;
+  columns: ErdColumnNode[];
+  hasDrift: boolean;
+  driftCounts: { added: number; modified: number; removed: number };
+  estimatedRowCount?: number | null;
+}
+
+export interface ErdRelationshipEdge {
+  id: string;
+  sourceTableId: string;
+  sourceColumn: string;
+  targetTableId: string;
+  targetColumn: string;
+  constraintName: string;
+  inferred: boolean;
+}
+
+export interface SchemaErdResponse {
+  databaseId: string;
+  databaseName: string;
+  schemaHash: string;
+  generatedAt: string;
+  source: 'live_constraints' | 'catalog_inferred';
+  tables: ErdTableNode[];
+  edges: ErdRelationshipEdge[];
+}
+
+// 2. Schema Snapshot Time Machine & Rollback Generator
+export interface TimeMachineRevision {
+  id: string;
+  kind: 'baseline' | 'snapshot';
+  label: string;
+  schemaHash: string;
+  gitCommitSha: string | null;
+  tableCount: number;
+  columnCount: number;
+  createdAt: string;
+  isCurrentBaseline?: boolean;
+}
+
+export interface SchemaTimeMachineResponse {
+  databaseId: string;
+  databaseName: string;
+  revisions: TimeMachineRevision[];
+  comparison: {
+    fromRevision: TimeMachineRevision;
+    toRevision: TimeMachineRevision;
+    identical: boolean;
+    addedCount: number;
+    removedCount: number;
+    modifiedCount: number;
+    diffs: ColumnDiffItem[];
+    upMigrationSql: string;
+    downRollbackSql: string;
+  } | null;
+}
+
+// 3. PostgreSQL Security & Privilege Drift Auditor
+export type SecurityFindingCategory =
+  | 'SUPERUSER_ROLE'
+  | 'MISSING_RLS'
+  | 'PUBLIC_GRANT'
+  | 'NON_SSL_SESSION'
+  | 'BYPASS_RLS';
+
+export interface SecurityAuditFinding {
+  id: string;
+  category: SecurityFindingCategory;
+  severity: SeverityLevel;
+  title: string;
+  targetObject: string;
+  description: string;
+  remediationSql: string;
+}
+
+export interface SecurityRoleRow {
+  roleName: string;
+  isSuperuser: boolean;
+  canLogin: boolean;
+  canCreateRole: boolean;
+  canCreateDb: boolean;
+  bypassRls: boolean;
+  validUntil: string | null;
+}
+
+export interface SecurityRlsTableRow {
+  schemaName: string;
+  tableName: string;
+  rlsEnabled: boolean;
+  rlsForced: boolean;
+  policyCount: number;
+  hasPublicGrant: boolean;
+}
+
+export interface SecurityAuditResponse {
+  databaseId: string;
+  databaseName: string;
+  environment: EnvironmentType;
+  collectedAt: string;
+  source: 'live_pg' | 'demo_catalog';
+  securityScore: number;
+  superuserCount: number;
+  tablesTotal: number;
+  tablesWithoutRlsCount: number;
+  publicGrantsCount: number;
+  sslSessionsCount: number;
+  nonSslSessionsCount: number;
+  sslCoveragePct: number;
+  findings: SecurityAuditFinding[];
+  roles: SecurityRoleRow[];
+  rlsTables: SecurityRlsTableRow[];
+}
+
+// 5. Replication Lag & WAL Slot Monitor
+export interface ReplicationStandbyRow {
+  pid: number;
+  applicationName: string;
+  clientAddr: string;
+  state: string;
+  syncState: string;
+  sentLsn: string;
+  replayLsn: string;
+  writeLagMs: number;
+  flushLagMs: number;
+  replayLagMs: number;
+  replayLagBytes: number;
+  replayLagPretty: string;
+}
+
+export interface ReplicationSlotRow {
+  slotName: string;
+  slotType: string;
+  database: string | null;
+  active: boolean;
+  walStatus: string;
+  retainedWalBytes: number;
+  retainedWalPretty: string;
+  remediationSql: string | null;
+}
+
+export interface ReplicationMonitorResponse {
+  targetLabel: string;
+  databaseId: string | null;
+  collectedAt: string;
+  source: 'live_pg' | 'demo_topology';
+  isStandby: boolean;
+  standbys: ReplicationStandbyRow[];
+  slots: ReplicationSlotRow[];
+  peakReplayLagMs: number;
+  peakReplayLagBytes: number;
+  peakReplayLagPretty: string;
+  inactiveSlotsCount: number;
+  totalRetainedWalBytes: number;
+  totalRetainedWalPretty: string;
+  warningNote?: string;
+}
+
+// 6. Maintenance Windows & Alert Silencing Schedules
+export interface MaintenanceWindowDto {
+  id: string;
+  databaseId: string | null;
+  databaseName: string | null;
+  environment: 'all' | EnvironmentType;
+  title: string;
+  dayOfWeek: number; // -1 = daily, 0 = Sun .. 6 = Sat
+  startTimeUtc: string; // "HH:MM"
+  durationMinutes: number;
+  suppressWebhooks: boolean;
+  suppressAutoReinspect: boolean;
+  isActive: boolean;
+  currentlyInWindow: boolean;
+  createdAt: string;
+}
+
+// 7. Team RBAC & Baseline Promotion Approvals
+export type WorkspaceRole = 'admin' | 'dba' | 'viewer';
+
+export interface TeamMemberDto {
+  id: string;
+  email: string;
+  displayName: string;
+  role: WorkspaceRole;
+  status: 'active' | 'invited';
+  invitedBy: string;
+  isOwner?: boolean;
+  createdAt: string;
+}
+
+export interface BaselineApprovalRequestDto {
+  id: string;
+  databaseId: string;
+  databaseName: string;
+  environment: EnvironmentType;
+  requestedByEmail: string;
+  gitCommitSha: string | null;
+  proposedSchemaHash: string;
+  currentBaselineHash: string | null;
+  diffSummary: string;
+  addedCount: number;
+  removedCount: number;
+  modifiedCount: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  reviewedByEmail: string | null;
+  reviewNote: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+}
+
+// 8. Executive Health Digest
+export interface ExecutiveTargetScorecard {
+  databaseId: string;
+  name: string;
+  environment: EnvironmentType;
+  healthStatus: HealthStatus;
+  healthScore: number;
+  slaAvailabilityPct: number;
+  inspectionsCount: number;
+  openIncidentsCount: number;
+  resolvedIncidentsCount: number;
+  driftEventsCount: number;
+  mttrMinutes: number | null;
+  databaseSizePretty: string;
+  databaseSizeBytes: number;
+  cacheHitRatioPct: number | null;
+  connectionUsagePct: number | null;
+}
+
+export interface ExecutiveDigestResponse {
+  generatedAt: string;
+  periodDays: number;
+  fleetSlaPct: number;
+  avgHealthScore: number;
+  totalTargets: number;
+  healthyTargetsCount: number;
+  driftedTargetsCount: number;
+  totalIncidentsInPeriod: number;
+  openIncidentsCount: number;
+  resolvedIncidentsInPeriod: number;
+  avgMttrMinutes: number | null;
+  totalStorageBytes: number;
+  totalStoragePretty: string;
+  projected30dGrowthBytes: number;
+  projected30dGrowthPretty: string;
+  incidentsByType: { type: IncidentType; count: number }[];
+  scorecards: ExecutiveTargetScorecard[];
+  highlights: { severity: 'INFO' | 'WARNING' | 'CRITICAL'; message: string }[];
+}
+
+// 9. Comprehensive Live Database Operations Monitor
+export interface LiveSessionRow {
+  pid: number;
+  usename: string;
+  applicationName: string;
+  clientAddr: string;
+  state:
+    | 'active'
+    | 'idle'
+    | 'idle in transaction'
+    | 'idle in transaction (aborted)'
+    | 'fastpath function call'
+    | 'disabled'
+    | 'other';
+  waitEventType: string | null;
+  waitEvent: string | null;
+  durationSeconds: number;
+  xactDurationSeconds: number | null;
+  xactStartIso: string | null;
+  queryStartIso: string | null;
+  query: string;
+  isBlocked: boolean;
+  blockingPids: number[];
+}
+
+export interface DatabaseThroughputStats {
+  pgVersion: string;
+  uptimeSeconds: number;
+  databaseName: string;
+  databaseSizePretty: string;
+  maxConnections: number;
+  activeConnections: number;
+  idleConnections: number;
+  idleInTransaction: number;
+  waitingConnections: number;
+  totalConnections: number;
+  connectionUsagePct: number;
+  xactCommit: number;
+  xactRollback: number;
+  rollbackRatioPct: number;
+  estimatedTps: number;
+  blksHit: number;
+  blksRead: number;
+  cacheHitRatioPct: number;
+  tupReturned: number;
+  tupFetched: number;
+  tupInserted: number;
+  tupUpdated: number;
+  tupDeleted: number;
+  deadlocks: number;
+  tempFiles: number;
+  tempBytes: number;
+  tempBytesPretty: string;
+  blkReadTimeMs: number;
+  blkWriteTimeMs: number;
+}
+
+export interface BgWriterStats {
+  checkpointsTimed: number;
+  checkpointsReq: number;
+  requestedCheckpointPct: number;
+  checkpointWriteTimeMs: number;
+  checkpointSyncTimeMs: number;
+  buffersCheckpoint: number;
+  buffersClean: number;
+  buffersBackend: number;
+  buffersAlloc: number;
+  maxwrittenClean: number;
+  statsResetIso: string | null;
+}
+
+export interface XidWraparoundTableRow {
+  schemaName: string;
+  tableName: string;
+  xidAge: number;
+  pctTowardFreeze: number;
+  pctTowardWraparound: number;
+  nDeadTup: number;
+  lastAutovacuumIso: string | null;
+  status: 'HEALTHY' | 'WARNING' | 'CRITICAL';
+  remediationSql: string;
+}
+
+export interface VacuumProgressRow {
+  pid: number;
+  schemaName: string;
+  tableName: string;
+  phase: string;
+  heapBlksTotal: number;
+  heapBlksScanned: number;
+  heapBlksVacuumed: number;
+  progressPct: number;
+  indexVacuumCount: number;
+}
+
+export interface PgSettingAuditRow {
+  name: string;
+  setting: string;
+  unit: string | null;
+  displayValue: string;
+  category: string;
+  context: string;
+  source: string;
+  status: 'OPTIMAL' | 'ADVISORY' | 'WARNING';
+  recommendation: string | null;
+  tuningSql: string | null;
+}
+
+export interface LiveMonitorResponse {
+  targetLabel: string;
+  databaseId: string | null;
+  environment: EnvironmentType | 'workspace';
+  collectedAt: string;
+  source: 'live_pg' | 'demo_live';
+  throughput: DatabaseThroughputStats;
+  bgwriter: BgWriterStats;
+  sessions: LiveSessionRow[];
+  databaseXidAge: number;
+  databaseXidWraparoundPct: number;
+  autovacuumFreezeMaxAge: number;
+  wraparoundTables: XidWraparoundTableRow[];
+  activeVacuums: VacuumProgressRow[];
+  settingsAudit: PgSettingAuditRow[];
+  warningNote?: string;
+}
+
 
 
 

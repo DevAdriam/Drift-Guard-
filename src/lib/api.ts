@@ -3,6 +3,7 @@ import type {
   AlertWebhookDto,
   ApiKeyDto,
   AuditLogDto,
+  BaselineApprovalRequestDto,
   CapacityPlanningResponse,
   ColumnCatalogRow,
   ColumnDiffItem,
@@ -10,6 +11,7 @@ import type {
   DatabaseTimelineResponse,
   EnvironmentCompareResult,
   EnvironmentType,
+  ExecutiveDigestResponse,
   ExplainPlanAnalysisResponse,
   HealthThresholdEvaluationResponse,
   HealthTrendsResponse,
@@ -17,16 +19,24 @@ import type {
   IncidentType,
   IndexAdvisorResponse,
   LiveLockContentionResponse,
+  LiveMonitorResponse,
+  MaintenanceWindowDto,
   MigrationCheckDto,
   MonitoredDatabaseDto,
   PerformanceTrendsResponse,
   QueryPerformanceResponse,
+  ReplicationMonitorResponse,
   SchemaBaselineDto,
+  SchemaErdResponse,
+  SchemaTimeMachineResponse,
+  SecurityAuditResponse,
   SeverityLevel,
   TargetHealthThresholdDto,
+  TeamMemberDto,
   TelemetryIncidentDto,
   TelemetrySnapshotDto,
   WebhookProvider,
+  WorkspaceRole,
   WorkspaceSettingsDto,
 } from '../types/telemetry.ts';
 
@@ -544,5 +554,180 @@ export class ApiClient {
         body: JSON.stringify(payload),
       }
     );
+  }
+
+  // 1. Interactive ERD & Schema Dependency Graph
+  getDatabaseErd(databaseId: string) {
+    return this.request<SchemaErdResponse>(`/api/databases/${databaseId}/erd`);
+  }
+
+  // 2. Schema Snapshot Time Machine & UP/DOWN Rollback Generator
+  getDatabaseTimeMachine(databaseId: string, fromId?: string, toId?: string) {
+    const qs = new URLSearchParams();
+    if (fromId) qs.set('from', fromId);
+    if (toId) qs.set('to', toId);
+    const queryStr = qs.toString();
+    return this.request<SchemaTimeMachineResponse>(
+      `/api/databases/${databaseId}/time-machine${queryStr ? `?${queryStr}` : ''}`
+    );
+  }
+
+  // 3. PostgreSQL Security & Privilege Drift Auditor
+  getDatabaseSecurityAudit(databaseId: string) {
+    return this.request<SecurityAuditResponse>(
+      `/api/databases/${databaseId}/security-audit`
+    );
+  }
+
+  // 5. Replication Lag & WAL Slot Monitor
+  getReplicationMonitor(databaseId?: string) {
+    const qs = databaseId
+      ? `?${new URLSearchParams({ databaseId }).toString()}`
+      : '';
+    return this.request<ReplicationMonitorResponse>(
+      `/api/telemetry-suite/replication${qs}`
+    );
+  }
+
+  // 6. Maintenance Windows
+  listMaintenanceWindows() {
+    return this.request<{ windows: MaintenanceWindowDto[] }>(
+      '/api/maintenance-windows'
+    );
+  }
+
+  createMaintenanceWindow(payload: {
+    title: string;
+    databaseId?: string | null;
+    environment: 'all' | EnvironmentType;
+    dayOfWeek: number;
+    startTimeUtc: string;
+    durationMinutes: number;
+    suppressWebhooks: boolean;
+    suppressAutoReinspect: boolean;
+  }) {
+    return this.request<{ window: MaintenanceWindowDto }>(
+      '/api/maintenance-windows',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    );
+  }
+
+  toggleMaintenanceWindow(id: string, isActive: boolean) {
+    return this.request<{ window: MaintenanceWindowDto }>(
+      `/api/maintenance-windows/${id}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ isActive }),
+      }
+    );
+  }
+
+  deleteMaintenanceWindow(id: string) {
+    return this.request<{ ok: boolean }>(`/api/maintenance-windows/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // 7. Team RBAC & Baseline Promotion Approvals
+  listTeamMembers() {
+    return this.request<{ members: TeamMemberDto[] }>('/api/team/members');
+  }
+
+  inviteTeamMember(payload: {
+    email: string;
+    displayName: string;
+    role: WorkspaceRole;
+  }) {
+    return this.request<{ member: TeamMemberDto }>('/api/team/members', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  updateTeamMemberRole(id: string, role: WorkspaceRole) {
+    return this.request<{ member: TeamMemberDto }>(`/api/team/members/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  removeTeamMember(id: string) {
+    return this.request<{ ok: boolean }>(`/api/team/members/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  listBaselineApprovals() {
+    return this.request<{ approvals: BaselineApprovalRequestDto[] }>(
+      '/api/approvals'
+    );
+  }
+
+  createBaselineApprovalRequest(payload: {
+    databaseId: string;
+    gitCommitSha?: string;
+    note?: string;
+  }) {
+    return this.request<{ approval: BaselineApprovalRequestDto }>(
+      '/api/approvals',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    );
+  }
+
+  reviewBaselineApproval(
+    id: string,
+    payload: { decision: 'APPROVED' | 'REJECTED'; reviewNote?: string }
+  ) {
+    return this.request<{ approval: BaselineApprovalRequestDto }>(
+      `/api/approvals/${id}/review`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    );
+  }
+
+  // 8. Executive Health Digest
+  getExecutiveDigest(days: 7 | 30 = 7) {
+    return this.request<ExecutiveDigestResponse>(
+      `/api/reports/executive-digest?days=${days}`
+    );
+  }
+
+  async downloadExecutiveDigestPdf(
+    days: 7 | 30 = 7
+  ): Promise<{ blob: Blob; filename: string }> {
+    const token = await this.getToken();
+    const res = await fetch(`/api/reports/executive-digest/pdf?days=${days}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(
+        typeof data.error === 'string'
+          ? data.error
+          : `Failed to generate executive PDF digest (HTTP ${res.status})`
+      );
+    }
+    const disposition = res.headers.get('Content-Disposition') ?? '';
+    const match = disposition.match(/filename="([^"]+)"/);
+    const filename =
+      match?.[1] ?? `driftguard-executive-digest-${days}d.pdf`;
+    const blob = await res.blob();
+    return { blob, filename };
+  }
+
+  // 9. Comprehensive Live Database Operations Monitor
+  getLiveMonitor(databaseId?: string) {
+    const qs = databaseId
+      ? `?${new URLSearchParams({ databaseId }).toString()}`
+      : '';
+    return this.request<LiveMonitorResponse>(`/api/live-monitor/full${qs}`);
   }
 }

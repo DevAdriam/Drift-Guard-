@@ -17,6 +17,7 @@ import type {
   RegressionStatus,
 } from '../types/telemetry.ts';
 import { useI18n } from '../i18n/LocaleContext.tsx';
+import { useTheme } from '../context/ThemeContext.tsx';
 
 interface PerformanceTrendsPanelProps {
   api: ApiClient;
@@ -230,6 +231,7 @@ export function PerformanceTrendsPanel({
   onRequestReconnect,
 }: PerformanceTrendsPanelProps) {
   const { locale, t, tr, formatEnv } = useI18n();
+  const { isDark } = useTheme();
 
   const [days, setDays] = useState<7 | 14 | 30>(30);
   const [liveData, setLiveData] = useState<PerformanceTrendsResponse | null>(
@@ -250,22 +252,22 @@ export function PerformanceTrendsPanel({
         case 'REGRESSION':
           return {
             label: tr('Regression', 'စွမ်းဆောင်ရည် ကျဆင်းမှု'),
-            className: 'text-red-700',
+            className: 'text-red-700 dark:text-red-400',
           };
         case 'ELEVATED':
           return {
             label: tr('Elevated', 'မြင့်တက်နေသည်'),
-            className: 'text-amber-700',
+            className: 'text-amber-700 dark:text-amber-400',
           };
         case 'IMPROVED':
           return {
             label: tr('Improved', 'တိုးတက်လာသည်'),
-            className: 'text-emerald-700',
+            className: 'text-emerald-700 dark:text-emerald-400',
           };
         default:
           return {
             label: tr('Stable', 'တည်ငြိမ်သည်'),
-            className: 'text-slate-600',
+            className: 'text-slate-600 dark:text-slate-300',
           };
       }
     },
@@ -416,28 +418,28 @@ export function PerformanceTrendsPanel({
   return (
     <section
       aria-labelledby="performance-trends-heading"
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden"
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden"
     >
       {/* Panel Header */}
-      <div className="px-6 py-5 border-b border-slate-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2
               id="performance-trends-heading"
-              className="text-base font-semibold text-slate-900"
+              className="text-base font-semibold text-slate-900 dark:text-slate-100"
             >
               {tr('Performance Trends', 'စွမ်းဆောင်ရည် လမ်းကြောင်းများ')}
             </h2>
-            <span className="text-slate-300" aria-hidden="true">
+            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
               ·
             </span>
-            <span className="text-xs font-mono text-slate-500">
+            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
               {locale === 'my'
                 ? `${days} ရက် ပျမ်းမျှ ကြာချိန်နှင့် သမိုင်းကြောင်း မူလစံ နှိုင်းယှဉ်ချက်`
                 : `${days}-day average latency vs. historical baseline`}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {tr(
               'Compares daily average execution latency of top queries against their historical baseline to flag sudden performance regressions.',
               'ထိပ်တန်း query များ၏ နေ့စဉ် ပျမ်းမျှ လုပ်ဆောင်ချိန်ကို သမိုင်းကြောင်း မူလစံနှုန်းနှင့် နှိုင်းယှဉ်၍ စွမ်းဆောင်ရည် ရုတ်တရက် ကျဆင်းမှုများကို ရှာဖွေဖော်ပြပါသည်။'
@@ -446,7 +448,7 @@ export function PerformanceTrendsPanel({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <label className="flex items-center gap-2 text-xs text-slate-600">
+          <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
             <span className="whitespace-nowrap">
               {tr('Source', 'အရင်းအမြစ်')}
             </span>
@@ -460,7 +462,7 @@ export function PerformanceTrendsPanel({
                 'Select target database for performance trends',
                 'စွမ်းဆောင်ရည် လမ်းကြောင်းအတွက် ပစ်မှတ် ဒေတာဘေ့စ် ရွေးချယ်ရန်'
               )}
-              className="px-2.5 py-1.5 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700 max-w-[200px] truncate"
+              className="px-2.5 py-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500 max-w-[200px] truncate"
             >
               <option value="">
                 {tr(
@@ -483,7 +485,7 @@ export function PerformanceTrendsPanel({
               'Select latency trend timeframe',
               'ကြာချိန် လမ်းကြောင်း ကာလ ရွေးချယ်ရန်'
             )}
-            className="inline-flex items-center gap-0.5 p-0.5 bg-slate-100 rounded-lg border border-slate-200"
+            className="inline-flex items-center gap-0.5 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-800"
           >
             {([7, 14, 30] as const).map((d) => (
               <button
@@ -492,8 +494,8 @@ export function PerformanceTrendsPanel({
                 onClick={() => setDays(d)}
                 className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 tabular-nums cursor-pointer ${
                   days === d
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
                 {locale === 'my' ? `${d} ရက်` : `${d}d`}
@@ -508,7 +510,7 @@ export function PerformanceTrendsPanel({
               loadTrends(selectedTargetId, days, true);
             }}
             disabled={capturing || loading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
           >
             <PlusCircle
               className={`w-3.5 h-3.5 ${capturing ? 'animate-spin' : ''}`}
@@ -529,8 +531,8 @@ export function PerformanceTrendsPanel({
             }}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               previewMode
-                ? 'text-amber-900 bg-amber-50 border-amber-300 hover:bg-amber-100'
-                : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50'
+                ? 'text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800/70 hover:bg-amber-100 dark:hover:bg-amber-950/70'
+                : 'text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -545,7 +547,7 @@ export function PerformanceTrendsPanel({
 
       {/* Explicit Simulated Preview Banner */}
       {previewMode && (
-        <div className="px-6 py-2.5 bg-amber-50 border-b border-amber-200 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900">
+        <div className="px-6 py-2.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-900/70 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200">
           <span>
             {locale === 'my'
               ? `မူလစံ ကွာခြားမှုနှင့် စွမ်းဆောင်ရည် ရုတ်တရက် ကျဆင်းမှု ရှာဖွေပုံကို ပြသရန် ${days} ရက်စာ နမူနာဒေတာကို ဖော်ပြထားပါသည်။`
@@ -557,7 +559,7 @@ export function PerformanceTrendsPanel({
               setPreviewMode(false);
               setFocusedQueryId(null);
             }}
-            className="font-semibold underline hover:text-amber-950 whitespace-nowrap cursor-pointer"
+            className="font-semibold underline hover:text-amber-950 dark:hover:text-amber-200 whitespace-nowrap cursor-pointer"
           >
             {tr('Switch back to live telemetry', 'တိုက်ရိုက် ဒေတာသို့ ပြန်ပြောင်းရန်')}
           </button>
@@ -571,20 +573,20 @@ export function PerformanceTrendsPanel({
             {[0, 1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-16 bg-slate-100 rounded-lg animate-pulse"
+                className="h-16 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse"
               />
             ))}
           </div>
-          <div className="h-64 bg-slate-100 rounded-lg animate-pulse" />
+          <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
         </div>
       ) : error && !previewMode ? (
         <div className="p-8 text-center space-y-3">
-          <p className="text-sm font-medium text-red-700">{error}</p>
+          <p className="text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
           <div className="flex items-center justify-center gap-2">
             <button
               type="button"
               onClick={() => loadTrends(selectedTargetId, days, false)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>{tr('Retry', 'ပြန်စမ်းရန်')}</span>
@@ -592,7 +594,7 @@ export function PerformanceTrendsPanel({
             <button
               type="button"
               onClick={() => setPreviewMode(true)}
-              className="px-3.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg cursor-pointer"
+              className="px-3.5 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/70 hover:bg-blue-100 dark:hover:bg-blue-950/75 rounded-lg cursor-pointer"
             >
               {tr('Preview 30-Day Pattern', 'ရက် ၃၀ ပုံစံ အစမ်းကြည့်ရန်')}
             </button>
@@ -600,13 +602,13 @@ export function PerformanceTrendsPanel({
         </div>
       ) : !activeData || seriesList.length === 0 ? (
         <div className="p-8 text-center space-y-2.5">
-          <p className="text-sm font-semibold text-slate-900">
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             {tr(
               'No query latency samples recorded yet',
               'Query ကြာချိန် မှတ်တမ်းများ မရှိသေးပါ'
             )}
           </p>
-          <p className="text-xs text-slate-500 max-w-lg mx-auto">
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
             {activeData?.unavailableReason === 'CREDENTIAL_DECRYPT_FAILED'
               ? tr(
                   'Stored connection credentials could not be decrypted after a server restart. Re-enter the connection URI to resume live sampling.',
@@ -630,7 +632,7 @@ export function PerformanceTrendsPanel({
               <button
                 type="button"
                 onClick={onRequestReconnect}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-lg transition-colors cursor-pointer"
               >
                 <KeyRound className="w-3.5 h-3.5" />
                 <span>
@@ -642,7 +644,7 @@ export function PerformanceTrendsPanel({
                 type="button"
                 onClick={() => loadTrends(selectedTargetId, days, true)}
                 disabled={capturing}
-                className="px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-lg transition-colors cursor-pointer"
               >
                 {tr('Capture First Sample', 'ပထမဆုံး နမူနာ မှတ်တမ်းယူရန်')}
               </button>
@@ -650,7 +652,7 @@ export function PerformanceTrendsPanel({
             <button
               type="button"
               onClick={() => setPreviewMode(true)}
-              className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer"
             >
               {tr('Preview 30-Day Pattern', 'ရက် ၃၀ ပုံစံ အစမ်းကြည့်ရန်')}
             </button>
@@ -659,15 +661,15 @@ export function PerformanceTrendsPanel({
       ) : (
         <>
           {/* 4-Column Summary KPI Strip */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 border-b border-slate-200 bg-slate-50/50">
+          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Tracked Top Queries', 'စောင့်ကြည့်နေသော ထိပ်တန်း Query များ')}
               </p>
-              <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {seriesList.length}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                 {locale === 'my'
                   ? `မှတ်တမ်း ${activeData.totalSamplesStored} ခု · ${activeData.distinctDays} ရက်`
                   : `${activeData.totalSamplesStored} stored samples · ${activeData.distinctDays} day${activeData.distinctDays === 1 ? '' : 's'}`}
@@ -675,19 +677,19 @@ export function PerformanceTrendsPanel({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Regressions Flagged', 'တွေ့ရှိသော စွမ်းဆောင်ရည် ကျဆင်းမှုများ')}
               </p>
               <p
                 className={`mt-1 text-xl font-bold font-mono tabular-nums ${
                   activeData.regressionQueriesCount > 0
-                    ? 'text-red-700'
-                    : 'text-emerald-700'
+                    ? 'text-red-700 dark:text-red-400'
+                    : 'text-emerald-700 dark:text-emerald-400'
                 }`}
               >
                 {activeData.regressionQueriesCount}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 {activeData.regressionQueriesCount > 0
                   ? tr(
                       'Exceeded +35% & 2σ baseline bound',
@@ -701,21 +703,21 @@ export function PerformanceTrendsPanel({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Worst Drift vs. Baseline', 'မူလစံထက် အများဆုံး ကွာခြားမှု')}
               </p>
               <p
                 className={`mt-1 text-xl font-bold font-mono tabular-nums ${
                   activeData.worstDeltaPct >= 35
-                    ? 'text-red-700'
+                    ? 'text-red-700 dark:text-red-400'
                     : activeData.worstDeltaPct >= 15
-                      ? 'text-amber-700'
-                      : 'text-slate-900'
+                      ? 'text-amber-700 dark:text-amber-400'
+                      : 'text-slate-900 dark:text-slate-100'
                 }`}
               >
                 {formatDeltaPct(activeData.worstDeltaPct)}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 {activeData.worstDeltaPct >= 35
                   ? tr('Sudden latency regression', 'ကြာချိန် ရုတ်တရက် မြင့်တက်မှု')
                   : activeData.worstDeltaPct >= 15
@@ -725,13 +727,13 @@ export function PerformanceTrendsPanel({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Blended Top-5 Latency', 'ထိပ်တန်း ၅ ခု ပျမ်းမျှ ကြာချိန်')}
               </p>
-              <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {formatMs(activeData.blendedLatestMs)}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500 font-mono tabular-nums">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 font-mono tabular-nums">
                 {tr('Baseline', 'မူလစံ')}{' '}
                 {formatMs(activeData.blendedBaselineMs)} (
                 {formatDeltaPct(activeData.blendedDeltaPct)})
@@ -740,7 +742,7 @@ export function PerformanceTrendsPanel({
           </div>
 
           {/* Interactive Chart Area */}
-          <div className="px-6 py-5 space-y-4 border-b border-slate-200">
+          <div className="px-6 py-5 space-y-4 border-b border-slate-200 dark:border-slate-800">
             {/* Query Focus Filter Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-1.5">
@@ -749,8 +751,8 @@ export function PerformanceTrendsPanel({
                   onClick={() => setFocusedQueryId(null)}
                   className={`px-2.5 py-1 text-xs font-medium rounded-md border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     focusedQueryId === null
-                      ? 'bg-slate-900 text-white border-slate-900'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      ? 'bg-slate-900 dark:bg-blue-600 text-white border-slate-900 dark:border-blue-500'
+                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                   }`}
                 >
                   {locale === 'my'
@@ -771,8 +773,8 @@ export function PerformanceTrendsPanel({
                       }
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                         active
-                          ? 'bg-slate-900 text-white border-slate-900'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          ? 'bg-slate-900 dark:bg-blue-600 text-white border-slate-900 dark:border-blue-500'
+                          : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                       }`}
                     >
                       <span
@@ -784,7 +786,7 @@ export function PerformanceTrendsPanel({
                       {s.status === 'REGRESSION' && (
                         <span
                           className={`text-[11px] font-semibold ${
-                            active ? 'text-red-300' : 'text-red-700'
+                            active ? 'text-red-300' : 'text-red-700 dark:text-red-400'
                           }`}
                         >
                           {formatDeltaPct(s.deltaPct)}
@@ -796,11 +798,11 @@ export function PerformanceTrendsPanel({
               </div>
 
               {/* Clean Chart Legend */}
-              <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+              <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
                 <span className="inline-flex items-center gap-1.5">
                   <span
                     aria-hidden="true"
-                    className="w-4 h-0.5 bg-blue-700 inline-block"
+                    className="w-4 h-0.5 bg-blue-700 dark:bg-blue-600 inline-block"
                   />
                   {tr('Observed Avg', 'တိုင်းတာရရှိ ပျမ်းမျှ')}
                 </span>
@@ -823,17 +825,17 @@ export function PerformanceTrendsPanel({
 
             {/* Sparse live history helper notice */}
             {isSparseLive && (
-              <div className="px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+              <div className="px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-300">
                 <span>
                   {locale === 'my' ? (
                     <>
                       တိုက်ရိုက် မူလစံ စုဆောင်းမှု စတင်ပြီးပါပြီ (မှတ်တမ်း{' '}
                       {buckets.length} ခု)။ ရက်အလိုက် သမိုင်းကြောင်း တည်ဆောက်ရန်{' '}
-                      <strong className="font-semibold text-slate-900">
+                      <strong className="font-semibold text-slate-900 dark:text-slate-100">
                         နမူနာ မှတ်တမ်းယူရန်
                       </strong>{' '}
                       ကို နှိပ်ပါ သို့မဟုတ်{' '}
-                      <strong className="font-semibold text-slate-900">
+                      <strong className="font-semibold text-slate-900 dark:text-slate-100">
                         ရက် ၃၀ ပုံစံ အစမ်းကြည့်ရန်
                       </strong>{' '}
                       ကို ဖွင့်ကြည့်နိုင်ပါသည်။
@@ -842,11 +844,11 @@ export function PerformanceTrendsPanel({
                     <>
                       Live baseline collection started ({buckets.length} sample
                       bucket{buckets.length === 1 ? '' : 's'} captured). Click{' '}
-                      <strong className="font-semibold text-slate-900">
+                      <strong className="font-semibold text-slate-900 dark:text-slate-100">
                         Capture Sample
                       </strong>{' '}
                       over time to build multi-day history, or open the{' '}
-                      <strong className="font-semibold text-slate-900">
+                      <strong className="font-semibold text-slate-900 dark:text-slate-100">
                         Preview 30-Day Pattern
                       </strong>{' '}
                       to inspect multi-week regression curves.
@@ -857,10 +859,10 @@ export function PerformanceTrendsPanel({
             )}
 
             {/* Live Hover / Latest Readout Strip */}
-            <div className="min-h-[28px] flex flex-wrap items-center justify-between gap-2 text-xs bg-slate-50/70 border border-slate-200/80 rounded-lg px-3.5 py-1.5">
+            <div className="min-h-[28px] flex flex-wrap items-center justify-between gap-2 text-xs bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 rounded-lg px-3.5 py-1.5">
               {hoveredBucket ? (
                 <>
-                  <span className="font-mono font-semibold text-slate-900 tabular-nums">
+                  <span className="font-mono font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
                     {hoveredBucket.label}
                   </span>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono tabular-nums text-[11px]">
@@ -887,19 +889,19 @@ export function PerformanceTrendsPanel({
                                 ],
                             }}
                           />
-                          <span className="text-slate-600">
+                          <span className="text-slate-600 dark:text-slate-300">
                             {s.shortLabel}:
                           </span>
                           <span
                             className={
                               pt.isRegression
-                                ? 'font-semibold text-red-700'
-                                : 'font-semibold text-slate-900'
+                                ? 'font-semibold text-red-700 dark:text-red-400'
+                                : 'font-semibold text-slate-900 dark:text-slate-100'
                             }
                           >
                             {formatMs(pt.avgLatencyMs)}
                           </span>
-                          <span className="text-slate-400">
+                          <span className="text-slate-400 dark:text-slate-500">
                             ({tr('base', 'မူလစံ')} {formatMs(s.baselineMs)} ·{' '}
                             {formatDeltaPct(pt.deltaPct)})
                           </span>
@@ -909,7 +911,7 @@ export function PerformanceTrendsPanel({
                   </div>
                 </>
               ) : (
-                <span className="text-slate-500">
+                <span className="text-slate-500 dark:text-slate-400">
                   {tr(
                     'Hover across the chart to inspect exact daily average latency against historical baselines, or click a query below to isolate its regression zone.',
                     'နေ့စဉ် ပျမ်းမျှ ကြာချိန်နှင့် မူလစံ နှိုင်းယှဉ်ချက်ကို ကြည့်ရှုရန် ဂရပ်ပေါ် ထောက်ပါ သို့မဟုတ် အောက်ပါ query တစ်ခုချင်းစီကို နှိပ်၍ သီးခြားကြည့်ရှုပါ။'
@@ -940,14 +942,22 @@ export function PerformanceTrendsPanel({
                         x2={chartW - padR}
                         y1={y}
                         y2={y}
-                        stroke={idx === 0 ? '#CBD5E1' : '#E2E8F0'}
+                        stroke={
+                          idx === 0
+                            ? isDark
+                              ? '#334155'
+                              : '#CBD5E1'
+                            : isDark
+                              ? '#1E293B'
+                              : '#E2E8F0'
+                        }
                         strokeWidth={1}
                       />
                       <text
                         x={padL - 8}
                         y={y + 3.5}
                         textAnchor="end"
-                        className="fill-slate-500 text-[10px] font-mono"
+                        className="fill-slate-500 dark:fill-slate-400 text-[10px] font-mono"
                       >
                         {formatMs(val)}
                       </text>
@@ -966,24 +976,24 @@ export function PerformanceTrendsPanel({
                         0,
                         yForMs(focusedSeries.regressionThresholdMs) - padT
                       )}
-                      fill="#FEE2E2"
-                      opacity={0.35}
+                      fill={isDark ? '#7F1D1D' : '#FEE2E2'}
+                      opacity={isDark ? 0.25 : 0.35}
                     />
                     <line
                       x1={padL}
                       x2={chartW - padR}
                       y1={yForMs(focusedSeries.regressionThresholdMs)}
                       y2={yForMs(focusedSeries.regressionThresholdMs)}
-                      stroke="#DC2626"
+                      stroke={isDark ? '#F87171' : '#DC2626'}
                       strokeWidth={1}
                       strokeDasharray="3 3"
-                      opacity={0.65}
+                      opacity={0.75}
                     />
                     <text
                       x={chartW - padR - 4}
                       y={yForMs(focusedSeries.regressionThresholdMs) - 5}
                       textAnchor="end"
-                      className="fill-red-700 text-[10px] font-mono"
+                      className="fill-red-700 dark:fill-red-400 text-[10px] font-mono"
                     >
                       {tr('Regression threshold', 'ကျဆင်းမှု ကန့်သတ်ချက်')} (
                       {formatMs(focusedSeries.regressionThresholdMs)})
@@ -1002,7 +1012,7 @@ export function PerformanceTrendsPanel({
                       x={chartW - padR - 4}
                       y={yForMs(focusedSeries.baselineMs) - 5}
                       textAnchor="end"
-                      className="fill-slate-600 text-[10px] font-mono"
+                      className="fill-slate-600 dark:fill-slate-300 text-[10px] font-mono"
                     >
                       {tr('Baseline', 'မူလစံ')} (
                       {formatMs(focusedSeries.baselineMs)})
@@ -1023,7 +1033,7 @@ export function PerformanceTrendsPanel({
                       x={chartW - padR - 4}
                       y={yForMs(activeData.blendedBaselineMs) - 5}
                       textAnchor="end"
-                      className="fill-slate-600 text-[10px] font-mono"
+                      className="fill-slate-600 dark:fill-slate-300 text-[10px] font-mono"
                     >
                       {tr('Blended Baseline', 'ပျမ်းမျှ မူလစံ')} (
                       {formatMs(activeData.blendedBaselineMs)})
@@ -1116,8 +1126,20 @@ export function PerformanceTrendsPanel({
                                   ? 4.5
                                   : 3
                             }
-                            fill={c.point.isRegression ? '#DC2626' : '#FFFFFF'}
-                            stroke={c.point.isRegression ? '#FFFFFF' : color}
+                            fill={
+                              c.point.isRegression
+                                ? '#EF4444'
+                                : isDark
+                                  ? '#0F172A'
+                                  : '#FFFFFF'
+                            }
+                            stroke={
+                              c.point.isRegression
+                                ? isDark
+                                  ? '#0F172A'
+                                  : '#FFFFFF'
+                                : color
+                            }
                             strokeWidth={2}
                           />
                         );
@@ -1139,7 +1161,7 @@ export function PerformanceTrendsPanel({
                           ? 'end'
                           : 'middle'
                     }
-                    className="fill-slate-500 text-[10px] font-mono"
+                    className="fill-slate-500 dark:fill-slate-400 text-[10px] font-mono"
                   >
                     {buckets[idx].label}
                   </text>
@@ -1176,7 +1198,7 @@ export function PerformanceTrendsPanel({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium">
                   <th className="py-2.5 pl-6 pr-3">
                     {tr('Query Pattern', 'Query ပုံစံ')}
                   </th>
@@ -1200,7 +1222,7 @@ export function PerformanceTrendsPanel({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {seriesList.map((s, idx) => {
                   const color = SERIES_COLORS[idx % SERIES_COLORS.length];
                   const st = statusMeta(s.status);
@@ -1216,7 +1238,7 @@ export function PerformanceTrendsPanel({
                           )
                         }
                         className={`cursor-pointer transition-colors ${
-                          isFocused ? 'bg-blue-50/50' : 'hover:bg-slate-50'
+                          isFocused ? 'bg-blue-50/50 dark:bg-blue-950/40' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
                         }`}
                       >
                         <td className="py-3 pl-6 pr-3 max-w-sm">
@@ -1234,7 +1256,7 @@ export function PerformanceTrendsPanel({
                                   prev === s.queryId ? null : s.queryId
                                 );
                               }}
-                              className="text-slate-400 hover:text-slate-800 shrink-0 cursor-pointer"
+                              className="text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 shrink-0 cursor-pointer"
                             >
                               {isExpanded ? (
                                 <ChevronDown className="w-3.5 h-3.5" />
@@ -1248,40 +1270,40 @@ export function PerformanceTrendsPanel({
                               style={{ backgroundColor: color }}
                             />
                             <div className="min-w-0">
-                              <p className="font-mono font-semibold text-slate-900 truncate">
+                              <p className="font-mono font-semibold text-slate-900 dark:text-slate-100 truncate">
                                 {s.shortLabel}
                               </p>
-                              <p className="font-mono text-[11px] text-slate-500 truncate">
+                              <p className="font-mono text-[11px] text-slate-500 dark:text-slate-400 truncate">
                                 {s.queryText}
                               </p>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-3 text-right font-mono tabular-nums text-slate-600 whitespace-nowrap">
+                        <td className="py-3 px-3 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300 whitespace-nowrap">
                           {formatMs(s.baselineMs)}
                         </td>
-                        <td className="py-3 px-3 text-right font-mono tabular-nums font-semibold text-slate-900 whitespace-nowrap">
+                        <td className="py-3 px-3 text-right font-mono tabular-nums font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                           {formatMs(s.latestMs)}
                         </td>
-                        <td className="py-3 px-3 text-right font-mono tabular-nums text-slate-700 whitespace-nowrap">
+                        <td className="py-3 px-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {formatMs(s.peakMs)}
                         </td>
                         <td
                           className={`py-3 px-3 text-right font-mono tabular-nums font-semibold whitespace-nowrap ${
                             s.deltaPct >= 35
-                              ? 'text-red-700'
+                              ? 'text-red-700 dark:text-red-400'
                               : s.deltaPct >= 15
-                                ? 'text-amber-700'
+                                ? 'text-amber-700 dark:text-amber-400'
                                 : s.deltaPct <= -15
-                                  ? 'text-emerald-700'
-                                  : 'text-slate-600'
+                                  ? 'text-emerald-700 dark:text-emerald-400'
+                                  : 'text-slate-600 dark:text-slate-300'
                           }`}
                         >
                           {formatDeltaPct(s.deltaPct)}
                         </td>
-                        <td className="py-3 px-3 text-right font-mono tabular-nums text-slate-700 whitespace-nowrap">
+                        <td className="py-3 px-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {s.regressionCount > 0 ? (
-                            <span className="font-semibold text-red-700">
+                            <span className="font-semibold text-red-700 dark:text-red-400">
                               {s.regressionCount}
                             </span>
                           ) : (
@@ -1296,13 +1318,13 @@ export function PerformanceTrendsPanel({
                       </tr>
 
                       {isExpanded && (
-                        <tr className="bg-slate-50/80">
+                        <tr className="bg-slate-50/80 dark:bg-slate-800/60">
                           <td colSpan={7} className="px-6 py-4 space-y-2.5">
-                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-300">
                               <div className="flex flex-wrap items-center gap-2 font-mono tabular-nums">
                                 <span>Query ID {s.queryId}</span>
                                 <span
-                                  className="text-slate-300"
+                                  className="text-slate-300 dark:text-slate-700"
                                   aria-hidden="true"
                                 >
                                   ·
@@ -1313,7 +1335,7 @@ export function PerformanceTrendsPanel({
                                     : `${s.totalCalls.toLocaleString()} calls`}
                                 </span>
                                 <span
-                                  className="text-slate-300"
+                                  className="text-slate-300 dark:text-slate-700"
                                   aria-hidden="true"
                                 >
                                   ·
@@ -1324,7 +1346,7 @@ export function PerformanceTrendsPanel({
                                     : `${s.avgCacheHitPct.toFixed(1)}% cache hit`}
                                 </span>
                                 <span
-                                  className="text-slate-300"
+                                  className="text-slate-300 dark:text-slate-700"
                                   aria-hidden="true"
                                 >
                                   ·
@@ -1340,11 +1362,11 @@ export function PerformanceTrendsPanel({
                                   e.stopPropagation();
                                   handleCopySql(s.queryId, s.queryText);
                                 }}
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
                               >
                                 {copiedId === s.queryId ? (
                                   <>
-                                    <Check className="w-3.5 h-3.5 text-emerald-700" />
+                                    <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                                     <span>{t('action.copied')}</span>
                                   </>
                                 ) : (
@@ -1355,7 +1377,7 @@ export function PerformanceTrendsPanel({
                                 )}
                               </button>
                             </div>
-                            <pre className="p-3.5 bg-slate-900 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap break-words leading-relaxed">
+                            <pre className="p-3.5 bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap break-words leading-relaxed">
                               {s.queryText}
                             </pre>
                           </td>

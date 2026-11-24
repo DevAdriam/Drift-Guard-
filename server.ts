@@ -75,6 +75,28 @@ import {
   DEMO_USER,
   ensureDemoWorkspaceSeeded,
 } from './src/server/demoWorkspace.ts';
+import {
+  getReplicationMonitor,
+  getSchemaErd,
+  getSchemaTimeMachine,
+  getSecurityAudit,
+} from './src/server/enterpriseInsights.ts';
+import {
+  createBaselineApprovalRequest,
+  createMaintenanceWindow,
+  deleteMaintenanceWindow,
+  generateExecutiveDigestPdf,
+  getExecutiveDigest,
+  inviteTeamMember,
+  listBaselineApprovals,
+  listMaintenanceWindows,
+  listTeamMembers,
+  removeTeamMember,
+  reviewBaselineApprovalRequest,
+  toggleMaintenanceWindow,
+  updateTeamMemberRole,
+} from './src/server/governanceService.ts';
+import { getLiveMonitorSnapshot } from './src/server/liveMonitorService.ts';
 
 dotenv.config();
 
@@ -1605,6 +1627,490 @@ app.get('/api/audit-logs', requireAuth, async (req: AuthRequest, res) => {
     });
   }
 });
+
+// 1. Interactive ERD & Schema Dependency Graph
+app.get(
+  '/api/databases/:id/erd',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const idCheck = uuidParam.safeParse(req.params.id);
+    if (!idCheck.success) {
+      res.status(400).json({ error: 'Invalid database identifier.' });
+      return;
+    }
+    try {
+      const erd = await getSchemaErd(req.user!.uid, idCheck.data);
+      res.json(erd);
+    } catch (error) {
+      res.status(400).json({
+        error:
+          error instanceof Error ? error.message : 'Failed to build ERD graph.',
+      });
+    }
+  }
+);
+
+// 2. Schema Snapshot Time Machine & UP/DOWN Rollback Generator
+app.get(
+  '/api/databases/:id/time-machine',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const idCheck = uuidParam.safeParse(req.params.id);
+    if (!idCheck.success) {
+      res.status(400).json({ error: 'Invalid database identifier.' });
+      return;
+    }
+    const fromRevId =
+      typeof req.query.from === 'string' && req.query.from.length > 0
+        ? req.query.from.slice(0, 80)
+        : undefined;
+    const toRevId =
+      typeof req.query.to === 'string' && req.query.to.length > 0
+        ? req.query.to.slice(0, 80)
+        : undefined;
+    try {
+      const data = await getSchemaTimeMachine(
+        req.user!.uid,
+        idCheck.data,
+        fromRevId,
+        toRevId
+      );
+      res.json(data);
+    } catch (error) {
+      res.status(400).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to load schema time machine.',
+      });
+    }
+  }
+);
+
+// 3. PostgreSQL Security & Privilege Drift Auditor
+app.get(
+  '/api/databases/:id/security-audit',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const idCheck = uuidParam.safeParse(req.params.id);
+    if (!idCheck.success) {
+      res.status(400).json({ error: 'Invalid database identifier.' });
+      return;
+    }
+    try {
+      const audit = await getSecurityAudit(req.user!.uid, idCheck.data);
+      res.json(audit);
+    } catch (error) {
+      res.status(400).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to run PostgreSQL security audit.',
+      });
+    }
+  }
+);
+
+// 5. Replication Lag & WAL Slot Monitor
+app.get(
+  '/api/telemetry-suite/replication',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const rawDbId =
+      typeof req.query.databaseId === 'string' && req.query.databaseId.trim()
+        ? req.query.databaseId.trim()
+        : undefined;
+    if (rawDbId && !uuidParam.safeParse(rawDbId).success) {
+      res.status(400).json({ error: 'Invalid databaseId query parameter.' });
+      return;
+    }
+    try {
+      const report = await getReplicationMonitor(req.user!.uid, rawDbId);
+      res.json(report);
+    } catch (error) {
+      res.status(400).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to query replication telemetry.',
+      });
+    }
+  }
+);
+
+// 6. Maintenance Windows & Alert Silencing Schedules
+const createMaintenanceWindowSchema = z.object({
+  title: z.string().trim().min(2).max(120),
+  databaseId: z.string().uuid().nullable().optional(),
+  environment: z.enum(['all', 'production', 'staging', 'development']).default('all'),
+  dayOfWeek: z.coerce.number().int().min(-1).max(6).default(-1),
+  startTimeUtc: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Start time must be HH:MM in UTC.'),
+  durationMinutes: z.coerce.number().int().min(10).max(720).default(60),
+  suppressWebhooks: z.boolean().default(true),
+  suppressAutoReinspect: z.boolean().default(true),
+});
+
+app.get(
+  '/api/maintenance-windows',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    try {
+      const windows = await listMaintenanceWindows(req.user!.uid);
+      res.json({ windows });
+    } catch (error) {
+      res.status(500).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to load maintenance windows.',
+      });
+    }
+  }
+);
+
+app.post(
+  '/api/maintenance-windows',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const parsed = createMaintenanceWindowSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error:
+          parsed.error.issues[0]?.message ?? 'Invalid maintenance window data.',
+      });
+      return;
+    }
+    try {
+      const windowItem = await createMaintenanceWindow(
+        req.user!.uid,
+        getActorEmail(req),
+        parsed.data
+      );
+      res.status(201).json({ window: windowItem });
+    } catch (error) {
+      res.status(400).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to create maintenance window.',
+      });
+    }
+  }
+);
+
+app.patch(
+  '/api/maintenance-windows/:id',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const idCheck = uuidParam.safeParse(req.params.id);
+    const bodyCheck = z.object({ isActive: z.boolean() }).safeParse(req.body);
+    if (!idCheck.success || !bodyCheck.success) {
+      res.status(400).json({ error: 'Invalid maintenance window update.' });
+      return;
+    }
+    try {
+      const windowItem = await toggleMaintenanceWindow(
+        req.user!.uid,
+        getActorEmail(req),
+        idCheck.data,
+        bodyCheck.data.isActive
+      );
+      res.json({ window: windowItem });
+    } catch (error) {
+      res.status(404).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Maintenance window not found.',
+      });
+    }
+  }
+);
+
+app.delete(
+  '/api/maintenance-windows/:id',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const idCheck = uuidParam.safeParse(req.params.id);
+    if (!idCheck.success) {
+      res.status(400).json({ error: 'Invalid maintenance window identifier.' });
+      return;
+    }
+    try {
+      await deleteMaintenanceWindow(
+        req.user!.uid,
+        getActorEmail(req),
+        idCheck.data
+      );
+      res.json({ ok: true });
+    } catch (error) {
+      res.status(404).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Maintenance window not found.',
+      });
+    }
+  }
+);
+
+// 7. Team RBAC & Baseline Promotion Approvals
+const inviteMemberSchema = z.object({
+  email: z.string().trim().email().max(180),
+  displayName: z.string().trim().min(2).max(120),
+  role: z.enum(['admin', 'dba', 'viewer']),
+});
+
+app.get('/api/team/members', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const members = await listTeamMembers(req.user!.uid);
+    res.json({ members });
+  } catch (error) {
+    res.status(500).json({
+      error:
+        error instanceof Error ? error.message : 'Failed to load team members.',
+    });
+  }
+});
+
+app.post('/api/team/members', requireAuth, async (req: AuthRequest, res) => {
+  const parsed = inviteMemberSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: parsed.error.issues[0]?.message ?? 'Invalid member payload.',
+    });
+    return;
+  }
+  try {
+    const member = await inviteTeamMember(
+      req.user!.uid,
+      getActorEmail(req),
+      parsed.data
+    );
+    res.status(201).json({ member });
+  } catch (error) {
+    res.status(400).json({
+      error:
+        error instanceof Error ? error.message : 'Failed to invite member.',
+    });
+  }
+});
+
+app.patch(
+  '/api/team/members/:id',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const idCheck = uuidParam.safeParse(req.params.id);
+    const bodyCheck = z
+      .object({ role: z.enum(['admin', 'dba', 'viewer']) })
+      .safeParse(req.body);
+    if (!idCheck.success || !bodyCheck.success) {
+      res.status(400).json({ error: 'Invalid role update request.' });
+      return;
+    }
+    try {
+      const member = await updateTeamMemberRole(
+        req.user!.uid,
+        getActorEmail(req),
+        idCheck.data,
+        bodyCheck.data.role
+      );
+      res.json({ member });
+    } catch (error) {
+      res.status(404).json({
+        error:
+          error instanceof Error ? error.message : 'Team member not found.',
+      });
+    }
+  }
+);
+
+app.delete(
+  '/api/team/members/:id',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const idCheck = uuidParam.safeParse(req.params.id);
+    if (!idCheck.success) {
+      res.status(400).json({ error: 'Invalid member identifier.' });
+      return;
+    }
+    try {
+      await removeTeamMember(req.user!.uid, getActorEmail(req), idCheck.data);
+      res.json({ ok: true });
+    } catch (error) {
+      res.status(404).json({
+        error:
+          error instanceof Error ? error.message : 'Team member not found.',
+      });
+    }
+  }
+);
+
+const createApprovalSchema = z.object({
+  databaseId: z.string().uuid(),
+  gitCommitSha: z
+    .string()
+    .trim()
+    .regex(/^[a-fA-F0-9]{7,40}$/, 'Commit SHA must be 7–40 hex characters')
+    .optional()
+    .or(z.literal('')),
+  note: z.string().trim().max(240).optional(),
+});
+
+const reviewApprovalSchema = z.object({
+  decision: z.enum(['APPROVED', 'REJECTED']),
+  reviewNote: z.string().trim().max(240).optional(),
+});
+
+app.get('/api/approvals', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const approvals = await listBaselineApprovals(req.user!.uid);
+    res.json({ approvals });
+  } catch (error) {
+    res.status(500).json({
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load approval requests.',
+    });
+  }
+});
+
+app.post('/api/approvals', requireAuth, async (req: AuthRequest, res) => {
+  const parsed = createApprovalSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: parsed.error.issues[0]?.message ?? 'Invalid approval request.',
+    });
+    return;
+  }
+  try {
+    const approval = await createBaselineApprovalRequest(
+      req.user!.uid,
+      getActorEmail(req),
+      {
+        databaseId: parsed.data.databaseId,
+        gitCommitSha: parsed.data.gitCommitSha || undefined,
+        note: parsed.data.note,
+      }
+    );
+    res.status(201).json({ approval });
+  } catch (error) {
+    res.status(400).json({
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to create approval request.',
+    });
+  }
+});
+
+app.post(
+  '/api/approvals/:id/review',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const idCheck = uuidParam.safeParse(req.params.id);
+    const bodyCheck = reviewApprovalSchema.safeParse(req.body);
+    if (!idCheck.success || !bodyCheck.success) {
+      res.status(400).json({ error: 'Invalid approval review payload.' });
+      return;
+    }
+    try {
+      const approval = await reviewBaselineApprovalRequest(
+        req.user!.uid,
+        getActorEmail(req),
+        idCheck.data,
+        bodyCheck.data.decision,
+        bodyCheck.data.reviewNote
+      );
+      res.json({ approval });
+    } catch (error) {
+      res.status(400).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to review approval request.',
+      });
+    }
+  }
+);
+
+// 8. Executive Health Digest (JSON + PDF)
+app.get(
+  '/api/reports/executive-digest',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const days = Number(req.query.days) === 30 ? 30 : 7;
+    try {
+      const digest = await getExecutiveDigest(req.user!.uid, days);
+      res.json(digest);
+    } catch (error) {
+      res.status(500).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to generate executive health digest.',
+      });
+    }
+  }
+);
+
+app.get(
+  '/api/reports/executive-digest/pdf',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const days = Number(req.query.days) === 30 ? 30 : 7;
+    try {
+      const { filename, buffer } = await generateExecutiveDigestPdf(
+        req.user!.uid,
+        getActorEmail(req),
+        days
+      );
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${filename}"`
+      );
+      res.send(buffer);
+    } catch (error) {
+      res.status(500).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to generate executive PDF digest.',
+      });
+    }
+  }
+);
+
+// 9. Comprehensive Live Database Operations Monitor
+app.get(
+  '/api/live-monitor/full',
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    const rawDbId =
+      typeof req.query.databaseId === 'string' && req.query.databaseId.trim()
+        ? req.query.databaseId.trim()
+        : undefined;
+    if (rawDbId && !uuidParam.safeParse(rawDbId).success) {
+      res.status(400).json({ error: 'Invalid database identifier.' });
+      return;
+    }
+    try {
+      const snapshot = await getLiveMonitorSnapshot(req.user!.uid, rawDbId);
+      res.json(snapshot);
+    } catch (error) {
+      res.status(400).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to collect live PostgreSQL operational telemetry.',
+      });
+    }
+  }
+);
 
 async function startServer() {
   const port = Number(process.env.PORT) || 3000;

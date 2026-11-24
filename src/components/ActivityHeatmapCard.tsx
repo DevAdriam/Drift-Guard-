@@ -374,30 +374,30 @@ function buildPreviewHeatmap(
 function getActivityCellClasses(level: 0 | 1 | 2 | 3 | 4): string {
   switch (level) {
     case 4:
-      return 'bg-blue-700 text-white border-blue-800/30';
+      return 'bg-blue-700 dark:bg-blue-500 text-white border-blue-800/30 dark:border-blue-400/40';
     case 3:
-      return 'bg-blue-500 text-white border-blue-600/20';
+      return 'bg-blue-500 dark:bg-blue-600 text-white border-blue-600/20 dark:border-blue-500/40';
     case 2:
-      return 'bg-blue-300 text-slate-900 border-blue-400/20';
+      return 'bg-blue-300 dark:bg-blue-800 text-slate-900 dark:text-blue-100 border-blue-400/20 dark:border-blue-700/60';
     case 1:
-      return 'bg-blue-100 text-blue-900 border-blue-200/70';
+      return 'bg-blue-100 dark:bg-blue-950/90 text-blue-900 dark:text-blue-300 border-blue-200/70 dark:border-blue-900/70';
     default:
-      return 'bg-slate-100 text-slate-400 border-slate-200/60';
+      return 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 border-slate-200/60 dark:border-slate-700/60';
   }
 }
 
 function getErrorCellClasses(level: 0 | 1 | 2 | 3 | 4): string {
   switch (level) {
     case 4:
-      return 'bg-red-700 text-white border-red-800/40';
+      return 'bg-red-700 dark:bg-red-600 text-white border-red-800/40 dark:border-red-400/50';
     case 3:
-      return 'bg-red-500 text-white border-red-600/30';
+      return 'bg-red-500 dark:bg-red-700 text-white border-red-600/30 dark:border-red-500/50';
     case 2:
-      return 'bg-amber-400 text-slate-950 border-amber-500/40';
+      return 'bg-amber-400 dark:bg-amber-500 text-slate-950 border-amber-500/40 dark:border-amber-400/50';
     case 1:
-      return 'bg-amber-100 text-amber-950 border-amber-300/70';
+      return 'bg-amber-100 dark:bg-amber-950/80 text-amber-950 dark:text-amber-300 border-amber-300/70 dark:border-amber-800/70';
     default:
-      return 'bg-slate-100 text-slate-400 border-slate-200/60';
+      return 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 border-slate-200/60 dark:border-slate-700/60';
   }
 }
 
@@ -407,8 +407,8 @@ function getCombinedCellClasses(cell: ActivityHeatmapCell): string {
   }
   if (cell.errorLevel >= 1) {
     return cell.errorLevel === 2
-      ? 'bg-amber-400 text-slate-950 border-amber-500/50'
-      : 'bg-amber-200 text-amber-950 border-amber-400/60';
+      ? 'bg-amber-400 dark:bg-amber-500 text-slate-950 border-amber-500/50 dark:border-amber-400/50'
+      : 'bg-amber-200 dark:bg-amber-900/85 text-amber-950 dark:text-amber-200 border-amber-400/60 dark:border-amber-700/70';
   }
   return getActivityCellClasses(cell.activityLevel);
 }
@@ -713,29 +713,29 @@ export function ActivityHeatmapCard({
   return (
     <section
       aria-labelledby="activity-heatmap-heading"
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden"
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden"
     >
       {/* Header & Controls */}
-      <div className="px-6 py-4 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <h2
               id="activity-heatmap-heading"
-              className="text-base font-semibold text-slate-900"
+              className="text-base font-semibold text-slate-900 dark:text-slate-100"
             >
               {tr(
                 '24-Hour Target Activity & Error Heat Map',
                 '၂၄ နာရီ ဒေတာဘေ့စ် လှုပ်ရှားမှုနှင့် အမှားနှုန်း အပူပြဇယား'
               )}
             </h2>
-            <span className="text-slate-300" aria-hidden="true">
+            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
               ·
             </span>
-            <span className="text-xs font-mono text-slate-500 tabular-nums">
+            <span className="text-xs font-mono text-slate-500 dark:text-slate-400 tabular-nums">
               {tr('Rolling 24h · Local Time', 'ပြီးခဲ့သော ၂၄ နာရီ · ဒေသစံတော်ချိန်')}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {tr(
               'Hourly PostgreSQL inspection activity, query load, and incident error rates across targets to pinpoint peak incident windows.',
               'သတိပေးချက် အဖြစ်အများဆုံး အချိန်များကို ရှာဖွေနိုင်ရန် PostgreSQL ဒေတာဘေ့စ်အလိုက် နာရီအလိုက် လှုပ်ရှားမှုနှင့် အမှားနှုန်းများကို ပြသထားပါသည်။'
@@ -748,7 +748,7 @@ export function ActivityHeatmapCard({
           <div
             role="group"
             aria-label={tr('Heat map metric mode', 'အပူပြဇယား ပြသမှု ပုံစံ')}
-            className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg"
+            className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg"
           >
             {(
               [
@@ -772,8 +772,8 @@ export function ActivityHeatmapCard({
                 onClick={() => setMetricMode(opt.id)}
                 className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                   metricMode === opt.id
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
                 {opt.label}
@@ -790,8 +790,8 @@ export function ActivityHeatmapCard({
             }}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               previewMode
-                ? 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100'
-                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800/70 hover:bg-blue-100 dark:hover:bg-blue-950/75'
+                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -809,7 +809,7 @@ export function ActivityHeatmapCard({
               setPreviewMode(false);
               loadHeatmap();
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`}
@@ -821,7 +821,7 @@ export function ActivityHeatmapCard({
 
       {/* Preview Mode Banner */}
       {previewMode && (
-        <div className="px-6 py-2.5 bg-blue-50/70 border-b border-blue-200/80 flex flex-wrap items-center justify-between gap-2 text-xs text-blue-900">
+        <div className="px-6 py-2.5 bg-blue-50/70 dark:bg-blue-950/40 border-b border-blue-200/80 dark:border-blue-900/70 flex flex-wrap items-center justify-between gap-2 text-xs text-blue-900 dark:text-blue-200">
           <span>
             {tr(
               'Viewing sample 24-hour multi-target incident pattern preview. Switch back to Live Data to inspect your persisted PostgreSQL telemetry.',
@@ -831,7 +831,7 @@ export function ActivityHeatmapCard({
           <button
             type="button"
             onClick={() => setPreviewMode(false)}
-            className="font-semibold text-blue-800 hover:text-blue-950 underline underline-offset-2 whitespace-nowrap shrink-0 cursor-pointer"
+            className="font-semibold text-blue-800 dark:text-blue-300 hover:text-blue-950 dark:hover:text-blue-100 underline underline-offset-2 whitespace-nowrap shrink-0 cursor-pointer"
           >
             {tr('Return to Live Data', 'တိုက်ရိုက်ဒေတာသို့ ပြန်သွားရန်')}
           </button>
@@ -845,7 +845,7 @@ export function ActivityHeatmapCard({
             {[0, 1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-14 bg-slate-100 rounded-lg animate-pulse"
+                className="h-14 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse"
               />
             ))}
           </div>
@@ -853,7 +853,7 @@ export function ActivityHeatmapCard({
             {[0, 1, 2].map((row) => (
               <div
                 key={row}
-                className="h-7 bg-slate-100 rounded animate-pulse"
+                className="h-7 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"
               />
             ))}
           </div>
@@ -862,13 +862,13 @@ export function ActivityHeatmapCard({
         <div className="p-6">
           <div
             role="alert"
-            className="px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-xs text-red-800 flex flex-wrap items-center justify-between gap-3"
+            className="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-xs text-red-800 dark:text-red-300 flex flex-wrap items-center justify-between gap-3"
           >
             <span>{error}</span>
             <button
               type="button"
               onClick={loadHeatmap}
-              className="px-3 py-1.5 text-xs font-medium text-red-900 bg-white border border-red-200 hover:bg-red-100 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
+              className="px-3 py-1.5 text-xs font-medium text-red-900 dark:text-red-200 bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/70 hover:bg-red-100 dark:hover:bg-red-950/70 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
             >
               {tr('Retry', 'ပြန်စမ်းရန်')}
             </button>
@@ -876,13 +876,13 @@ export function ActivityHeatmapCard({
         </div>
       ) : !activeData || !filteredView ? null : visibleTargets.length === 0 ? (
         <div className="p-8 text-center space-y-2.5">
-          <p className="text-sm font-semibold text-slate-900">
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             {tr(
               'No targets in this environment filter',
               'ဤပတ်ဝန်းကျင် စစ်ထုတ်မှုတွင် ဒေတာဘေ့စ် မရှိသေးပါ'
             )}
           </p>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
             {tr(
               'Register a PostgreSQL target or run an inspection to populate the 24-hour activity and incident heat map.',
               '၂၄ နာရီ လှုပ်ရှားမှုနှင့် သတိပေးချက် အပူပြဇယားတွင် ဒေတာပြသရန် PostgreSQL ဒေတာဘေ့စ်တစ်ခု ထည့်သွင်းပြီး စစ်ဆေးမှု ပြုလုပ်ပါ။'
@@ -892,7 +892,7 @@ export function ActivityHeatmapCard({
             <button
               type="button"
               onClick={() => setPreviewMode(true)}
-              className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer"
             >
               {tr('Preview 24h Pattern', '၂၄ နာရီ ပုံစံ အစမ်းကြည့်ရန်')}
             </button>
@@ -901,22 +901,22 @@ export function ActivityHeatmapCard({
       ) : (
         <>
           {/* 4-Column Peak Insights Strip */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 border-b border-slate-200 bg-slate-50/50">
+          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
             <div className="px-6 py-3.5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Peak Incident Window', 'သတိပေးချက် အများဆုံး အချိန်')}
               </p>
               <p
                 className={`mt-1 text-base font-bold font-mono tabular-nums ${
                   filteredView.summary.peakIncidentCount > 0
-                    ? 'text-red-700'
-                    : 'text-slate-900'
+                    ? 'text-red-700 dark:text-red-400'
+                    : 'text-slate-900 dark:text-slate-100'
                 }`}
               >
                 {filteredView.summary.peakIncidentRangeLabel ??
                   tr('None in 24h', '၂၄ နာရီအတွင်း မရှိပါ')}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                 {filteredView.summary.peakIncidentCount > 0
                   ? locale === 'my'
                     ? `သတိပေးချက် ${filteredView.summary.peakIncidentCount} ခု · အမှားနှုန်း ${filteredView.summary.peakErrorRatePct.toFixed(1)}%`
@@ -929,13 +929,13 @@ export function ActivityHeatmapCard({
             </div>
 
             <div className="px-6 py-3.5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Peak Activity Window', 'လှုပ်ရှားမှု အများဆုံး အချိန်')}
               </p>
-              <p className="mt-1 text-base font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1 text-base font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {filteredView.summary.peakActivityRangeLabel ?? '—'}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                 {filteredView.summary.peakActivityCount > 0
                   ? locale === 'my'
                     ? `ဖြစ်စဉ် ${filteredView.summary.peakActivityCount} ခု မှတ်တမ်းတင်ထားသည်`
@@ -945,21 +945,21 @@ export function ActivityHeatmapCard({
             </div>
 
             <div className="px-6 py-3.5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('24h Fleet Error Rate', '၂၄ နာရီ စုစုပေါင်း အမှားနှုန်း')}
               </p>
               <p
                 className={`mt-1 text-base font-bold font-mono tabular-nums ${
                   filteredView.summary.overallErrorRatePct >= 25
-                    ? 'text-red-700'
+                    ? 'text-red-700 dark:text-red-400'
                     : filteredView.summary.overallErrorRatePct > 0
-                      ? 'text-amber-700'
-                      : 'text-emerald-700'
+                      ? 'text-amber-700 dark:text-amber-400'
+                      : 'text-emerald-700 dark:text-emerald-400'
                 }`}
               >
                 {filteredView.summary.overallErrorRatePct.toFixed(1)}%
               </p>
-              <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                 {locale === 'my'
                   ? `သတိပေးချက် ${filteredView.summary.totalIncidents24h} ခု · အရေးကြီး ${filteredView.summary.totalCritical24h} ခု`
                   : `${filteredView.summary.totalIncidents24h} incidents · ${filteredView.summary.totalCritical24h} critical`}
@@ -967,13 +967,13 @@ export function ActivityHeatmapCard({
             </div>
 
             <div className="px-6 py-3.5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('24h Telemetry Events', '၂၄ နာရီ စစ်ဆေးမှု ဖြစ်စဉ်များ')}
               </p>
-              <p className="mt-1 text-base font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1 text-base font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {filteredView.summary.totalActivityEvents24h.toLocaleString()}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                 {locale === 'my'
                   ? `စစ်ဆေးမှု ${filteredView.summary.totalInspections24h} ကြိမ် · တက်ကြွပစ်မှတ် ${filteredView.summary.activeTargetsCount} ခု`
                   : `${filteredView.summary.totalInspections24h} inspections · ${filteredView.summary.activeTargetsCount} active target${filteredView.summary.activeTargetsCount === 1 ? '' : 's'}`}
@@ -983,7 +983,7 @@ export function ActivityHeatmapCard({
 
           {/* Empty 24h Live Activity Notice (still renders the 24h grid so user sees structure) */}
           {!previewMode && !filteredView.summary.hasLiveData && (
-            <div className="px-6 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+            <div className="px-6 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-300">
               <span>
                 {tr(
                   'No telemetry inspections or incidents have been recorded in the last 24 hours yet. Run a fleet inspection or preview a 24h incident pattern.',
@@ -995,7 +995,7 @@ export function ActivityHeatmapCard({
                   <button
                     type="button"
                     onClick={onInspectAll}
-                    className="px-3 py-1 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-md whitespace-nowrap cursor-pointer"
+                    className="px-3 py-1 text-xs font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-md whitespace-nowrap cursor-pointer"
                   >
                     {tr('Inspect All Now', 'အားလုံး စစ်ဆေးရန်')}
                   </button>
@@ -1003,7 +1003,7 @@ export function ActivityHeatmapCard({
                 <button
                   type="button"
                   onClick={() => setPreviewMode(true)}
-                  className="px-3 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 rounded-md whitespace-nowrap cursor-pointer"
+                  className="px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md whitespace-nowrap cursor-pointer"
                 >
                   {tr('Preview 24h Pattern', '၂၄ နာရီ ပုံစံ အစမ်းကြည့်ရန်')}
                 </button>
@@ -1016,7 +1016,7 @@ export function ActivityHeatmapCard({
             <div className="min-w-[820px]">
               {/* Hour Axis Header */}
               <div className="grid grid-cols-[200px_1fr_76px] items-end gap-3 mb-2">
-                <div className="text-[11px] font-medium text-slate-500">
+                <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                   {tr('PostgreSQL Target', 'PostgreSQL ပစ်မှတ်')}
                 </div>
                 <div className="grid grid-cols-24 gap-1">
@@ -1032,16 +1032,16 @@ export function ActivityHeatmapCard({
                         className="flex flex-col items-center justify-end min-w-0"
                       >
                         {isPeak && (
-                          <span className="text-[9px] font-semibold text-red-700 leading-none mb-0.5 whitespace-nowrap">
+                          <span className="text-[9px] font-semibold text-red-700 dark:text-red-400 leading-none mb-0.5 whitespace-nowrap">
                             {tr('Peak', 'အများဆုံး')}
                           </span>
                         )}
                         <span
                           className={`text-[10px] font-mono tabular-nums leading-none ${
                             isPeak
-                              ? 'text-red-700 font-semibold'
+                              ? 'text-red-700 dark:text-red-400 font-semibold'
                               : showTick
-                                ? 'text-slate-500'
+                                ? 'text-slate-500 dark:text-slate-400'
                                 : 'text-transparent select-none'
                           }`}
                         >
@@ -1051,7 +1051,7 @@ export function ActivityHeatmapCard({
                     );
                   })}
                 </div>
-                <div className="text-[11px] font-medium text-slate-500 text-right whitespace-nowrap">
+                <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 text-right whitespace-nowrap">
                   {tr('24h Err %', '၂၄ နာရီ အမှား%')}
                 </div>
               </div>
@@ -1072,16 +1072,16 @@ export function ActivityHeatmapCard({
                             onSelectDatabase(row.databaseId);
                           }
                         }}
-                        className={`text-left max-w-full truncate text-xs font-semibold text-slate-900 block ${
+                        className={`text-left max-w-full truncate text-xs font-semibold text-slate-900 dark:text-slate-100 block ${
                           isPreviewTargetId(row.databaseId)
                             ? 'cursor-default'
-                            : 'hover:text-blue-700 cursor-pointer'
+                            : 'hover:text-blue-700 dark:hover:text-blue-400 cursor-pointer'
                         }`}
                         title={`${row.name} (${formatEnv(row.environment, true)})`}
                       >
                         {row.name}
                       </button>
-                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
                         <span>{formatEnv(row.environment, true)}</span>
                         <span aria-hidden="true">·</span>
                         <span className="font-mono tabular-nums">
@@ -1123,13 +1123,13 @@ export function ActivityHeatmapCard({
                               handleTogglePin(row.databaseId, cell.bucketIndex)
                             }
                             aria-label={`${row.name} ${bucket.rangeLabel}: ${cell.activityCount} activity events, ${cell.incidentsCount} incidents, ${cell.errorRatePct}% error rate`}
-                            className={`h-7 rounded-[4px] border text-[10px] font-mono font-semibold tabular-nums flex items-center justify-center transition-transform duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-1 ${renderCellClasses(
+                            className={`h-7 rounded-[4px] border text-[10px] font-mono font-semibold tabular-nums flex items-center justify-center transition-transform duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${renderCellClasses(
                               cell
                             )} ${
                               selected
-                                ? 'ring-2 ring-slate-900 ring-offset-1 scale-[1.06] z-10'
+                                ? 'ring-2 ring-slate-900 dark:ring-slate-100 ring-offset-1 dark:ring-offset-slate-900 scale-[1.06] z-10'
                                 : isPeak
-                                  ? 'ring-1 ring-red-400/70'
+                                  ? 'ring-1 ring-red-400/80 dark:ring-red-400/90'
                                   : 'hover:scale-[1.05]'
                             }`}
                           >
@@ -1143,10 +1143,10 @@ export function ActivityHeatmapCard({
                       <span
                         className={
                           row.avgErrorRatePct >= 25
-                            ? 'font-semibold text-red-700'
+                            ? 'font-semibold text-red-700 dark:text-red-400'
                             : row.avgErrorRatePct > 0
-                              ? 'font-semibold text-amber-700'
-                              : 'text-slate-500'
+                              ? 'font-semibold text-amber-700 dark:text-amber-400'
+                              : 'text-slate-500 dark:text-slate-400'
                         }
                       >
                         {row.avgErrorRatePct.toFixed(1)}%
@@ -1157,12 +1157,12 @@ export function ActivityHeatmapCard({
               </div>
 
               {/* Fleet Rollup Summary Row */}
-              <div className="mt-3 pt-3 border-t border-slate-200 grid grid-cols-[200px_1fr_76px] items-center gap-3">
+              <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-[200px_1fr_76px] items-center gap-3">
                 <div className="min-w-0 pr-1">
-                  <p className="text-xs font-semibold text-slate-900 truncate">
+                  <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
                     {tr('All Targets (Fleet)', 'ဒေတာဘေ့စ်အားလုံး စုပေါင်း')}
                   </p>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     {tr('Combined hourly pulse', 'နာရီအလိုက် စုစုပေါင်း')}
                   </p>
                 </div>
@@ -1193,13 +1193,13 @@ export function ActivityHeatmapCard({
                         onBlur={() => setHoveredCell(null)}
                         onClick={() => handleTogglePin('fleet', cell.bucketIndex)}
                         aria-label={`All targets ${bucket.rangeLabel}: ${cell.activityCount} activity events, ${cell.incidentsCount} incidents, ${cell.errorRatePct}% error rate`}
-                        className={`h-8 rounded-[4px] border text-[10px] font-mono font-semibold tabular-nums flex items-center justify-center transition-transform duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-1 ${renderCellClasses(
+                        className={`h-8 rounded-[4px] border text-[10px] font-mono font-semibold tabular-nums flex items-center justify-center transition-transform duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${renderCellClasses(
                           cell
                         )} ${
                           selected
-                            ? 'ring-2 ring-slate-900 ring-offset-1 scale-[1.06] z-10'
+                            ? 'ring-2 ring-slate-900 dark:ring-slate-100 ring-offset-1 dark:ring-offset-slate-900 scale-[1.06] z-10'
                             : isPeak
-                              ? 'ring-1 ring-red-500/80'
+                              ? 'ring-1 ring-red-500/80 dark:ring-red-400/90'
                               : 'hover:scale-[1.05]'
                         }`}
                       >
@@ -1213,10 +1213,10 @@ export function ActivityHeatmapCard({
                   <span
                     className={
                       filteredView.summary.overallErrorRatePct >= 25
-                        ? 'text-red-700'
+                        ? 'text-red-700 dark:text-red-400'
                         : filteredView.summary.overallErrorRatePct > 0
-                          ? 'text-amber-700'
-                          : 'text-emerald-700'
+                          ? 'text-amber-700 dark:text-amber-400'
+                          : 'text-emerald-700 dark:text-emerald-400'
                     }
                   >
                     {filteredView.summary.overallErrorRatePct.toFixed(1)}%
@@ -1225,17 +1225,17 @@ export function ActivityHeatmapCard({
               </div>
 
               {/* Scale Legend */}
-              <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500">
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500 dark:text-slate-400">
                 <div className="flex flex-wrap items-center gap-4">
                   {metricMode !== 'errors' && (
                     <div className="flex items-center gap-1.5">
                       <span>{tr('Activity:', 'လှုပ်ရှားမှု:')}</span>
                       <span>{tr('Idle', 'ငြိမ်')}</span>
-                      <span className="w-3.5 h-3.5 rounded-[3px] bg-slate-100 border border-slate-200 inline-block" />
-                      <span className="w-3.5 h-3.5 rounded-[3px] bg-blue-100 border border-blue-200 inline-block" />
-                      <span className="w-3.5 h-3.5 rounded-[3px] bg-blue-300 border border-blue-400/30 inline-block" />
-                      <span className="w-3.5 h-3.5 rounded-[3px] bg-blue-500 inline-block" />
-                      <span className="w-3.5 h-3.5 rounded-[3px] bg-blue-700 inline-block" />
+                      <span className="w-3.5 h-3.5 rounded-[3px] bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 inline-block" />
+                      <span className="w-3.5 h-3.5 rounded-[3px] bg-blue-100 dark:bg-blue-950/90 border border-blue-200 dark:border-blue-900/70 inline-block" />
+                      <span className="w-3.5 h-3.5 rounded-[3px] bg-blue-300 dark:bg-blue-800 border border-blue-400/30 dark:border-blue-700/60 inline-block" />
+                      <span className="w-3.5 h-3.5 rounded-[3px] bg-blue-500 dark:bg-blue-600 inline-block" />
+                      <span className="w-3.5 h-3.5 rounded-[3px] bg-blue-700 dark:bg-blue-500 inline-block" />
                       <span>{tr('High', 'မြင့်')}</span>
                     </div>
                   )}
@@ -1246,10 +1246,10 @@ export function ActivityHeatmapCard({
                         {tr('Errors / Incidents:', 'အမှား / သတိပေးချက်:')}
                       </span>
                       <span>{tr('Low', 'နည်း')}</span>
-                      <span className="w-3.5 h-3.5 rounded-[3px] bg-amber-200 border border-amber-400/60 inline-block" />
-                      <span className="w-3.5 h-3.5 rounded-[3px] bg-amber-400 inline-block" />
-                      <span className="w-3.5 h-3.5 rounded-[3px] bg-red-500 inline-block" />
-                      <span className="w-3.5 h-3.5 rounded-[3px] bg-red-700 inline-block" />
+                      <span className="w-3.5 h-3.5 rounded-[3px] bg-amber-200 dark:bg-amber-900/85 border border-amber-400/60 dark:border-amber-700/70 inline-block" />
+                      <span className="w-3.5 h-3.5 rounded-[3px] bg-amber-400 dark:bg-amber-500 inline-block" />
+                      <span className="w-3.5 h-3.5 rounded-[3px] bg-red-500 dark:bg-red-700 inline-block" />
+                      <span className="w-3.5 h-3.5 rounded-[3px] bg-red-700 dark:bg-red-600 inline-block" />
                       <span>{tr('Critical', 'အရေးကြီး')}</span>
                     </div>
                   )}
@@ -1267,41 +1267,41 @@ export function ActivityHeatmapCard({
 
           {/* Inline Selected / Hovered Hour Inspection Strip */}
           {inspectedDetails && (
-            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
+            <div className="px-6 py-3.5 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 min-w-0">
-                <span className="font-semibold text-slate-900">
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
                   {inspectedDetails.rowName}
                 </span>
                 {inspectedDetails.environment && (
                   <>
-                    <span className="text-slate-300" aria-hidden="true">
+                    <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                       ·
                     </span>
-                    <span className="text-slate-600">
+                    <span className="text-slate-600 dark:text-slate-300">
                       {formatEnv(inspectedDetails.environment, true)}
                     </span>
                   </>
                 )}
-                <span className="text-slate-300" aria-hidden="true">
+                <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                   ·
                 </span>
-                <span className="font-mono font-semibold text-slate-800 tabular-nums">
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
                   {inspectedDetails.bucket.rangeLabel}
                 </span>
-                <span className="text-slate-300" aria-hidden="true">
+                <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                   ·
                 </span>
-                <span className="font-mono tabular-nums text-slate-700">
+                <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
                   {locale === 'my'
                     ? `ဖြစ်စဉ် ${inspectedDetails.cell.activityCount} ခု (စစ်ဆေးမှု ${inspectedDetails.cell.inspectionsCount})`
                     : `${inspectedDetails.cell.activityCount} events (${inspectedDetails.cell.inspectionsCount} inspections)`}
                 </span>
                 {inspectedDetails.cell.queryCalls > 0 && (
                   <>
-                    <span className="text-slate-300" aria-hidden="true">
+                    <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                       ·
                     </span>
-                    <span className="font-mono tabular-nums text-slate-700">
+                    <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
                       {locale === 'my'
                         ? `Query ${inspectedDetails.cell.queryCalls.toLocaleString()} ကြိမ်`
                         : `${inspectedDetails.cell.queryCalls.toLocaleString()} query calls`}
@@ -1310,26 +1310,26 @@ export function ActivityHeatmapCard({
                 )}
                 {inspectedDetails.cell.avgConnectionPct !== null && (
                   <>
-                    <span className="text-slate-300" aria-hidden="true">
+                    <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                       ·
                     </span>
-                    <span className="font-mono tabular-nums text-slate-700">
+                    <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
                       {locale === 'my'
                         ? `ချိတ်ဆက်မှု ${inspectedDetails.cell.avgConnectionPct.toFixed(1)}%`
                         : `${inspectedDetails.cell.avgConnectionPct.toFixed(1)}% conn`}
                     </span>
                   </>
                 )}
-                <span className="text-slate-300" aria-hidden="true">
+                <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                   ·
                 </span>
                 <span
                   className={`font-mono font-semibold tabular-nums ${
                     inspectedDetails.cell.errorRatePct >= 25
-                      ? 'text-red-700'
+                      ? 'text-red-700 dark:text-red-400'
                       : inspectedDetails.cell.incidentsCount > 0
-                        ? 'text-amber-700'
-                        : 'text-emerald-700'
+                        ? 'text-amber-700 dark:text-amber-400'
+                        : 'text-emerald-700 dark:text-emerald-400'
                   }`}
                 >
                   {locale === 'my'
@@ -1338,10 +1338,10 @@ export function ActivityHeatmapCard({
                 </span>
                 {inspectedDetails.cell.topIncidentType && (
                   <>
-                    <span className="text-slate-300" aria-hidden="true">
+                    <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                       ·
                     </span>
-                    <span className="text-red-700 font-medium">
+                    <span className="text-red-700 dark:text-red-400 font-medium">
                       {formatIncidentType(inspectedDetails.cell.topIncidentType)}
                     </span>
                   </>
@@ -1355,7 +1355,7 @@ export function ActivityHeatmapCard({
                     onClick={() =>
                       onSelectDatabase(inspectedDetails.databaseId!)
                     }
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 rounded-md whitespace-nowrap cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md whitespace-nowrap cursor-pointer"
                   >
                     <span>{tr('Inspect Target', 'ပစ်မှတ်ကြည့်ရန်')}</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1365,7 +1365,7 @@ export function ActivityHeatmapCard({
                   <button
                     type="button"
                     onClick={onViewIncidents}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-red-800 bg-red-50 border border-red-200 hover:bg-red-100 rounded-md whitespace-nowrap cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-red-800 dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/70 hover:bg-red-100 dark:hover:bg-red-950/70 rounded-md whitespace-nowrap cursor-pointer"
                   >
                     <span>{tr('View Incidents', 'သတိပေးချက်များ ကြည့်ရန်')}</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />

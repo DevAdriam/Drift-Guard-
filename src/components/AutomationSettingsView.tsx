@@ -17,6 +17,7 @@ import type {
   TargetHealthThresholdDto,
   WorkspaceSettingsDto,
 } from '../types/telemetry.ts';
+import { MaintenanceWindowsPanel } from './MaintenanceWindowsPanel.tsx';
 
 interface AutomationSettingsViewProps {
   api: ApiClient;
@@ -24,7 +25,12 @@ interface AutomationSettingsViewProps {
   onDatabasesChanged?: () => void | Promise<void>;
 }
 
-type SettingsTab = 'cicd' | 'health-thresholds' | 'thresholds' | 'audit';
+type SettingsTab =
+  | 'cicd'
+  | 'health-thresholds'
+  | 'maintenance'
+  | 'thresholds'
+  | 'audit';
 
 interface ThresholdDraft {
   enabled: boolean;
@@ -421,13 +427,13 @@ jobs:
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {tr(
             'CI/CD Gates, Alert Rules & Audit Log',
             'CI/CD စစ်ဆေးဂိတ်၊ သတိပေးချက် စည်းမျဉ်းများနှင့် မှတ်တမ်း'
           )}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           {tr(
             'Block drifted deploys automatically in GitHub Actions, tune your alert thresholds, and audit every schema inspection and baseline change.',
             'GitHub Actions တွင် ဖွဲ့စည်းပုံ မကိုက်ညီသော Deploy များကို အလိုအလျောက် တားဆီးနိုင်ပြီး သတိပေးချက် သတ်မှတ်ချက်များနှင့် လုပ်ဆောင်ချက် မှတ်တမ်းအားလုံးကို စီမံနိုင်ပါသည်။'
@@ -436,7 +442,7 @@ jobs:
       </div>
 
       {/* Sub-navigation */}
-      <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-100 rounded-lg w-fit">
+      <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
         {(
           [
             {
@@ -451,6 +457,13 @@ jobs:
               label: tr(
                 `Health Score Auto-Inspect (${targetThresholds.filter((x) => x.enabled).length})`,
                 `ကျန်းမာရေးရမှတ် အလိုအလျောက် စစ်ဆေးမှု (${targetThresholds.filter((x) => x.enabled).length})`
+              ),
+            },
+            {
+              id: 'maintenance',
+              label: tr(
+                'Maintenance Windows',
+                'ပြုပြင်ထိန်းသိမ်းချိန် အချိန်ဇယား'
               ),
             },
             {
@@ -472,8 +485,8 @@ jobs:
             onClick={() => setActiveTab(tab.id)}
             className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === tab.id
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             {tab.label}
@@ -482,14 +495,14 @@ jobs:
       </div>
 
       {notice && (
-        <div className="px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm text-blue-900">
+        <div className="px-4 py-3 rounded-lg border border-blue-200 dark:border-blue-900/70 bg-blue-50 dark:bg-blue-950/40 text-sm text-blue-900 dark:text-blue-200">
           {notice}
         </div>
       )}
       {error && (
         <div
           role="alert"
-          className="px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-800"
+          className="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-sm text-red-800 dark:text-red-300"
         >
           {error}
         </div>
@@ -500,18 +513,18 @@ jobs:
         <div className="space-y-6">
           <form
             onSubmit={handleCreateKey}
-            className="bg-white border border-slate-200 rounded-xl p-6 space-y-4"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4"
           >
             <div className="flex items-center gap-2">
-              <KeyRound className="w-4 h-4 text-blue-700" />
-              <h2 className="text-base font-semibold text-slate-900">
+              <KeyRound className="w-4 h-4 text-blue-700 dark:text-blue-400" />
+              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                 {tr(
                   'Create CI/CD Pipeline API Key',
                   'CI/CD Pipeline API Key အသစ် ဖန်တီးရန်'
                 )}
               </h2>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {tr(
                 'Authenticate GitHub Actions or GitLab CI to run automated drift checks',
                 'GitHub Actions သို့မဟုတ် GitLab CI မှတစ်ဆင့် ဖွဲ့စည်းပုံ အလိုအလျောက် စစ်ဆေးရန် အသုံးပြုပါ'
@@ -535,12 +548,12 @@ jobs:
                   'e.g. GitHub Actions — Production Deploy',
                   'ဥပမာ — GitHub Actions — Production Deploy'
                 )}
-                className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+                className="flex-1 px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
               />
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-60 rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-60 rounded-lg whitespace-nowrap shrink-0 cursor-pointer"
               >
                 {saving
                   ? tr('Generating…', 'ဖန်တီးနေသည်…')
@@ -549,21 +562,21 @@ jobs:
             </div>
 
             {createdPlaintextKey && (
-              <div className="p-4 rounded-lg border border-amber-300 bg-amber-50 space-y-2">
-                <p className="text-xs font-semibold text-amber-900">
+              <div className="p-4 rounded-lg border border-amber-300 dark:border-amber-800/70 bg-amber-50 dark:bg-amber-950/40 space-y-2">
+                <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">
                   {tr(
                     'Copy your new API key now — it will not be shown again:',
                     'သင့် API Key အသစ်ကို ယခု ကူးယူသိမ်းဆည်းထားပါ — နောက်တစ်ကြိမ် ထပ်မံပြသမည် မဟုတ်ပါ —'
                   )}
                 </p>
-                <div className="flex items-center justify-between gap-3 bg-white border border-amber-200 rounded-md px-3 py-2">
-                  <code className="text-xs font-mono text-slate-900 break-all">
+                <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-900/70 rounded-md px-3 py-2">
+                  <code className="text-xs font-mono text-slate-900 dark:text-slate-100 break-all">
                     {createdPlaintextKey}
                   </code>
                   <button
                     type="button"
                     onClick={() => handleCopy('new-key', createdPlaintextKey)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-900 whitespace-nowrap shrink-0 cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 whitespace-nowrap shrink-0 cursor-pointer"
                   >
                     {copiedId === 'new-key' ? (
                       <>
@@ -583,12 +596,12 @@ jobs:
           </form>
 
           {/* Existing Keys */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {tr('Active Pipeline Keys', 'အသုံးပြုနေသော Pipeline API Key များ')}
               </h2>
-              <span className="text-xs text-slate-500 tabular-nums">
+              <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                 {tr(
                   `${apiKeys.length} key${apiKeys.length === 1 ? '' : 's'}`,
                   `Key ${apiKeys.length} ခု`
@@ -597,9 +610,9 @@ jobs:
             </div>
 
             {loading ? (
-              <div className="p-6 animate-pulse h-16 bg-slate-50" />
+              <div className="p-6 animate-pulse h-16 bg-slate-50 dark:bg-slate-800/60" />
             ) : apiKeys.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-500">
+              <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
                 {tr(
                   'No CI/CD API keys created yet.',
                   'CI/CD API Key မဖန်တီးရသေးပါ။'
@@ -609,7 +622,7 @@ jobs:
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium">
                       <th className="py-2.5 px-6">
                         {tr('Key Name', 'Key အမည်')}
                       </th>
@@ -624,16 +637,16 @@ jobs:
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                     {apiKeys.map((k) => (
                       <tr key={k.id}>
-                        <td className="py-3 px-6 font-medium text-slate-900">
+                        <td className="py-3 px-6 font-medium text-slate-900 dark:text-slate-100">
                           {k.name}
                         </td>
-                        <td className="py-3 px-4 font-mono text-slate-600">
+                        <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">
                           {k.keyPrefix}••••••••
                         </td>
-                        <td className="py-3 px-4 text-slate-500 tabular-nums">
+                        <td className="py-3 px-4 text-slate-500 dark:text-slate-400 tabular-nums">
                           {k.lastUsedAt
                             ? formatDateTime(k.lastUsedAt)
                             : tr('Never used', 'မသုံးရသေးပါ')}
@@ -642,7 +655,7 @@ jobs:
                           <button
                             type="button"
                             onClick={() => handleRevokeKey(k.id)}
-                            className="inline-flex items-center gap-1 text-red-700 hover:text-red-900 font-medium cursor-pointer"
+                            className="inline-flex items-center gap-1 text-red-700 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-medium cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             <span>{tr('Revoke', 'ပယ်ဖျက်ရန်')}</span>
@@ -657,16 +670,16 @@ jobs:
           </div>
 
           {/* GitHub Actions Snippet */}
-          <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold text-slate-900">
+                <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                   {tr(
                     'GitHub Actions Workflow Template',
                     'GitHub Actions Workflow နမူနာပုံစံ'
                   )}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {tr(
                     'Fails the pull request with HTTP 409 if undocumented drift is present, and promotes the Git commit SHA baseline after deploy.',
                     'မှတ်တမ်းမတင်ထားသော ဖွဲ့စည်းပုံ ပြောင်းလဲမှုရှိပါက Pull Request ကို HTTP 409 ဖြင့် ရပ်တန့်ပေးပြီး Deploy အပြီး Git Commit SHA ကို မူလစံအဖြစ် အလိုအလျောက် မြှင့်တင်ပေးပါသည်။'
@@ -681,7 +694,7 @@ jobs:
                     'Target database for CI template',
                     'CI နမူနာအတွက် ဒေတာဘေ့စ် ရွေးရန်'
                   )}
-                  className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-slate-900"
+                  className="px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                 >
                   {databases.map((db) => (
                     <option key={db.id} value={db.id}>
@@ -692,15 +705,15 @@ jobs:
               )}
             </div>
 
-            <div className="bg-slate-900 rounded-lg overflow-hidden">
+            <div className="bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 rounded-lg overflow-hidden">
               <div className="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
-                <span className="text-xs font-mono text-slate-300">
+                <span className="text-xs font-mono text-slate-300 dark:text-slate-700">
                   .github/workflows/driftguard.yml
                 </span>
                 <button
                   type="button"
                   onClick={() => handleCopy('gh-yaml', githubActionYaml)}
-                  className="inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs text-slate-300 dark:text-slate-700 hover:text-white cursor-pointer"
                 >
                   {copiedId === 'gh-yaml' ? (
                     <>
@@ -727,18 +740,18 @@ jobs:
       {activeTab === 'health-thresholds' && (
         <div className="space-y-6">
           {/* 4-Column Summary Strip */}
-          <div className="bg-white border border-slate-200 rounded-xl grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800">
             <div className="p-5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Protected Targets', 'ကာကွယ်ထားသော ဒေတာဘေ့စ်များ')}
               </p>
-              <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {targetThresholds.filter((x) => x.enabled).length}
-                <span className="text-sm font-normal text-slate-400">
+                <span className="text-sm font-normal text-slate-400 dark:text-slate-500">
                   /{targetThresholds.length}
                 </span>
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {tr(
                   'Auto re-inspection rules active',
                   'အလိုအလျောက် ပြန်စစ်ဆေးမှု ဖွင့်ထားသည်'
@@ -747,19 +760,19 @@ jobs:
             </div>
 
             <div className="p-5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Currently Breached', 'လက်ရှိ ကန့်သတ်ချက်အောက်')}
               </p>
               <p
                 className={`mt-1.5 text-2xl font-bold font-mono tabular-nums ${
                   targetThresholds.some((x) => x.isBreached)
-                    ? 'text-red-700'
-                    : 'text-emerald-700'
+                    ? 'text-red-700 dark:text-red-400'
+                    : 'text-emerald-700 dark:text-emerald-400'
                 }`}
               >
                 {targetThresholds.filter((x) => x.isBreached).length}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {tr(
                   'Below custom min health score',
                   'စိတ်ကြိုက် ကျန်းမာရေးရမှတ်အောက် ရောက်နေသည်'
@@ -768,16 +781,16 @@ jobs:
             </div>
 
             <div className="p-5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Auto Re-Inspections', 'အလိုအလျောက် စစ်ဆေးပြီးအကြိမ်')}
               </p>
-              <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {targetThresholds.reduce(
                   (sum, x) => sum + x.autoReinspectCount,
                   0
                 )}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {tr(
                   'Triggered by threshold breaches',
                   'ကန့်သတ်ချက် ကျော်လွန်မှုကြောင့် စစ်ဆေးမှု'
@@ -786,13 +799,13 @@ jobs:
             </div>
 
             <div className="p-5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Health Score Model', 'ကျန်းမာရေးရမှတ် တွက်ချက်ပုံ')}
               </p>
-              <p className="mt-1.5 text-sm font-semibold font-mono tabular-nums text-slate-900">
+              <p className="mt-1.5 text-sm font-semibold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 0–100 pts
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {tr(
                   'Drift, open alerts, locks, bloat & pool pressure',
                   'ဖွဲ့စည်းပုံ၊ သတိပေးချက်၊ Lock၊ ဖောင်းပွမှုနှင့် ချိတ်ဆက်မှု'
@@ -802,19 +815,19 @@ jobs:
           </div>
 
           {/* Per-Target Threshold Table */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-blue-700 shrink-0" />
-                  <h2 className="text-base font-semibold text-slate-900">
+                  <Activity className="w-4 h-4 text-blue-700 dark:text-blue-400 shrink-0" />
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                     {tr(
                       'Per-Target Health Score Thresholds',
                       'ဒေတာဘေ့စ်တစ်ခုချင်းစီအတွက် ကျန်းမာရေးရမှတ် ကန့်သတ်ချက်များ'
                     )}
                   </h2>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   {tr(
                     'Configure a minimum 0–100 health score per PostgreSQL target. When a target drops below its threshold, DriftGuard automatically triggers a verification re-inspection while honoring the cooldown window to prevent loops.',
                     'PostgreSQL ဒေတာဘေ့စ်တစ်ခုချင်းစီအတွက် အနည်းဆုံး ကျန်းမာရေးရမှတ် (0–100) ကို စိတ်ကြိုက်သတ်မှတ်ပါ။ ရမှတ်ကန့်သတ်ချက်အောက် ကျဆင်းပါက စောင့်ဆိုင်းချိန် (Cooldown) အတိုင်း အလိုအလျောက် ပြန်လည်စစ်ဆေးပေးပါမည်။'
@@ -827,7 +840,7 @@ jobs:
                   type="button"
                   disabled={evaluatingAll || evaluatingDbId !== null}
                   onClick={() => handleEvaluateThresholds()}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
                 >
                   <RefreshCw
                     className={`w-3.5 h-3.5 ${evaluatingAll ? 'animate-spin' : ''}`}
@@ -846,18 +859,18 @@ jobs:
 
             {loading ? (
               <div className="p-6 space-y-3 animate-pulse">
-                <div className="h-10 bg-slate-100 rounded" />
-                <div className="h-10 bg-slate-100 rounded" />
+                <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded" />
+                <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded" />
               </div>
             ) : targetThresholds.length === 0 ? (
               <div className="p-10 text-center space-y-1.5">
-                <p className="text-sm font-medium text-slate-900">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                   {tr(
                     'No monitored databases configured yet',
                     'စောင့်ကြည့်နေသော ဒေတာဘေ့စ် မရှိသေးပါ'
                   )}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {tr(
                     'Add a PostgreSQL target first to configure per-database health score thresholds and automatic re-inspections.',
                     'ဒေတာဘေ့စ်အလိုက် ကျန်းမာရေးရမှတ် ကန့်သတ်ချက်နှင့် အလိုအလျောက် ပြန်စစ်ဆေးမှု သတ်မှတ်ရန် PostgreSQL ဒေတာဘေ့စ်တစ်ခုကို ဦးစွာ ထည့်သွင်းပါ။'
@@ -868,7 +881,7 @@ jobs:
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium">
                       <th className="py-3 px-6">
                         {tr('Target Database', 'ဒေတာဘေ့စ် ပစ်မှတ်')}
                       </th>
@@ -892,7 +905,7 @@ jobs:
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                     {targetThresholds.map((row) => {
                       const draft = thresholdDrafts[row.databaseId] ?? {
                         enabled: row.enabled,
@@ -921,46 +934,46 @@ jobs:
                       );
 
                       const scoreBarFill = isScoreBelowDraft
-                        ? 'fill-red-600'
+                        ? 'fill-red-600 dark:fill-red-400'
                         : row.currentHealthScore >= 85
                           ? 'fill-emerald-600'
                           : row.currentHealthScore >= 60
                             ? 'fill-amber-500'
-                            : 'fill-red-600';
+                            : 'fill-red-600 dark:fill-red-400';
 
                       return (
                         <tr
                           key={row.databaseId}
                           className={
-                            row.isBreached ? 'bg-red-50/30' : 'hover:bg-slate-50/70'
+                            row.isBreached ? 'bg-red-50/30 dark:bg-red-950/30' : 'hover:bg-slate-50/70 dark:hover:bg-slate-800/60'
                           }
                         >
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-slate-900">
+                              <span className="font-semibold text-slate-900 dark:text-slate-100">
                                 {row.databaseName}
                               </span>
                               <span
-                                className="text-slate-300"
+                                className="text-slate-300 dark:text-slate-700"
                                 aria-hidden="true"
                               >
                                 ·
                               </span>
-                              <span className="text-slate-500">
+                              <span className="text-slate-500 dark:text-slate-400">
                                 {formatEnv(row.environment, true)}
                               </span>
                             </div>
-                            <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
+                            <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
                               <span
                                 className={
                                   row.lastHealthStatus === 'HEALTHY'
-                                    ? 'text-emerald-700 font-medium'
+                                    ? 'text-emerald-700 dark:text-emerald-400 font-medium'
                                     : row.lastHealthStatus === 'DRIFT' ||
                                         row.lastHealthStatus === 'ERROR'
-                                      ? 'text-red-700 font-medium'
+                                      ? 'text-red-700 dark:text-red-400 font-medium'
                                       : row.lastHealthStatus === 'WARNING'
-                                        ? 'text-amber-700 font-medium'
-                                        : 'text-slate-500'
+                                        ? 'text-amber-700 dark:text-amber-400 font-medium'
+                                        : 'text-slate-500 dark:text-slate-400'
                                 }
                               >
                                 {row.lastHealthStatus === 'HEALTHY'
@@ -976,12 +989,12 @@ jobs:
                               {!row.isActive && (
                                 <>
                                   <span
-                                    className="text-slate-300"
+                                    className="text-slate-300 dark:text-slate-700"
                                     aria-hidden="true"
                                   >
                                     ·
                                   </span>
-                                  <span className="text-slate-400">
+                                  <span className="text-slate-400 dark:text-slate-500">
                                     {tr('Paused', 'ရပ်ဆိုင်းထား')}
                                   </span>
                                 </>
@@ -989,7 +1002,7 @@ jobs:
                               {row.openIncidentsCount > 0 && (
                                 <>
                                   <span
-                                    className="text-slate-300"
+                                    className="text-slate-300 dark:text-slate-700"
                                     aria-hidden="true"
                                   >
                                     ·
@@ -1010,15 +1023,15 @@ jobs:
                               <span
                                 className={`font-mono font-semibold tabular-nums ${
                                   isScoreBelowDraft
-                                    ? 'text-red-700'
+                                    ? 'text-red-700 dark:text-red-400'
                                     : row.currentHealthScore >= 85
-                                      ? 'text-emerald-700'
-                                      : 'text-amber-700'
+                                      ? 'text-emerald-700 dark:text-emerald-400'
+                                      : 'text-amber-700 dark:text-amber-400'
                                 }`}
                               >
                                 {row.currentHealthScore}/100
                               </span>
-                              <span className="text-[11px] font-mono tabular-nums text-slate-500">
+                              <span className="text-[11px] font-mono tabular-nums text-slate-500 dark:text-slate-400">
                                 {tr(
                                   `Min ${previewThreshold}`,
                                   `အနည်းဆုံး ${previewThreshold}`
@@ -1041,7 +1054,7 @@ jobs:
                                 width={100}
                                 height={6}
                                 rx={3}
-                                className="fill-slate-100"
+                                className="fill-slate-100 dark:fill-slate-800"
                               />
                               <rect
                                 x={0}
@@ -1063,7 +1076,7 @@ jobs:
                                 width={1.5}
                                 height={9}
                                 rx={0.75}
-                                className="fill-slate-900"
+                                className="fill-slate-900 dark:fill-slate-100"
                               />
                             </svg>
                           </td>
@@ -1088,12 +1101,12 @@ jobs:
                                 }
                                 className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors cursor-pointer disabled:opacity-60 ${
                                   draft.enabled
-                                    ? 'bg-blue-700'
-                                    : 'bg-slate-200'
+                                    ? 'bg-blue-700 dark:bg-blue-600'
+                                    : 'bg-slate-200 dark:bg-slate-700'
                                 }`}
                               >
                                 <span
-                                  className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
+                                  className={`inline-block h-3.5 w-3.5 rounded-full bg-white dark:bg-slate-900 transition-transform ${
                                     draft.enabled
                                       ? 'translate-x-4.5'
                                       : 'translate-x-1'
@@ -1103,8 +1116,8 @@ jobs:
                               <span
                                 className={`font-medium ${
                                   draft.enabled
-                                    ? 'text-slate-900'
-                                    : 'text-slate-400'
+                                    ? 'text-slate-900 dark:text-slate-100'
+                                    : 'text-slate-400 dark:text-slate-500'
                                 }`}
                               >
                                 {draft.enabled
@@ -1134,7 +1147,7 @@ jobs:
                                   row
                                 )
                               }
-                              className="w-20 px-2.5 py-1.5 text-xs font-mono tabular-nums border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700 disabled:bg-slate-50"
+                              className="w-20 px-2.5 py-1.5 text-xs font-mono tabular-nums border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500 disabled:bg-slate-50 dark:disabled:bg-slate-800/50"
                             />
                           </td>
 
@@ -1158,41 +1171,41 @@ jobs:
                                   row
                                 )
                               }
-                              className="w-20 px-2.5 py-1.5 text-xs font-mono tabular-nums border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700 disabled:bg-slate-50"
+                              className="w-20 px-2.5 py-1.5 text-xs font-mono tabular-nums border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500 disabled:bg-slate-50 dark:disabled:bg-slate-800/50"
                             />
                           </td>
 
                           <td className="py-4 px-4">
                             <div className="font-semibold whitespace-nowrap">
                               {!row.enabled ? (
-                                <span className="text-slate-400 font-medium">
+                                <span className="text-slate-400 dark:text-slate-500 font-medium">
                                   {tr('Disabled', 'ပိတ်ထားသည်')}
                                 </span>
                               ) : !row.isActive ? (
-                                <span className="text-slate-500 font-medium">
+                                <span className="text-slate-500 dark:text-slate-400 font-medium">
                                   {tr('Target paused', 'ပစ်မှတ် ရပ်ဆိုင်းထား')}
                                 </span>
                               ) : row.isBreached && row.inCooldown ? (
-                                <span className="text-amber-700">
+                                <span className="text-amber-700 dark:text-amber-400">
                                   {tr(
                                     `Breached · Cooldown (${cooldownMinsLeft}m)`,
                                     `ကန့်သတ်ချက်အောက် · စောင့်ဆိုင်း (${cooldownMinsLeft} မိနစ်)`
                                   )}
                                 </span>
                               ) : row.isBreached ? (
-                                <span className="text-red-700">
+                                <span className="text-red-700 dark:text-red-400">
                                   {tr(
                                     `Breached (< ${row.minHealthScore})`,
                                     `ကန့်သတ်ချက်အောက် (< ${row.minHealthScore})`
                                   )}
                                 </span>
                               ) : (
-                                <span className="text-emerald-700 font-medium">
+                                <span className="text-emerald-700 dark:text-emerald-400 font-medium">
                                   {tr('Above threshold', 'စံနှုန်းအထက် ရှိသည်')}
                                 </span>
                               )}
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 tabular-nums whitespace-nowrap">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums whitespace-nowrap">
                               {row.autoReinspectCount > 0
                                 ? tr(
                                     `${row.autoReinspectCount} auto run${row.autoReinspectCount === 1 ? '' : 's'} · Last ${formatRelativeTime(row.lastAutoReinspectAt)}`,
@@ -1213,8 +1226,8 @@ jobs:
                                 onClick={() => handleSaveTargetThreshold(row)}
                                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:cursor-not-allowed ${
                                   isDirty
-                                    ? 'bg-blue-700 hover:bg-blue-800 text-white disabled:opacity-60'
-                                    : 'bg-white border border-slate-200 text-slate-400'
+                                    ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 text-white disabled:opacity-60'
+                                    : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'
                                 }`}
                               >
                                 {savingDbId === row.databaseId
@@ -1233,7 +1246,7 @@ jobs:
                                   'Evaluate threshold and trigger automatic re-inspection if breached',
                                   'ကန့်သတ်ချက်ကို စစ်ဆေးပြီး လိုအပ်ပါက အလိုအလျောက် ပြန်လည်စစ်ဆေးရန်'
                                 )}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
                               >
                                 <RefreshCw
                                   className={`w-3 h-3 ${
@@ -1261,17 +1274,17 @@ jobs:
       {activeTab === 'thresholds' && (
         <form
           onSubmit={handleSaveThresholds}
-          className="bg-white border border-slate-200 rounded-xl p-6 space-y-6"
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-6"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold text-slate-900">
+              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                 {tr(
                   'Custom Telemetry Alert Thresholds',
                   'စိတ်ကြိုက် သတိပေးချက် သတ်မှတ်ချက်များ'
                 )}
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 {tr(
                   'Customize when DriftGuard opens incidents and dispatches Slack or Discord alerts during inspections.',
                   'စစ်ဆေးမှုများအတွင်း မည်သည့်အခြေအနေတွင် ဖြစ်ရပ်ဖွင့်ပြီး Slack သို့မဟုတ် Discord သတိပေးချက် ပေးပို့မည်ကို စိတ်ကြိုက်သတ်မှတ်နိုင်ပါသည်။'
@@ -1281,7 +1294,7 @@ jobs:
             <button
               type="button"
               onClick={() => setActiveTab('health-thresholds')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50/60 border border-blue-200 hover:bg-blue-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/70 hover:bg-blue-50 dark:hover:bg-blue-950/55 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               <Activity className="w-3.5 h-3.5" />
               <span>
@@ -1297,7 +1310,7 @@ jobs:
             <div>
               <label
                 htmlFor="set-lock"
-                className="block text-xs font-medium text-slate-700 mb-1"
+                className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
                 {tr(
                   'Blocking Lock Wait Threshold (seconds)',
@@ -1316,9 +1329,9 @@ jobs:
                     lockThresholdSeconds: Number(e.target.value) || 15,
                   })
                 }
-                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 rounded-lg"
+                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 dark:border-slate-700 rounded-lg"
               />
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {tr(
                   'Default: 15s (opens WARNING lock contention alert).',
                   'မူလ — ၁၅ စက္ကန့် (Lock ပိတ်ဆို့မှု သတိပေးချက် ဖွင့်ပေးမည်)။'
@@ -1329,7 +1342,7 @@ jobs:
             <div>
               <label
                 htmlFor="set-bloat-mb"
-                className="block text-xs font-medium text-slate-700 mb-1"
+                className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
                 {tr(
                   'Index Bloat Min Size (MB)',
@@ -1348,9 +1361,9 @@ jobs:
                     bloatMbThreshold: Number(e.target.value) || 50,
                   })
                 }
-                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 rounded-lg"
+                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 dark:border-slate-700 rounded-lg"
               />
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {tr(
                   'Default: 50 MB (ignores tiny tables).',
                   'မူလ — 50 MB (ဇယားအသေးများကို ကျော်သွားမည်)။'
@@ -1361,7 +1374,7 @@ jobs:
             <div>
               <label
                 htmlFor="set-bloat-pct"
-                className="block text-xs font-medium text-slate-700 mb-1"
+                className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
                 {tr(
                   'Index Bloat Min Percentage (%)',
@@ -1380,9 +1393,9 @@ jobs:
                     bloatPctThreshold: Number(e.target.value) || 40,
                   })
                 }
-                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 rounded-lg"
+                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 dark:border-slate-700 rounded-lg"
               />
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {tr(
                   'Default: 40% wasted space threshold.',
                   'မူလ — အလဟဿ သိုလှောင်မှု ၄၀% ကန့်သတ်ချက်။'
@@ -1393,7 +1406,7 @@ jobs:
             <div>
               <label
                 htmlFor="set-dead"
-                className="block text-xs font-medium text-slate-700 mb-1"
+                className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
                 {tr(
                   'Table Dead Tuple Ratio (%)',
@@ -1412,9 +1425,9 @@ jobs:
                     deadTuplePctThreshold: Number(e.target.value) || 20,
                   })
                 }
-                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 rounded-lg"
+                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 dark:border-slate-700 rounded-lg"
               />
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {tr(
                   'Flags tables needing VACUUM (ANALYZE) above 10k dead rows.',
                   'Dead Row ၁၀,၀၀၀ ကျော်ပြီး VACUUM (ANALYZE) လိုအပ်သော ဇယားများကို သတိပေးမည်။'
@@ -1425,7 +1438,7 @@ jobs:
             <div>
               <label
                 htmlFor="set-cache"
-                className="block text-xs font-medium text-slate-700 mb-1"
+                className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
                 {tr(
                   'Target Buffer Cache Hit Ratio (%)',
@@ -1444,9 +1457,9 @@ jobs:
                     cacheHitMinPct: Number(e.target.value) || 95,
                   })
                 }
-                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 rounded-lg"
+                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 dark:border-slate-700 rounded-lg"
               />
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {tr(
                   'Highlights memory pressure when cache hits dip below target.',
                   'Cache ထိရောက်မှု စံနှုန်းအောက်ကျဆင်းပါက မှတ်ဉာဏ် ဖိအားကို သတိပေးမည်။'
@@ -1457,7 +1470,7 @@ jobs:
             <div>
               <label
                 htmlFor="set-conn"
-                className="block text-xs font-medium text-slate-700 mb-1"
+                className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
                 {tr(
                   'Connection Pool Saturation (%)',
@@ -1476,9 +1489,9 @@ jobs:
                     connSaturationPct: Number(e.target.value) || 80,
                   })
                 }
-                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 rounded-lg"
+                className="w-full px-3 py-2 text-sm font-mono tabular-nums border border-slate-300 dark:border-slate-700 rounded-lg"
               />
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {tr(
                   'Opens WARNING before hitting PostgreSQL max_connections.',
                   'PostgreSQL max_connections မပြည့်မီ ကြိုတင် သတိပေးချက် ဖွင့်ပေးမည်။'
@@ -1487,8 +1500,8 @@ jobs:
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs text-slate-500">
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
               {settings.updatedAt
                 ? tr(
                     `Last updated ${formatDateTime(settings.updatedAt)}`,
@@ -1499,7 +1512,7 @@ jobs:
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-60 rounded-lg cursor-pointer"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-60 rounded-lg cursor-pointer"
             >
               {saving
                 ? t('action.saving')
@@ -1511,16 +1524,16 @@ jobs:
 
       {/* TAB 3: Activity Audit Log */}
       {activeTab === 'audit' && (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {tr(
                   'Workspace Activity Audit Log',
                   'လုပ်ငန်းခွင် လုပ်ဆောင်ချက် မှတ်တမ်း'
                 )}
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 {tr(
                   'Immutable trail of inspections, baseline promotions, migration reviews, incident updates, and API key actions.',
                   'စစ်ဆေးမှုများ၊ မူလစံ မြှင့်တင်မှုများ၊ Migration စစ်ဆေးချက်များ၊ ဖြစ်ရပ်ပြင်ဆင်မှုနှင့် API Key လုပ်ဆောင်ချက်အားလုံး၏ မပြောင်းလဲနိုင်သော မှတ်တမ်း။'
@@ -1528,7 +1541,7 @@ jobs:
               </p>
             </div>
             <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={auditSearch}
@@ -1537,13 +1550,13 @@ jobs:
                   'Filter actions, targets…',
                   'လုပ်ဆောင်ချက်၊ ပစ်မှတ် ရှာရန်…'
                 )}
-                className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-slate-900"
+                className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
               />
             </div>
           </div>
 
           {filteredLogs.length === 0 ? (
-            <div className="p-8 text-center text-xs text-slate-500">
+            <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
               {tr(
                 'No activity entries match your filter yet.',
                 'ရှာဖွေမှုနှင့် ကိုက်ညီသော လုပ်ဆောင်ချက် မှတ်တမ်း မရှိသေးပါ။'
@@ -1553,7 +1566,7 @@ jobs:
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium">
                     <th className="py-2.5 px-6">{tr('Time', 'အချိန်')}</th>
                     <th className="py-2.5 px-4">
                       {tr('Actor', 'ဆောင်ရွက်သူ')}
@@ -1567,10 +1580,10 @@ jobs:
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {filteredLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50">
-                      <td className="py-3 px-6 text-slate-500 tabular-nums whitespace-nowrap">
+                    <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                      <td className="py-3 px-6 text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">
                         {new Date(log.createdAt).toLocaleString(
                           locale === 'my' ? 'my-MM' : 'en-US',
                           {
@@ -1582,16 +1595,16 @@ jobs:
                           }
                         )}
                       </td>
-                      <td className="py-3 px-4 font-mono text-slate-700 whitespace-nowrap">
+                      <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {log.actorEmail}
                       </td>
-                      <td className="py-3 px-4 font-mono font-semibold text-slate-900 whitespace-nowrap">
+                      <td className="py-3 px-4 font-mono font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                         {log.action}
                       </td>
-                      <td className="py-3 px-4 font-medium text-slate-800 whitespace-nowrap">
+                      <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                         {log.entityLabel}
                       </td>
-                      <td className="py-3 px-6 text-slate-600">
+                      <td className="py-3 px-6 text-slate-600 dark:text-slate-300">
                         {log.summary}
                       </td>
                     </tr>
@@ -1601,6 +1614,15 @@ jobs:
             </div>
           )}
         </div>
+      )}
+
+      {/* TAB: Maintenance Windows & Alert Silencing Schedules */}
+      {activeTab === 'maintenance' && (
+        <MaintenanceWindowsPanel
+          api={api}
+          databases={databases}
+          onChanged={loadAll}
+        />
       )}
     </div>
   );

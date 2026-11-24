@@ -63,19 +63,19 @@ export function UpdateCredentialsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-[1px] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-slate-900/40 dark:bg-slate-950/75 backdrop-blur-[1px] flex items-center justify-center p-4">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="update-creds-title"
-        className="w-full max-w-lg bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
+        className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden"
       >
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <KeyRound className="w-4 h-4 text-blue-700 shrink-0" />
+            <KeyRound className="w-4 h-4 text-blue-700 dark:text-blue-400 shrink-0" />
             <h2
               id="update-creds-title"
-              className="text-base font-semibold text-slate-900 truncate"
+              className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate"
             >
               {tr('Update Connection URI', 'ချိတ်ဆက်မှု URI ပြင်ဆင်ရန်')}
             </h2>
@@ -84,7 +84,7 @@ export function UpdateCredentialsModal({
             type="button"
             onClick={onClose}
             aria-label={t('action.close')}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-md transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -92,10 +92,10 @@ export function UpdateCredentialsModal({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="space-y-1">
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-slate-700 dark:text-slate-300">
               {locale === 'my' ? (
                 <>
-                  <strong className="font-semibold text-slate-900">
+                  <strong className="font-semibold text-slate-900 dark:text-slate-100">
                     {targetName}
                   </strong>{' '}
                   အတွက် PostgreSQL ချိတ်ဆက်မှု URI အသစ်ကို ပြန်လည်ထည့်သွင်းပါ။
@@ -105,7 +105,7 @@ export function UpdateCredentialsModal({
               ) : (
                 <>
                   Re-enter the PostgreSQL connection URI for{' '}
-                  <strong className="font-semibold text-slate-900">
+                  <strong className="font-semibold text-slate-900 dark:text-slate-100">
                     {targetName}
                   </strong>
                   . All historical baselines, snapshots, and incidents will be
@@ -114,7 +114,7 @@ export function UpdateCredentialsModal({
               )}
             </p>
             {maskedTarget && (
-              <p className="text-xs font-mono text-slate-500 truncate">
+              <p className="text-xs font-mono text-slate-500 dark:text-slate-400 truncate">
                 {tr('Current target:', 'လက်ရှိ ပစ်မှတ်:')} {maskedTarget}
               </p>
             )}
@@ -123,7 +123,7 @@ export function UpdateCredentialsModal({
           <div className="space-y-1.5">
             <label
               htmlFor="reconnect-postgres-uri"
-              className="block text-xs font-semibold text-slate-700"
+              className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
             >
               {tr('PostgreSQL Connection URI', 'PostgreSQL ချိတ်ဆက်မှု URI')}
             </label>
@@ -135,9 +135,9 @@ export function UpdateCredentialsModal({
               value={connectionUrl}
               onChange={(e) => setConnectionUrl(e.target.value)}
               placeholder="postgresql://drift_monitor:password@db.example.com:5432/app_db?sslmode=require"
-              className="w-full px-3 py-2 text-sm font-mono bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+              className="w-full px-3 py-2 text-sm font-mono bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
             />
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {tr(
                 'Encrypted on the server with AES-256-GCM using a persistent key and never exposed back to the browser.',
                 'ဆာဗာတွင် AES-256-GCM စနစ်ဖြင့် တည်မြဲသော သော့သုံး၍ လုံခြုံစွာ ကုဒ်ဝှက်သိမ်းဆည်းမည်ဖြစ်ပြီး ဘရောက်ဆာသို့ ပြန်လည်ဖော်ပြမည် မဟုတ်ပါ။'
@@ -148,25 +148,25 @@ export function UpdateCredentialsModal({
           {error && (
             <div
               role="alert"
-              className="px-3.5 py-2.5 rounded-lg border border-red-200 bg-red-50 text-xs text-red-800"
+              className="px-3.5 py-2.5 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-xs text-red-800 dark:text-red-300"
             >
               {error}
             </div>
           )}
 
-          <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-100">
+          <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-100 dark:border-slate-800/80">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer"
             >
               {t('action.cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-60 rounded-lg transition-colors cursor-pointer"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-60 rounded-lg transition-colors cursor-pointer"
             >
               {submitting
                 ? tr('Saving…', 'သိမ်းဆည်းနေသည်…')

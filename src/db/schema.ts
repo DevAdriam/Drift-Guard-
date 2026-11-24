@@ -251,12 +251,91 @@ export const targetHealthThresholds = pgTable(
   (table) => [index('idx_target_health_thresholds_owner').on(table.ownerUid)]
 );
 
+export const maintenanceWindows = pgTable(
+  'maintenance_windows',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ownerUid: text('owner_uid')
+      .notNull()
+      .references(() => users.uid, { onDelete: 'cascade' }),
+    databaseId: uuid('database_id').references(() => monitoredDatabases.id, {
+      onDelete: 'cascade',
+    }),
+    environment: varchar('environment', { length: 20 }).default('all').notNull(),
+    title: varchar('title', { length: 120 }).notNull(),
+    dayOfWeek: integer('day_of_week').default(-1).notNull(), // -1 = daily, 0 = Sun .. 6 = Sat (UTC)
+    startTimeUtc: varchar('start_time_utc', { length: 5 }).notNull(), // "HH:MM"
+    durationMinutes: integer('duration_minutes').default(60).notNull(),
+    suppressWebhooks: boolean('suppress_webhooks').default(true).notNull(),
+    suppressAutoReinspect: boolean('suppress_auto_reinspect')
+      .default(true)
+      .notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index('idx_maintenance_windows_owner').on(table.ownerUid)]
+);
+
+export const teamMembers = pgTable(
+  'team_members',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ownerUid: text('owner_uid')
+      .notNull()
+      .references(() => users.uid, { onDelete: 'cascade' }),
+    email: varchar('email', { length: 180 }).notNull(),
+    displayName: varchar('display_name', { length: 120 }).notNull(),
+    role: varchar('role', { length: 16 }).default('viewer').notNull(), // admin | dba | viewer
+    status: varchar('status', { length: 16 }).default('active').notNull(), // active | invited
+    invitedBy: text('invited_by').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index('idx_team_members_owner').on(table.ownerUid)]
+);
+
+export const baselineApprovalRequests = pgTable(
+  'baseline_approval_requests',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ownerUid: text('owner_uid')
+      .notNull()
+      .references(() => users.uid, { onDelete: 'cascade' }),
+    databaseId: uuid('database_id')
+      .notNull()
+      .references(() => monitoredDatabases.id, { onDelete: 'cascade' }),
+    requestedByEmail: text('requested_by_email').notNull(),
+    gitCommitSha: varchar('git_commit_sha', { length: 40 }),
+    proposedSchemaHash: varchar('proposed_schema_hash', { length: 64 }).notNull(),
+    proposedCatalogJson: jsonb('proposed_catalog_json')
+      .$type<ColumnCatalogRow[]>()
+      .notNull(),
+    diffSummary: text('diff_summary').notNull(),
+    status: varchar('status', { length: 16 }).default('PENDING').notNull(), // PENDING | APPROVED | REJECTED
+    reviewedByEmail: text('reviewed_by_email'),
+    reviewNote: text('review_note'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('idx_baseline_approvals_owner').on(table.ownerUid, table.createdAt),
+  ]
+);
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   databases: many(monitoredDatabases),
   webhooks: many(alertWebhooks),
   migrationChecks: many(migrationChecks),
   apiKeys: many(apiKeys),
   auditLogs: many(auditLogs),
+  maintenanceWindows: many(maintenanceWindows),
+  teamMembers: many(teamMembers),
+  baselineApprovalRequests: many(baselineApprovalRequests),
   settings: one(workspaceSettings),
 }));
 

@@ -5,11 +5,14 @@ import {
   alertWebhooks,
   apiKeys,
   auditLogs,
+  baselineApprovalRequests,
+  maintenanceWindows,
   migrationChecks,
   monitoredDatabases,
   queryLatencySamples,
   schemaBaselines,
   targetHealthThresholds,
+  teamMembers,
   telemetryIncidents,
   telemetrySnapshots,
   users,
@@ -440,11 +443,12 @@ async function seedDemoWorkspaceInternal(): Promise<void> {
 
   // Check if demo targets already exist
   const existingDbs = await db
-    .select({ id: monitoredDatabases.id })
+    .select({ id: monitoredDatabases.id, name: monitoredDatabases.name })
     .from(monitoredDatabases)
     .where(eq(monitoredDatabases.ownerUid, DEMO_USER.uid));
 
   if (existingDbs.length > 0) {
+    await ensureDemoGovernanceSeeded(existingDbs);
     return;
   }
 
@@ -1248,4 +1252,148 @@ async function seedDemoWorkspaceInternal(): Promise<void> {
       createdAt: new Date(now - 3 * DAY_MS),
     },
   ]);
+
+  await ensureDemoGovernanceSeeded([
+    { id: prodBilling.id, name: prodBilling.name },
+    { id: prodLedger.id, name: prodLedger.name },
+    { id: stagingOrders.id, name: stagingOrders.name },
+    { id: devAnalytics.id, name: devAnalytics.name },
+  ]);
 }
+
+async function ensureDemoGovernanceSeeded(
+  demoDbs: { id: string; name: string }[]
+): Promise<void> {
+  const now = Date.now();
+  const HOUR_MS = 3_600_000;
+  const DAY_MS = 86_400_000;
+  const prodBilling = demoDbs.find((d) => d.name === 'prod-billing-pg') ?? demoDbs[0];
+  const prodLedger = demoDbs.find((d) => d.name === 'prod-core-ledger') ?? demoDbs[1] ?? demoDbs[0];
+
+  const [existingWindows, existingMembers, existingApprovals] = await Promise.all([
+    db
+      .select({ id: maintenanceWindows.id })
+      .from(maintenanceWindows)
+      .where(eq(maintenanceWindows.ownerUid, DEMO_USER.uid))
+      .limit(1),
+    db
+      .select({ id: teamMembers.id })
+      .from(teamMembers)
+      .where(eq(teamMembers.ownerUid, DEMO_USER.uid))
+      .limit(1),
+    db
+      .select({ id: baselineApprovalRequests.id })
+      .from(baselineApprovalRequests)
+      .where(eq(baselineApprovalRequests.ownerUid, DEMO_USER.uid))
+      .limit(1),
+  ]);
+
+  if (existingWindows.length === 0) {
+    await db.insert(maintenanceWindows).values([
+      {
+        ownerUid: DEMO_USER.uid,
+        databaseId: null,
+        environment: 'production',
+        title: 'Sunday Production Release & Migration Window',
+        dayOfWeek: 0, // Sunday UTC
+        startTimeUtc: '02:00',
+        durationMinutes: 120,
+        suppressWebhooks: true,
+        suppressAutoReinspect: true,
+        isActive: true,
+        createdAt: new Date(now - 10 * DAY_MS),
+      },
+      {
+        ownerUid: DEMO_USER.uid,
+        databaseId: null,
+        environment: 'staging',
+        title: 'Nightly Staging Schema Rebuild',
+        dayOfWeek: -1, // Daily
+        startTimeUtc: '04:30',
+        durationMinutes: 45,
+        suppressWebhooks: true,
+        suppressAutoReinspect: false,
+        isActive: true,
+        createdAt: new Date(now - 6 * DAY_MS),
+      },
+    ]);
+  }
+
+  if (existingMembers.length === 0) {
+    await db.insert(teamMembers).values([
+      {
+        ownerUid: DEMO_USER.uid,
+        email: 'maya.lin@driftguard.dev',
+        displayName: 'Maya Lin',
+        role: 'dba',
+        status: 'active',
+        invitedBy: DEMO_USER.email,
+        createdAt: new Date(now - 16 * DAY_MS),
+      },
+      {
+        ownerUid: DEMO_USER.uid,
+        email: 'kyaw.zin@driftguard.dev',
+        displayName: 'Kyaw Zin Htet',
+        role: 'admin',
+        status: 'active',
+        invitedBy: DEMO_USER.email,
+        createdAt: new Date(now - 12 * DAY_MS),
+      },
+      {
+        ownerUid: DEMO_USER.uid,
+        email: 'priya.nair@driftguard.dev',
+        displayName: 'Priya Nair',
+        role: 'viewer',
+        status: 'invited',
+        invitedBy: DEMO_USER.email,
+        createdAt: new Date(now - 2 * DAY_MS),
+      },
+    ]);
+  }
+
+  if (existingApprovals.length === 0 && prodBilling) {
+    const driftedCatalog = buildDriftedProdCatalog();
+    const driftedHash = SchemaInspector.computeCanonicalHash(driftedCatalog);
+    const baselineCatalog = buildBaselineCatalog();
+    const baselineHash = SchemaInspector.computeCanonicalHash(baselineCatalog);
+
+    await db.insert(baselineApprovalRequests).values([
+      {
+        ownerUid: DEMO_USER.uid,
+        databaseId: prodBilling.id,
+        requestedByEmail: 'maya.lin@driftguard.dev',
+        gitCommitSha: 'f82c91d',
+        proposedSchemaHash: driftedHash,
+        proposedCatalogJson: driftedCatalog,
+        diffSummary:
+          'Q4 EU VAT & batch settlement rollout (+2 added, -0 removed, ~1 modified column(s))',
+        status: 'PENDING',
+        reviewedByEmail: null,
+        reviewNote: null,
+        createdAt: new Date(now - 2 * HOUR_MS),
+        reviewedAt: null,
+      },
+      ...(prodLedger
+        ? [
+            {
+              ownerUid: DEMO_USER.uid,
+              databaseId: prodLedger.id,
+              requestedByEmail: 'maya.lin@driftguard.dev',
+              gitCommitSha: 'a9f4c21',
+              proposedSchemaHash: baselineHash,
+              proposedCatalogJson: baselineCatalog,
+              diffSummary:
+                'Ledger reconciliation baseline freeze (+3 added, -0 removed, ~0 modified column(s))',
+              status: 'APPROVED',
+              reviewedByEmail: 'kyaw.zin@driftguard.dev',
+              reviewNote:
+                'Verified lock_timeout and zero blocking locks on staging replay.',
+              createdAt: new Date(now - 4 * DAY_MS),
+              reviewedAt: new Date(now - 4 * DAY_MS + 35 * 60_000),
+            },
+          ]
+        : []),
+    ]);
+  }
+}
+

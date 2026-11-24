@@ -150,13 +150,13 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {tr(
             'Alert Channels & Webhook Routing',
             'သတိပေးချက် လမ်းကြောင်းများနှင့် Webhook ချိတ်ဆက်မှု'
           )}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           {tr(
             'Route high-priority schema drift, lock contention, and index bloat notifications to Slack, Discord, or custom HTTPS endpoints.',
             'အရေးကြီး ဖွဲ့စည်းပုံ ပြောင်းလဲမှု၊ Lock ပိတ်ဆို့မှုနှင့် အညွှန်း ဖောင်းပွမှု သတိပေးချက်များကို Slack၊ Discord သို့မဟုတ် စိတ်ကြိုက် HTTPS Webhook များသို့ ပေးပို့နိုင်ပါသည်။'
@@ -165,14 +165,14 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
       </div>
 
       {notice && (
-        <div className="px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm text-blue-900">
+        <div className="px-4 py-3 rounded-lg border border-blue-200 dark:border-blue-900/70 bg-blue-50 dark:bg-blue-950/40 text-sm text-blue-900 dark:text-blue-200">
           {notice}
         </div>
       )}
       {error && (
         <div
           role="alert"
-          className="px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-800"
+          className="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-sm text-red-800 dark:text-red-300"
         >
           {error}
         </div>
@@ -181,9 +181,9 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
       {/* Create Webhook Form */}
       <form
         onSubmit={handleCreate}
-        className="bg-white border border-slate-200 rounded-xl p-6 space-y-4"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4"
       >
-        <h2 className="text-base font-semibold text-slate-900">
+        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
           {tr('Add Webhook Destination', 'Webhook လမ်းကြောင်း အသစ်ထည့်ရန်')}
         </h2>
 
@@ -191,7 +191,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
           <div>
             <label
               htmlFor="wh-name"
-              className="block text-xs font-medium text-slate-700 mb-1.5"
+              className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5"
             >
               {tr('Channel Name', 'လမ်းကြောင်း အမည်')}
             </label>
@@ -204,14 +204,14 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="#db-alerts-prod"
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+              className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
             />
           </div>
 
           <div>
             <label
               htmlFor="wh-provider"
-              className="block text-xs font-medium text-slate-700 mb-1.5"
+              className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5"
             >
               {tr('Provider', 'ဝန်ဆောင်မှု အမျိုးအစား')}
             </label>
@@ -219,7 +219,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
               id="wh-provider"
               value={provider}
               onChange={(e) => setProvider(e.target.value as WebhookProvider)}
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+              className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
             >
               <option value="slack">Slack (hooks.slack.com)</option>
               <option value="discord">Discord (discord.com)</option>
@@ -232,7 +232,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
           <div>
             <label
               htmlFor="wh-severity"
-              className="block text-xs font-medium text-slate-700 mb-1.5"
+              className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5"
             >
               {tr('Minimum Severity', 'အနည်းဆုံး အရေးကြီးမှုအဆင့်')}
             </label>
@@ -240,7 +240,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
               id="wh-severity"
               value={minSeverity}
               onChange={(e) => setMinSeverity(e.target.value as SeverityLevel)}
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+              className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
             >
               <option value="CRITICAL">
                 {tr(
@@ -266,7 +266,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
           <div>
             <label
               htmlFor="wh-url"
-              className="block text-xs font-medium text-slate-700 mb-1.5"
+              className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5"
             >
               {tr('HTTPS Webhook URL', 'HTTPS Webhook လိပ်စာ')}
             </label>
@@ -283,13 +283,13 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
                     ? 'https://discord.com/api/webhooks/...'
                     : 'https://ops.example.com/hooks/drift'
               }
-              className="w-full px-3 py-2 text-sm font-mono border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+              className="w-full px-3 py-2 text-sm font-mono border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
             />
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 dark:text-slate-400">
             {tr(
               'Outbound URLs are strictly validated for public HTTPS hosts and encrypted at rest.',
               'ပြင်ပ HTTPS လိပ်စာများကို လုံခြုံရေး စစ်ဆေးပြီး သိမ်းဆည်းချိန်တွင် ကုဒ်ဝှက်ထားပါသည်။'
@@ -298,7 +298,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
           <button
             type="submit"
             disabled={submitting}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             {submitting
               ? t('action.saving')
@@ -308,15 +308,15 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
       </form>
 
       {/* Configured Channels Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             {tr(
               'Configured Destinations',
               'ချိတ်ဆက်ထားသော သတိပေးချက် လမ်းကြောင်းများ'
             )}
           </h2>
-          <span className="text-xs text-slate-500 tabular-nums">
+          <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
             {tr(
               `${webhooks.length} channel${webhooks.length === 1 ? '' : 's'}`,
               `လမ်းကြောင်း ${webhooks.length} ခု`
@@ -326,18 +326,18 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
 
         {loading ? (
           <div className="p-6 space-y-3 animate-pulse">
-            <div className="h-10 bg-slate-100 rounded" />
-            <div className="h-10 bg-slate-100 rounded" />
+            <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded" />
+            <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded" />
           </div>
         ) : webhooks.length === 0 ? (
           <div className="p-10 text-center space-y-1.5">
-            <p className="text-sm font-medium text-slate-900">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
               {tr(
                 'No alert channels configured yet',
                 'သတိပေးချက် လမ်းကြောင်း မထည့်သွင်းရသေးပါ'
               )}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {tr(
                 'Add a Slack or Discord webhook above to receive real-time alerts whenever drift or lock incidents occur.',
                 'ဖွဲ့စည်းပုံ ပြောင်းလဲမှု သို့မဟုတ် Lock ပိတ်ဆို့မှု ဖြစ်ပွားတိုင်း ချက်ချင်း သတိပေးချက် ရရှိရန် အထက်တွင် Slack သို့မဟုတ် Discord Webhook ထည့်သွင်းပါ။'
@@ -348,7 +348,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium">
                   <th className="py-3 px-6">{tr('Channel', 'လမ်းကြောင်း')}</th>
                   <th className="py-3 px-4">{tr('Endpoint', 'လိပ်စာ')}</th>
                   <th className="py-3 px-4">
@@ -363,20 +363,20 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {webhooks.map((ch) => (
-                  <tr key={ch.id} className="hover:bg-slate-50">
+                  <tr key={ch.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
                     <td className="py-3.5 px-6">
-                      <p className="font-semibold text-slate-900">{ch.name}</p>
-                      <p className="text-slate-500 capitalize">{ch.provider}</p>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{ch.name}</p>
+                      <p className="text-slate-500 dark:text-slate-400 capitalize">{ch.provider}</p>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-600 max-w-xs truncate">
+                    <td className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300 max-w-xs truncate">
                       {ch.maskedUrl}
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                       {formatSeverity(ch.minSeverity)}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-600 tabular-nums whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 tabular-nums whitespace-nowrap">
                       {ch.lastTriggeredAt
                         ? `HTTP ${ch.lastStatusCode ?? 'ERR'} · ${new Date(
                             ch.lastTriggeredAt
@@ -391,7 +391,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
                         disabled={busyId === ch.id}
                         onClick={() => handleToggle(ch)}
                         className={`font-medium cursor-pointer ${
-                          ch.isActive ? 'text-emerald-700' : 'text-slate-400'
+                          ch.isActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'
                         }`}
                       >
                         {ch.isActive ? t('status.enabled') : t('status.paused')}
@@ -403,7 +403,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
                           type="button"
                           disabled={busyId === ch.id}
                           onClick={() => handleTest(ch.id)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 border border-slate-200 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
                         >
                           <Send className="w-3 h-3" />
                           <span>{tr('Test', 'စမ်းသပ်ရန်')}</span>
@@ -413,7 +413,7 @@ export function WebhooksView({ api, onChanged }: WebhooksViewProps) {
                           disabled={busyId === ch.id}
                           onClick={() => handleDelete(ch.id)}
                           aria-label={`${t('action.delete')} ${ch.name}`}
-                          className="p-1.5 text-slate-400 hover:text-red-700 rounded-md cursor-pointer disabled:opacity-60"
+                          className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-red-700 dark:hover:text-red-400 rounded-md cursor-pointer disabled:opacity-60"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

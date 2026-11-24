@@ -14,6 +14,7 @@ import type {
   SuggestedTrendAlert,
 } from '../types/telemetry.ts';
 import { useI18n } from '../i18n/LocaleContext.tsx';
+import { useTheme } from '../context/ThemeContext.tsx';
 
 interface HealthTrendsPanelProps {
   api: ApiClient;
@@ -318,28 +319,28 @@ export function HealthTrendsPanel({
   return (
     <section
       aria-labelledby="health-trends-heading"
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden"
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden"
     >
       {/* Header Bar */}
-      <div className="px-6 py-5 border-b border-slate-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2
               id="health-trends-heading"
-              className="text-base font-semibold text-slate-900"
+              className="text-base font-semibold text-slate-900 dark:text-slate-100"
             >
               {tr('Health Trends', 'ကျန်းမာရေး လမ်းကြောင်းများ')}
             </h2>
-            <span className="text-slate-300" aria-hidden="true">
+            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
               ·
             </span>
-            <span className="text-xs font-mono text-slate-500">
+            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
               {locale === 'my'
                 ? `Sliding-Window မူမမှန်မှု ရှာဖွေခြင်း (${windowSize} မှတ် · ${sigmaThreshold.toFixed(1)}σ)`
                 : `Sliding-Window Anomaly Detection (${windowSize}-sample · ${sigmaThreshold.toFixed(1)}σ)`}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {tr(
               'Automatically detects anomalous spikes in vacuum dead-tuple activity and index bloat growth against a rolling baseline and suggests new incident alerts.',
               'VACUUM dead-tuple လှုပ်ရှားမှုနှင့် အညွှန်း ဖောင်းပွမှု ရုတ်တရက် မြင့်တက်ခြင်းများကို ရွေ့လျားစံနှုန်းနှင့် နှိုင်းယှဉ်၍ အလိုအလျောက် ရှာဖွေပြီး သတိပေးချက်အသစ်များ အကြံပြုပေးပါသည်။'
@@ -355,7 +356,7 @@ export function HealthTrendsPanel({
               'Select PostgreSQL target for health trends',
               'ကျန်းမာရေး လမ်းကြောင်းအတွက် PostgreSQL ပစ်မှတ် ရွေးချယ်ရန်'
             )}
-            className="px-3 py-1.5 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700 max-w-[200px] truncate"
+            className="px-3 py-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500 max-w-[200px] truncate"
           >
             <option value="">
               {tr(
@@ -370,13 +371,13 @@ export function HealthTrendsPanel({
             ))}
           </select>
 
-          <label className="flex items-center gap-1.5 text-xs text-slate-600 whitespace-nowrap">
+          <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
             <span>{tr('Window', 'ကာလအကွာအဝေး')}</span>
             <select
               value={windowSize}
               onChange={(e) => setWindowSize(Number(e.target.value))}
               aria-label={tr('Sliding window size', 'Sliding window အရွယ်အစား')}
-              className="px-2.5 py-1.5 text-xs font-mono text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+              className="px-2.5 py-1.5 text-xs font-mono text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
             >
               <option value={3}>{locale === 'my' ? '၃ မှတ်' : '3 pts'}</option>
               <option value={5}>{locale === 'my' ? '၅ မှတ်' : '5 pts'}</option>
@@ -385,7 +386,7 @@ export function HealthTrendsPanel({
             </select>
           </label>
 
-          <label className="flex items-center gap-1.5 text-xs text-slate-600 whitespace-nowrap">
+          <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
             <span>{tr('Sensitivity', 'အာရုံခံနိုင်စွမ်း')}</span>
             <select
               value={sigmaThreshold}
@@ -394,7 +395,7 @@ export function HealthTrendsPanel({
                 'Anomaly sensitivity threshold',
                 'မူမမှန်မှု အာရုံခံ ကန့်သတ်ချက်'
               )}
-              className="px-2.5 py-1.5 text-xs font-mono text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+              className="px-2.5 py-1.5 text-xs font-mono text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
             >
               <option value={1.5}>
                 {tr('1.5σ (High)', '1.5σ (မြင့်)')}
@@ -415,7 +416,7 @@ export function HealthTrendsPanel({
               setPreviewSample(false);
               loadTrends(selectedTargetId, windowSize, sigmaThreshold);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`}
@@ -427,7 +428,7 @@ export function HealthTrendsPanel({
 
       {/* Preview Mode Banner */}
       {previewSample && (
-        <div className="px-6 py-3 bg-amber-50 border-b border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900">
+        <div className="px-6 py-3 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-900/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200">
           <span>
             {tr(
               'Showing a 14-sample anomaly preview demonstrating sliding-window detection on vacuum activity and index bloat spikes. Switch back to live telemetry to promote real database incidents.',
@@ -440,7 +441,7 @@ export function HealthTrendsPanel({
               setPreviewSample(false);
               loadTrends(selectedTargetId, windowSize, sigmaThreshold);
             }}
-            className="px-3 py-1.5 text-xs font-medium text-amber-950 bg-white border border-amber-300 hover:bg-amber-100 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
+            className="px-3 py-1.5 text-xs font-medium text-amber-950 dark:text-amber-200 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-800/70 hover:bg-amber-100 dark:hover:bg-amber-950/70 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
           >
             {tr('Return to Live Trends', 'တိုက်ရိုက် လမ်းကြောင်းသို့ ပြန်သွားရန်')}
           </button>
@@ -448,7 +449,7 @@ export function HealthTrendsPanel({
       )}
 
       {notice && (
-        <div className="px-6 py-3 bg-blue-50 border-b border-blue-200 text-xs text-blue-900">
+        <div className="px-6 py-3 bg-blue-50 dark:bg-blue-950/40 border-b border-blue-200 dark:border-blue-900/70 text-xs text-blue-900 dark:text-blue-200">
           {notice}
         </div>
       )}
@@ -458,19 +459,19 @@ export function HealthTrendsPanel({
         <div className="p-6 space-y-4 animate-pulse">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((k) => (
-              <div key={k} className="h-20 bg-slate-100 rounded-lg" />
+              <div key={k} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-lg" />
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="h-52 bg-slate-100 rounded-lg" />
-            <div className="h-52 bg-slate-100 rounded-lg" />
+            <div className="h-52 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+            <div className="h-52 bg-slate-100 dark:bg-slate-800 rounded-lg" />
           </div>
         </div>
       ) : error ? (
         <div className="p-6">
           <div
             role="alert"
-            className="px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-xs text-red-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            className="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-xs text-red-800 dark:text-red-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
           >
             <span>{error}</span>
             <button
@@ -478,7 +479,7 @@ export function HealthTrendsPanel({
               onClick={() =>
                 loadTrends(selectedTargetId, windowSize, sigmaThreshold)
               }
-              className="px-3 py-1.5 text-xs font-medium text-red-900 bg-white border border-red-200 hover:bg-red-100 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
+              className="px-3 py-1.5 text-xs font-medium text-red-900 dark:text-red-200 bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/70 hover:bg-red-100 dark:hover:bg-red-950/70 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
             >
               {tr('Retry Analysis', 'ပြန်လည် ခွဲခြမ်းစိတ်ဖြာရန်')}
             </button>
@@ -487,19 +488,19 @@ export function HealthTrendsPanel({
       ) : activeTrends ? (
         <div>
           {/* 4-Column Trend KPI Strip */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 border-b border-slate-200 bg-slate-50/50">
+          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Sliding-Window Spikes', 'မူမမှန် မြင့်တက်မှု အရေအတွက်')}
               </p>
               <p
                 className={`mt-1 text-xl font-bold font-mono tabular-nums ${
-                  totalFlaggedPoints > 0 ? 'text-red-700' : 'text-slate-900'
+                  totalFlaggedPoints > 0 ? 'text-red-700 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'
                 }`}
               >
                 {totalFlaggedPoints}
               </p>
-              <p className="text-xs text-slate-500 font-mono tabular-nums mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono tabular-nums mt-0.5">
                 {locale === 'my'
                   ? `VACUUM ${activeTrends.vacuumAnomalyCount} · ဖောင်းပွမှု ${activeTrends.bloatAnomalyCount}`
                   : `${activeTrends.vacuumAnomalyCount} vacuum · ${activeTrends.bloatAnomalyCount} bloat`}
@@ -507,21 +508,21 @@ export function HealthTrendsPanel({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Latest Peak Dead Tuples', 'နောက်ဆုံး အမြင့်ဆုံး Dead Tuple')}
               </p>
               <p
                 className={`mt-1 text-xl font-bold font-mono tabular-nums ${
                   activeTrends.latestDeadTuplePct >= 20
-                    ? 'text-red-700'
+                    ? 'text-red-700 dark:text-red-400'
                     : activeTrends.latestDeadTuplePct >= 10
-                      ? 'text-amber-700'
-                      : 'text-slate-900'
+                      ? 'text-amber-700 dark:text-amber-400'
+                      : 'text-slate-900 dark:text-slate-100'
                 }`}
               >
                 {activeTrends.latestDeadTuplePct.toFixed(1)}%
               </p>
-              <p className="text-xs text-slate-500 font-mono tabular-nums mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono tabular-nums mt-0.5">
                 {locale === 'my'
                   ? `စုစုပေါင်း VACUUM ${activeTrends.totalVacuumCycles.toLocaleString()} ကြိမ်`
                   : `${activeTrends.totalVacuumCycles.toLocaleString()} cumulative vacuum cycles`}
@@ -529,19 +530,19 @@ export function HealthTrendsPanel({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Latest Index Bloat Peak', 'နောက်ဆုံး အမြင့်ဆုံး အညွှန်း ဖောင်းပွမှု')}
               </p>
               <p
                 className={`mt-1 text-xl font-bold font-mono tabular-nums ${
                   activeTrends.latestIndexBloatPct >= 40
-                    ? 'text-amber-700'
-                    : 'text-slate-900'
+                    ? 'text-amber-700 dark:text-amber-400'
+                    : 'text-slate-900 dark:text-slate-100'
                 }`}
               >
                 {activeTrends.latestIndexBloatPct.toFixed(1)}%
               </p>
-              <p className="text-xs text-slate-500 font-mono tabular-nums mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono tabular-nums mt-0.5">
                 {locale === 'my'
                   ? `တိုင်းတာချက် ${activeTrends.points.length} ခု ခွဲခြမ်းစိတ်ဖြာပြီး`
                   : `${activeTrends.points.length} observation${activeTrends.points.length === 1 ? '' : 's'} analyzed`}
@@ -549,19 +550,19 @@ export function HealthTrendsPanel({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Suggested Incident Alerts', 'အကြံပြု သတိပေးချက်များ')}
               </p>
               <p
                 className={`mt-1 text-xl font-bold font-mono tabular-nums ${
                   activeTrends.suggestedAlerts.length > 0
-                    ? 'text-amber-700'
-                    : 'text-emerald-700'
+                    ? 'text-amber-700 dark:text-amber-400'
+                    : 'text-emerald-700 dark:text-emerald-400'
                 }`}
               >
                 {activeTrends.suggestedAlerts.length}
               </p>
-              <p className="text-xs text-slate-500 mt-0.5 truncate">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                 {activeTrends.suggestedAlerts.length > 0
                   ? tr(
                       'Ready for 1-click alert promotion',
@@ -576,7 +577,7 @@ export function HealthTrendsPanel({
           </div>
 
           {/* Dual Sliding-Window Trend Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 border-b border-slate-200">
+          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800">
             <SlidingWindowChart
               title={tr(
                 'Vacuum Activity & Dead-Tuple Spike Trend',
@@ -619,12 +620,12 @@ export function HealthTrendsPanel({
 
           {/* Suggested Incident Alerts Section */}
           <div>
-            <div className="px-6 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="text-xs font-semibold text-slate-900">
+                <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                   {tr('Suggested Incident Alerts', 'အကြံပြု သတိပေးချက်များ')}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {tr(
                     'Anomalous vacuum spikes and index bloat surges recommended for promotion to your workspace Incident Feed.',
                     'ပုံမှန်မဟုတ်သော VACUUM နှင့် အညွှန်း ဖောင်းပွမှု မြင့်တက်ခြင်းများကို လုပ်ငန်းခွင် သတိပေးချက် စာရင်းသို့ ထည့်သွင်းရန် အကြံပြုထားပါသည်။'
@@ -635,7 +636,7 @@ export function HealthTrendsPanel({
                 <button
                   type="button"
                   onClick={() => setPreviewSample(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <Eye className="w-3.5 h-3.5" />
                   <span>
@@ -648,13 +649,13 @@ export function HealthTrendsPanel({
             {activeTrends.suggestedAlerts.length === 0 ? (
               <div className="p-8 text-center space-y-3">
                 <div className="space-y-1 max-w-lg mx-auto">
-                  <p className="text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {tr(
                       'No anomalous vacuum or index bloat spikes detected',
                       'မူမမှန်သော VACUUM သို့မဟုတ် အညွှန်း ဖောင်းပွမှု မြင့်တက်ခြင်း မတွေ့ရှိပါ'
                     )}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {activeTrends.points.length < 4
                       ? locale === 'my'
                         ? `${activeTrends.targetLabel} အတွက် လက်ရှိ မှတ်တမ်း ${activeTrends.points.length} ခုသာ ရှိသေးပါသည်။ ${windowSize} မှတ် sliding window အတွက် ပုံမှန် စစ်ဆေးမှုများ ဆက်လက်ပြုလုပ်ပါ သို့မဟုတ် နမူနာကြည့်ရှုပါ။`
@@ -668,7 +669,7 @@ export function HealthTrendsPanel({
                   <button
                     type="button"
                     onClick={() => setPreviewSample(true)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-800 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span>
@@ -678,57 +679,57 @@ export function HealthTrendsPanel({
                 )}
               </div>
             ) : (
-              <div className="divide-y divide-slate-200">
+              <div className="divide-y divide-slate-200 dark:divide-slate-800">
                 {activeTrends.suggestedAlerts.map((alert) => {
                   const isPromoted =
                     alert.alreadyPromoted || promotedIds.has(alert.id);
                   const copyKey = `trend-sql-${alert.id}`;
                   const sevClass =
                     alert.severity === 'CRITICAL'
-                      ? 'text-red-700'
+                      ? 'text-red-700 dark:text-red-400'
                       : alert.severity === 'WARNING'
-                        ? 'text-amber-700'
-                        : 'text-blue-700';
+                        ? 'text-amber-700 dark:text-amber-400'
+                        : 'text-blue-700 dark:text-blue-400';
 
                   return (
                     <div
                       key={alert.id}
-                      className="px-6 py-4 flex flex-col lg:flex-row lg:items-start justify-between gap-4 hover:bg-slate-50/60 transition-colors"
+                      className="px-6 py-4 flex flex-col lg:flex-row lg:items-start justify-between gap-4 hover:bg-slate-50/60 dark:hover:bg-slate-800/60 transition-colors"
                     >
                       <div className="space-y-1.5 min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2 text-xs">
                           <span className={`font-semibold ${sevClass}`}>
                             {formatSeverity(alert.severity)}
                           </span>
-                          <span className="text-slate-300" aria-hidden="true">
+                          <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                             ·
                           </span>
-                          <span className="font-mono font-semibold text-slate-700">
+                          <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
                             {formatIncidentType(alert.incidentType)}
                           </span>
-                          <span className="text-slate-300" aria-hidden="true">
+                          <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                             ·
                           </span>
-                          <span className="font-mono text-slate-900">
+                          <span className="font-mono text-slate-900 dark:text-slate-100">
                             {alert.targetObject}
                           </span>
                         </div>
 
-                        <p className="text-sm font-semibold text-slate-900">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                           {alert.title}
                         </p>
 
-                        <div className="flex flex-wrap items-center gap-2 text-xs font-mono tabular-nums text-slate-600">
-                          <span className="text-slate-900 font-semibold">
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-mono tabular-nums text-slate-600 dark:text-slate-300">
+                          <span className="text-slate-900 dark:text-slate-100 font-semibold">
                             {tr('Observed:', 'တိုင်းတာရရှိ:')} {alert.observedLabel}
                           </span>
-                          <span className="text-slate-300" aria-hidden="true">
+                          <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                             ·
                           </span>
                           <span>
                             {tr('Baseline:', 'မူလစံ:')} {alert.baselineLabel}
                           </span>
-                          <span className="text-slate-300" aria-hidden="true">
+                          <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                             ·
                           </span>
                           <span className={`font-semibold ${sevClass}`}>
@@ -736,7 +737,7 @@ export function HealthTrendsPanel({
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-600 leading-relaxed max-w-3xl">
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
                           {alert.plainEnglishReason}
                         </p>
                       </div>
@@ -747,11 +748,11 @@ export function HealthTrendsPanel({
                           onClick={() =>
                             handleCopy(copyKey, alert.remediationSql)
                           }
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                         >
                           {copiedId === copyKey ? (
                             <>
-                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                              <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                               <span>{tr('Copied SQL', 'SQL ကူးယူပြီး')}</span>
                             </>
                           ) : (
@@ -765,18 +766,18 @@ export function HealthTrendsPanel({
                         </button>
 
                         {previewSample ? (
-                          <span className="text-xs text-slate-500 font-medium px-2">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium px-2">
                             {tr('Sample suggestion', 'နမူနာ အကြံပြုချက်')}
                           </span>
                         ) : !activeTrends.canPromoteAlerts ? (
-                          <span className="text-xs text-slate-500 px-2">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 px-2">
                             {tr(
                               'Register target to promote',
                               'ထည့်သွင်းရန် ပစ်မှတ် မှတ်ပုံတင်ပါ'
                             )}
                           </span>
                         ) : isPromoted ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                             <Check className="w-3.5 h-3.5" />
                             <span>
                               {tr(
@@ -790,7 +791,7 @@ export function HealthTrendsPanel({
                             type="button"
                             disabled={promotingId === alert.id}
                             onClick={() => handlePromoteAlert(alert)}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                           >
                             <BellPlus className="w-3.5 h-3.5" />
                             <span>
@@ -841,6 +842,7 @@ function SlidingWindowChart({
   legendSpike: string;
   bandSuffix: string;
 }) {
+  const { isDark } = useTheme();
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const width = 460;
@@ -909,7 +911,14 @@ function SlidingWindowChart({
     )
     .join(' ');
 
-  const lineColor = series === 'vacuum' ? '#1D4ED8' : '#0F766E';
+  const lineColor =
+    series === 'vacuum'
+      ? isDark
+        ? '#3B82F6'
+        : '#1D4ED8'
+      : isDark
+        ? '#14B8A6'
+        : '#0F766E';
   const activePt =
     hoveredIdx !== null ? (points[hoveredIdx] ?? null) : null;
 
@@ -922,19 +931,19 @@ function SlidingWindowChart({
     <div className="p-6 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-xs font-semibold text-slate-900">{title}</h3>
-          <p className="text-[11px] text-slate-500 mt-0.5">{subtitle}</p>
+          <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
         </div>
-        <div className="text-right font-mono text-[11px] tabular-nums text-slate-600 shrink-0">
+        <div className="text-right font-mono text-[11px] tabular-nums text-slate-600 dark:text-slate-300 shrink-0">
           {activePt ? (
             <div>
-              <span className="font-semibold text-slate-900">
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
                 {getValue(activePt).toFixed(1)}%
               </span>
               {getZ(activePt) !== null && (
                 <span
                   className={`ml-1.5 font-semibold ${
-                    isAnomaly(activePt) ? 'text-red-700' : 'text-slate-500'
+                    isAnomaly(activePt) ? 'text-red-700 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >
                   ({getZ(activePt)! >= 0 ? '+' : ''}
@@ -943,14 +952,14 @@ function SlidingWindowChart({
               )}
             </div>
           ) : (
-            <span className="text-slate-400">
+            <span className="text-slate-400 dark:text-slate-500">
               {windowSize}-{bandSuffix} · {sigmaThreshold.toFixed(1)}σ
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
+      <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 dark:text-slate-400">
         <span className="inline-flex items-center gap-1.5">
           <span
             className="w-3 h-0.5 inline-block"
@@ -959,7 +968,7 @@ function SlidingWindowChart({
           <span>{legendObserved}</span>
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="w-3 h-0 border-t border-dashed border-slate-400 inline-block" />
+          <span className="w-3 h-0 border-t border-dashed border-slate-400 dark:border-slate-600 inline-block" />
           <span>{legendMean}</span>
         </span>
         <span className="inline-flex items-center gap-1.5">
@@ -986,14 +995,14 @@ function SlidingWindowChart({
               y1={t.y}
               x2={width - padRight}
               y2={t.y}
-              stroke="#E2E8F0"
+              stroke={isDark ? '#1E293B' : '#E2E8F0'}
               strokeWidth="1"
             />
             <text
               x={padLeft - 8}
               y={t.y + 3.5}
               textAnchor="end"
-              className="fill-slate-500 text-[10px] font-mono"
+              className="fill-slate-500 dark:fill-slate-400 text-[10px] font-mono"
             >
               {t.val}%
             </text>
@@ -1007,7 +1016,7 @@ function SlidingWindowChart({
               x={toX(0)}
               y={height - 8}
               textAnchor={points.length === 1 ? 'middle' : 'start'}
-              className="fill-slate-500 text-[10px] font-mono"
+              className="fill-slate-500 dark:fill-slate-400 text-[10px] font-mono"
             >
               {points[0].label}
             </text>
@@ -1016,7 +1025,7 @@ function SlidingWindowChart({
                 x={toX(Math.floor(points.length / 2))}
                 y={height - 8}
                 textAnchor="middle"
-                className="fill-slate-500 text-[10px] font-mono"
+                className="fill-slate-500 dark:fill-slate-400 text-[10px] font-mono"
               >
                 {points[Math.floor(points.length / 2)].label}
               </text>
@@ -1026,7 +1035,7 @@ function SlidingWindowChart({
                 x={toX(points.length - 1)}
                 y={height - 8}
                 textAnchor="end"
-                className="fill-slate-500 text-[10px] font-mono"
+                className="fill-slate-500 dark:fill-slate-400 text-[10px] font-mono"
               >
                 {points[points.length - 1].label}
               </text>
@@ -1084,7 +1093,7 @@ function SlidingWindowChart({
                   y1={padTop}
                   x2={cx}
                   y2={padTop + plotH}
-                  stroke="#CBD5E1"
+                  stroke={isDark ? '#475569' : '#CBD5E1'}
                   strokeWidth="1"
                   strokeDasharray="2 2"
                 />
@@ -1094,16 +1103,30 @@ function SlidingWindowChart({
                   cx={cx}
                   cy={cy}
                   r="7"
-                  fill="#DC2626"
-                  fillOpacity="0.18"
+                  fill="#EF4444"
+                  fillOpacity="0.22"
                 />
               )}
               <circle
                 cx={cx}
                 cy={cy}
                 r={anomalous ? 4 : isHovered ? 4 : 2.75}
-                fill={anomalous ? '#DC2626' : isHovered ? lineColor : '#FFFFFF'}
-                stroke={anomalous ? '#FFFFFF' : lineColor}
+                fill={
+                  anomalous
+                    ? '#EF4444'
+                    : isHovered
+                      ? lineColor
+                      : isDark
+                        ? '#0F172A'
+                        : '#FFFFFF'
+                }
+                stroke={
+                  anomalous
+                    ? isDark
+                      ? '#0F172A'
+                      : '#FFFFFF'
+                    : lineColor
+                }
                 strokeWidth="1.5"
               />
               <rect

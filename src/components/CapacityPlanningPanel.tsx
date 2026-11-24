@@ -6,6 +6,7 @@ import type {
   MonitoredDatabaseDto,
 } from '../types/telemetry.ts';
 import { useI18n } from '../i18n/LocaleContext.tsx';
+import { useTheme } from '../context/ThemeContext.tsx';
 
 interface CapacityPlanningPanelProps {
   api: ApiClient;
@@ -237,20 +238,20 @@ export function CapacityPlanningPanel({
               daysToExhaustion === 0
                 ? tr('Capacity Reached', 'သိုလှောင်မှု ပြည့်သွားပြီး')
                 : tr('Critical (<30d)', 'အရေးကြီး (<၃၀ ရက်)'),
-            textClass: 'text-red-700',
+            textClass: 'text-red-700 dark:text-red-400',
             strokeColor: '#DC2626',
           }
         : daysToExhaustion <= 90
           ? {
               label: tr('Plan Expansion (<90d)', 'တိုးချဲ့ရန် ပြင်ဆင်ပါ (<၉၀ ရက်)'),
-              textClass: 'text-amber-700',
+              textClass: 'text-amber-700 dark:text-amber-400',
               strokeColor: '#D97706',
             }
           : {
               label: Number.isFinite(daysToExhaustion)
                 ? tr('Healthy Runway', 'လုံလောက်သော ကာလ')
                 : tr('Stable', 'တည်ငြိမ်သည်'),
-              textClass: 'text-emerald-700',
+              textClass: 'text-emerald-700 dark:text-emerald-400',
               strokeColor: '#1D4ED8',
             };
 
@@ -277,22 +278,22 @@ export function CapacityPlanningPanel({
   return (
     <section
       aria-labelledby="capacity-planning-heading"
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden"
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden"
     >
       {/* Header Bar */}
-      <div className="px-6 py-5 border-b border-slate-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2
               id="capacity-planning-heading"
-              className="text-base font-semibold text-slate-900"
+              className="text-base font-semibold text-slate-900 dark:text-slate-100"
             >
               {tr('Capacity Planning', 'သိုလှောင်မှု ပမာဏ ကြိုတင်ခန့်မှန်းခြင်း')}
             </h2>
-            <span className="text-slate-300" aria-hidden="true">
+            <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
               ·
             </span>
-            <span className="text-xs font-mono text-slate-500">
+            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
               {data?.dataSource === 'historical_snapshots'
                 ? locale === 'my'
                   ? `သမိုင်းကြောင်း မှတ်တမ်းများ (${data.snapshotCount} မှတ်)`
@@ -303,7 +304,7 @@ export function CapacityPlanningPanel({
                   )}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {tr(
               'Projects disk growth from historical table bloat rates and estimates when the selected database will hit maximum storage capacity.',
               'သမိုင်းကြောင်း ဇယား ဖောင်းပွမှု နှုန်းထားများအပေါ် အခြေခံ၍ သိုလှောင်မှု တိုးပွားမှုနှင့် အမြင့်ဆုံး ပမာဏ ပြည့်မည့် ခန့်မှန်းရက်စွဲကို တွက်ချက်ဖော်ပြပါသည်။'
@@ -319,7 +320,7 @@ export function CapacityPlanningPanel({
               'Select PostgreSQL target for capacity planning',
               'သိုလှောင်မှု ကြိုတင်ခန့်မှန်းရန် PostgreSQL ပစ်မှတ် ရွေးချယ်ရန်'
             )}
-            className="px-3 py-1.5 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700 max-w-[210px] truncate"
+            className="px-3 py-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500 max-w-[210px] truncate"
           >
             <option value="">
               {tr(
@@ -334,7 +335,7 @@ export function CapacityPlanningPanel({
             ))}
           </select>
 
-          <label className="flex items-center gap-1.5 text-xs text-slate-600 whitespace-nowrap">
+          <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
             <span>{tr('Max Storage', 'အမြင့်ဆုံး သိုလှောင်မှု')}</span>
             <input
               type="number"
@@ -347,16 +348,16 @@ export function CapacityPlanningPanel({
                 'Maximum storage capacity in gigabytes',
                 'အမြင့်ဆုံး သိုလှောင်မှု ပမာဏ (GB)'
               )}
-              className="w-20 px-2.5 py-1.5 text-xs font-mono tabular-nums text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+              className="w-20 px-2.5 py-1.5 text-xs font-mono tabular-nums text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
             />
-            <span className="font-mono text-slate-500">GB</span>
+            <span className="font-mono text-slate-500 dark:text-slate-400">GB</span>
           </label>
 
           <button
             type="button"
             disabled={loading}
             onClick={() => loadCapacity(selectedTargetId)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`}
@@ -368,9 +369,9 @@ export function CapacityPlanningPanel({
 
       {/* Quick Storage Tier Bar */}
       {!loading && !error && data && (
-        <div className="px-6 py-2.5 border-b border-slate-200 bg-slate-50/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="px-6 py-2.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-800/40 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-slate-500 mr-1">
+            <span className="text-slate-500 dark:text-slate-400 mr-1">
               {tr('Provisioned Volume Tier:', 'သတ်မှတ်ထားသော သိုလှောင်မှု အဆင့်:')}
             </span>
             {PRESET_CAPACITIES_GB.map((gb) => (
@@ -380,8 +381,8 @@ export function CapacityPlanningPanel({
                 onClick={() => applyCapacityGb(gb)}
                 className={`px-2.5 py-1 font-mono text-xs rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                   Math.abs(maxCapacityGb - gb) < 0.001
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                    ? 'bg-slate-900 dark:bg-blue-600 text-white'
+                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 {gb >= 1000 ? `${gb / 1000} TB` : `${gb} GB`}
@@ -392,7 +393,7 @@ export function CapacityPlanningPanel({
           <button
             type="button"
             onClick={() => setShowMitigated((prev) => !prev)}
-            className="text-xs font-medium text-slate-700 hover:text-slate-900 whitespace-nowrap shrink-0 cursor-pointer"
+            className="text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 whitespace-nowrap shrink-0 cursor-pointer"
           >
             {showMitigated
               ? tr(
@@ -412,22 +413,22 @@ export function CapacityPlanningPanel({
         <div className="p-6 space-y-5 animate-pulse">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((k) => (
-              <div key={k} className="h-20 bg-slate-100 rounded-lg" />
+              <div key={k} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-lg" />
             ))}
           </div>
-          <div className="h-60 bg-slate-100 rounded-lg" />
+          <div className="h-60 bg-slate-100 dark:bg-slate-800 rounded-lg" />
         </div>
       ) : error ? (
         <div className="p-6">
           <div
             role="alert"
-            className="px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-xs text-red-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            className="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-xs text-red-800 dark:text-red-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
           >
             <span>{error}</span>
             <button
               type="button"
               onClick={() => loadCapacity(selectedTargetId)}
-              className="px-3 py-1.5 text-xs font-medium text-red-900 bg-white border border-red-200 hover:bg-red-100 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
+              className="px-3 py-1.5 text-xs font-medium text-red-900 dark:text-red-200 bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/70 hover:bg-red-100 dark:hover:bg-red-950/70 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
             >
               {tr('Retry Forecast', 'ပြန်လည်တွက်ချက်ရန်')}
             </button>
@@ -436,15 +437,15 @@ export function CapacityPlanningPanel({
       ) : data && projection ? (
         <div>
           {/* 4-Column Forecast KPI Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 border-b border-slate-200 bg-slate-50/50">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr(
                   'Estimated Max Capacity Date',
                   'သိုလှောင်မှု ပြည့်မည့် ခန့်မှန်းရက်စွဲ'
                 )}
               </p>
-              <p className="mt-1 text-lg font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1 text-lg font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {projection.daysToExhaustion === 0
                   ? tr('Capacity Reached', 'ပြည့်သွားပြီး')
                   : projection.exhaustionDate
@@ -458,10 +459,10 @@ export function CapacityPlanningPanel({
                 {Number.isFinite(projection.daysToExhaustion) &&
                   projection.daysToExhaustion > 0 && (
                     <>
-                      <span className="text-slate-300" aria-hidden="true">
+                      <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                         ·
                       </span>
-                      <span className="font-mono tabular-nums text-slate-500">
+                      <span className="font-mono tabular-nums text-slate-500 dark:text-slate-400">
                         {locale === 'my'
                           ? `ကျန်ရှိချိန် ${formatRunwayDuration(projection.daysToExhaustion)}`
                           : `${formatRunwayDuration(projection.daysToExhaustion)} left`}
@@ -472,28 +473,28 @@ export function CapacityPlanningPanel({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Current Disk Footprint', 'လက်ရှိ အသုံးပြုထားသော ပမာဏ')}
               </p>
-              <p className="mt-1 text-lg font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1 text-lg font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {data.currentDbPretty}
               </p>
               <div className="mt-1.5 flex items-center gap-2">
-                <div className="h-1.5 flex-1 bg-slate-200 rounded-full overflow-hidden">
+                <div className="h-1.5 flex-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${
                       projection.usedPct >= 85
                         ? 'bg-red-600'
                         : projection.usedPct >= 65
                           ? 'bg-amber-500'
-                          : 'bg-blue-700'
+                          : 'bg-blue-700 dark:bg-blue-600'
                     }`}
                     style={{
                       width: `${Math.min(100, Math.max(2, projection.usedPct))}%`,
                     }}
                   />
                 </div>
-                <span className="text-xs font-mono tabular-nums text-slate-600 whitespace-nowrap">
+                <span className="text-xs font-mono tabular-nums text-slate-600 dark:text-slate-300 whitespace-nowrap">
                   {projection.usedPct < 0.1 && projection.usedPct > 0
                     ? '<0.1%'
                     : `${projection.usedPct.toFixed(1)}%`}{' '}
@@ -505,10 +506,10 @@ export function CapacityPlanningPanel({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Projected Disk Growth Rate', 'ခန့်မှန်း နေ့စဉ် တိုးပွားမှုနှုန်း')}
               </p>
-              <p className="mt-1 text-lg font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1 text-lg font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {data.dailyGrowthBytes > 0
                   ? locale === 'my'
                     ? `${formatBytes(data.dailyGrowthBytes)}/ရက်`
@@ -517,7 +518,7 @@ export function CapacityPlanningPanel({
                     ? '0 B/ရက်'
                     : '0 B/day'}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500 font-mono tabular-nums">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 font-mono tabular-nums">
                 {locale === 'my'
                   ? `${formatBytes(data.monthlyGrowthBytes)}/လ · ဖောင်းပွမှုမှ ${projection.bloatShareOfGrowthPct}%`
                   : `${formatBytes(data.monthlyGrowthBytes)}/mo · ${projection.bloatShareOfGrowthPct}% from bloat`}
@@ -525,16 +526,16 @@ export function CapacityPlanningPanel({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr(
                   'Reclaimable Bloat & Runway Gain',
                   'ပြန်လည်ရယူနိုင်သော ဖောင်းပွမှုနှင့် ကာလတိုးမြှင့်မှု'
                 )}
               </p>
-              <p className="mt-1 text-lg font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1 text-lg font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {data.estimatedBloatPretty}
               </p>
-              <p className="mt-0.5 text-xs text-emerald-700 font-medium tabular-nums">
+              <p className="mt-0.5 text-xs text-emerald-700 dark:text-emerald-400 font-medium tabular-nums">
                 {projection.extraRunwayDays === Number.POSITIVE_INFINITY
                   ? tr(
                       'Stabilizes runway after VACUUM',
@@ -552,9 +553,9 @@ export function CapacityPlanningPanel({
           </div>
 
           {/* Interactive Projection SVG Chart */}
-          <div className="p-6 border-b border-slate-200 space-y-4">
+          <div className="p-6 border-b border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-              <div className="flex flex-wrap items-center gap-4 text-slate-600">
+              <div className="flex flex-wrap items-center gap-4 text-slate-600 dark:text-slate-300">
                 <span className="inline-flex items-center gap-1.5">
                   <span
                     className="w-3 h-0.5 inline-block"
@@ -586,7 +587,7 @@ export function CapacityPlanningPanel({
                 </span>
               </div>
 
-              <div className="font-mono tabular-nums text-slate-700">
+              <div className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
                 {activePoint ? (
                   <span>
                     {formatDateShort(activePoint.date)} ·{' '}
@@ -597,7 +598,7 @@ export function CapacityPlanningPanel({
                     )
                   </span>
                 ) : (
-                  <span className="text-slate-500">
+                  <span className="text-slate-500 dark:text-slate-400">
                     {tr(
                       'Hover chart points to inspect forecasted storage',
                       'ခန့်မှန်း သိုလှောင်မှု အသေးစိတ်ကြည့်ရန် ဂရပ်အမှတ်များပေါ် ထောက်ပါ'
@@ -632,15 +633,15 @@ export function CapacityPlanningPanel({
 
           {/* Top Table Bloat & Growth Contributors */}
           <div className="overflow-x-auto">
-            <div className="px-6 py-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+            <div className="px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h3 className="text-xs font-semibold text-slate-900">
+                <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                   {tr(
                     'Table Bloat & Storage Growth Contributors',
                     'ဇယား ဖောင်းပွမှုနှင့် သိုလှောင်မှု တိုးပွားစေသော အဓိက ဇယားများ'
                   )}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {locale === 'my' ? (
                     <>
                       PostgreSQL စောင့်ကြည့်ကာလ{' '}
@@ -664,7 +665,7 @@ export function CapacityPlanningPanel({
                   )}
                 </p>
               </div>
-              <span className="text-xs font-mono tabular-nums text-slate-500">
+              <span className="text-xs font-mono tabular-nums text-slate-500 dark:text-slate-400">
                 {locale === 'my'
                   ? `ဇယား ${data.topTables.length} ခု ခွဲခြမ်းစိတ်ဖြာပြီး`
                   : `${data.topTables.length} table${data.topTables.length === 1 ? '' : 's'} analyzed`}
@@ -672,7 +673,7 @@ export function CapacityPlanningPanel({
             </div>
 
             {data.topTables.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-500">
+              <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
                 {locale === 'my' ? (
                   <>
                     ဤဒေတာဘေ့စ်အတွက် <code className="font-mono">pg_stat_user_tables</code>{' '}
@@ -689,7 +690,7 @@ export function CapacityPlanningPanel({
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs font-medium text-slate-500 dark:text-slate-400">
                     <th className="py-3 pl-6 pr-3">{tr('Table', 'ဇယား')}</th>
                     <th className="py-3 px-4 text-right whitespace-nowrap">
                       {tr('Current Size', 'လက်ရှိ အရွယ်အစား')}
@@ -711,29 +712,29 @@ export function CapacityPlanningPanel({
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 text-xs">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
                   {data.topTables.map((table) => {
                     const key = `${table.schemaname}.${table.relname}`;
                     const copyKey = `cap-vac-${key}`;
                     return (
                       <tr
                         key={key}
-                        className="hover:bg-slate-50 transition-colors"
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
                       >
                         <td className="py-3 pl-6 pr-3">
-                          <p className="font-mono font-semibold text-slate-900">
+                          <p className="font-mono font-semibold text-slate-900 dark:text-slate-100">
                             {key}
                           </p>
-                          <p className="text-[11px] font-mono tabular-nums text-slate-500 mt-0.5">
+                          <p className="text-[11px] font-mono tabular-nums text-slate-500 dark:text-slate-400 mt-0.5">
                             {locale === 'my'
                               ? `အသုံးပြု ${table.n_live_tup.toLocaleString()} · ပြင်ဆင်/ဖျက် ${(table.n_tup_upd + table.n_tup_del).toLocaleString()}`
                               : `${table.n_live_tup.toLocaleString()} live · ${(table.n_tup_upd + table.n_tup_del).toLocaleString()} upd/del churn`}
                           </p>
                         </td>
 
-                        <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-900 whitespace-nowrap">
+                        <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-900 dark:text-slate-100 whitespace-nowrap">
                           <div>{table.total_size_pretty}</div>
-                          <div className="text-[11px] text-slate-500">
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
                             idx {formatBytes(table.index_bytes)}
                           </div>
                         </td>
@@ -742,35 +743,35 @@ export function CapacityPlanningPanel({
                           <span
                             className={
                               table.dead_tuple_pct >= 20
-                                ? 'font-semibold text-red-700'
+                                ? 'font-semibold text-red-700 dark:text-red-400'
                                 : table.dead_tuple_pct >= 10
-                                  ? 'font-semibold text-amber-700'
-                                  : 'text-slate-700'
+                                  ? 'font-semibold text-amber-700 dark:text-amber-400'
+                                  : 'text-slate-700 dark:text-slate-300'
                             }
                           >
                             {table.dead_tuple_pct.toFixed(1)}%
                           </span>
                         </td>
 
-                        <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-700 whitespace-nowrap">
+                        <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {table.estimated_bloat_pretty}
                         </td>
 
                         <td className="py-3 px-4 text-right font-mono tabular-nums whitespace-nowrap">
-                          <div className="font-semibold text-slate-900">
+                          <div className="font-semibold text-slate-900 dark:text-slate-100">
                             {formatBytes(table.daily_growth_bytes)}/d
                           </div>
-                          <div className="text-[11px] text-slate-500">
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
                             {tr('bloat', 'ဖောင်းပွမှု')}{' '}
                             {formatBytes(table.daily_bloat_bytes)}/d
                           </div>
                         </td>
 
-                        <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-700 whitespace-nowrap">
+                        <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           <div className="inline-flex items-center gap-2 justify-end">
-                            <div className="w-14 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="w-14 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-blue-700 rounded-full"
+                                className="h-full bg-blue-700 dark:bg-blue-600 rounded-full"
                                 style={{
                                   width: `${Math.min(100, Math.max(2, table.growth_share_pct))}%`,
                                 }}
@@ -788,11 +789,11 @@ export function CapacityPlanningPanel({
                             onClick={() =>
                               handleCopy(copyKey, table.remediation_sql)
                             }
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-md cursor-pointer whitespace-nowrap shrink-0"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md cursor-pointer whitespace-nowrap shrink-0"
                           >
                             {copiedId === copyKey ? (
                               <>
-                                <Check className="w-3 h-3 text-emerald-600" />
+                                <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                 <span>{t('action.copied')}</span>
                               </>
                             ) : (
@@ -858,6 +859,7 @@ function CapacitySvgChart({
   fullLabel: string;
   ariaLabel: string;
 }) {
+  const { isDark } = useTheme();
   const width = 760;
   const height = 240;
   const padLeft = 66;
@@ -933,14 +935,14 @@ function CapacitySvgChart({
               y1={tick.y}
               x2={width - padRight}
               y2={tick.y}
-              stroke="#E2E8F0"
+              stroke={isDark ? '#1E293B' : '#E2E8F0'}
               strokeWidth="1"
             />
             <text
               x={padLeft - 10}
               y={tick.y + 4}
               textAnchor="end"
-              className="fill-slate-500 text-[10px] font-mono"
+              className="fill-slate-500 dark:fill-slate-400 text-[10px] font-mono"
             >
               {formatBytes(tick.bytes)}
             </text>
@@ -960,7 +962,7 @@ function CapacitySvgChart({
               textAnchor={
                 idx === 0 ? 'start' : idx === 12 ? 'end' : 'middle'
               }
-              className="fill-slate-500 text-[10px] font-mono"
+              className="fill-slate-500 dark:fill-slate-400 text-[10px] font-mono"
             >
               {idx === 0 ? todayLabel : formatAxisDate(wp.date)}
             </text>
@@ -1006,7 +1008,7 @@ function CapacitySvgChart({
           x={width - padRight}
           y={Math.max(padTop + 10, capY - 6)}
           textAnchor="end"
-          className="fill-red-700 text-[10px] font-mono font-semibold"
+          className="fill-red-700 dark:fill-red-400 text-[10px] font-mono font-semibold"
         >
           {maxCapLabel} ({formatBytes(maxBytes)})
         </text>
@@ -1028,15 +1030,15 @@ function CapacitySvgChart({
               cx={exhaustX}
               cy={capY}
               r="4.5"
-              fill="#DC2626"
-              stroke="#FFFFFF"
+              fill="#EF4444"
+              stroke={isDark ? '#0F172A' : '#FFFFFF'}
               strokeWidth="1.5"
             />
             <text
               x={Math.min(width - padRight - 4, Math.max(padLeft + 4, exhaustX))}
               y={Math.min(padTop + plotH - 8, capY + 16)}
               textAnchor={exhaustX > width - 160 ? 'end' : 'middle'}
-              className="fill-red-700 text-[10px] font-mono font-semibold"
+              className="fill-red-700 dark:fill-red-400 text-[10px] font-mono font-semibold"
             >
               {fullLabel}
               {formatDateShort(exhaustionDate)}
@@ -1066,7 +1068,9 @@ function CapacitySvgChart({
                 cx={cx}
                 cy={cy}
                 r={isHovered ? 4.5 : 2.5}
-                fill={isHovered ? strokeColor : '#FFFFFF'}
+                fill={
+                  isHovered ? strokeColor : isDark ? '#0F172A' : '#FFFFFF'
+                }
                 stroke={strokeColor}
                 strokeWidth="1.75"
               />

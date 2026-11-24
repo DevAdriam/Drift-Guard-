@@ -3,6 +3,7 @@
   "appId": "1:162565362975:web:6d22b54d0cede9a7204c2a",
   "apiKey": "AIzaSyBkyrGjujvVrh6sxGtNxlEOiBz9Ks3vvzw",
   "authDomain": "famous-grid-gw2pc.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-driftguard-c928a61e-81d4-4fa5-80cd-0d8823343579",
   "storageBucket": "famous-grid-gw2pc.firebasestorage.app",
   "messagingSenderId": "162565362975",
   "measurementId": "",

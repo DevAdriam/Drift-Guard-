@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Activity,
   AlertTriangle,
   ArrowLeftRight,
   Bell,
@@ -10,14 +11,17 @@ import {
   List,
   LogOut,
   Menu,
+  Network,
   Plus,
   RefreshCw,
   Search,
+  ShieldCheck,
   SlidersHorizontal,
   Trash2,
   X,
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
+import { ThemeProvider, ThemeSwitcher } from './context/ThemeContext.tsx';
 import {
   LanguageSwitcher,
   LocaleProvider,
@@ -33,6 +37,9 @@ import { WebhooksView } from './components/WebhooksView.tsx';
 import { CompareEnvironmentsView } from './components/CompareEnvironmentsView.tsx';
 import { MigrationLinterView } from './components/MigrationLinterView.tsx';
 import { AutomationSettingsView } from './components/AutomationSettingsView.tsx';
+import { GovernanceReportsView } from './components/GovernanceReportsView.tsx';
+import { LiveMonitorView } from './components/LiveMonitorView.tsx';
+import { ArchitectureDiagramsView } from './components/ArchitectureDiagramsView.tsx';
 import { ActivityHeatmapCard } from './components/ActivityHeatmapCard.tsx';
 import { HealthTrendSparkline } from './components/HealthTrendSparkline.tsx';
 import type {
@@ -43,11 +50,14 @@ import type {
 
 type WorkspaceSection =
   | 'targets'
+  | 'live-monitor'
   | 'compare'
   | 'migrations'
   | 'incidents'
   | 'sql-suite'
+  | 'diagrams'
   | 'webhooks'
+  | 'governance'
   | 'automation';
 
 function DashboardShell() {
@@ -120,8 +130,8 @@ function DashboardShell() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <p className="text-sm font-medium text-slate-500">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
           {tr(
             'Loading DriftGuard workspace…',
             'DriftGuard လုပ်ငန်းခွင်ကို ဖွင့်နေပါသည်…'
@@ -364,6 +374,11 @@ function DashboardShell() {
       count: databases.length,
     },
     {
+      id: 'live-monitor',
+      label: tr('Live DB Monitor', 'တိုက်ရိုက် ဒေတာဘေ့စ် စောင့်ကြည့်'),
+      icon: Activity,
+    },
+    {
       id: 'compare',
       label: t('nav.compare'),
       icon: ArrowLeftRight,
@@ -385,10 +400,23 @@ function DashboardShell() {
       icon: Code2,
     },
     {
+      id: 'diagrams',
+      label: tr('Architecture & Diagrams', 'ဗိသုကာနှင့် ပုံကြမ်းများ'),
+      icon: Network,
+    },
+    {
       id: 'webhooks',
       label: t('nav.webhooks'),
       icon: Bell,
       count: activeWebhooksCount,
+    },
+    {
+      id: 'governance',
+      label: tr(
+        'Governance & Reports',
+        'စီမံခန့်ခွဲမှုနှင့် အစီရင်ခံစာများ'
+      ),
+      icon: ShieldCheck,
     },
     {
       id: 'automation',
@@ -402,20 +430,35 @@ function DashboardShell() {
       ? selectedDbName
         ? `${tr('Targets', 'ဒေတာဘေ့စ်များ')} / ${selectedDbName}`
         : t('nav.targets')
-      : section === 'compare'
-        ? t('nav.compare')
-        : section === 'migrations'
-          ? tr(
-              'Pre-Flight Migration Linter',
-              'Migration ဘေးကင်းရေး စစ်ဆေးစက်'
-            )
-          : section === 'incidents'
-            ? t('nav.incidents')
-            : section === 'sql-suite'
-              ? t('nav.telemetry')
-              : section === 'webhooks'
-                ? t('nav.webhooks')
-                : tr('CI/CD Gates & Threshold Rules', 'CI/CD နှင့် စည်းမျဉ်းများ');
+      : section === 'live-monitor'
+        ? tr(
+            'Live PostgreSQL Operations Monitor',
+            'တိုက်ရိုက် PostgreSQL လုပ်ငန်းလည်ပတ်မှု စောင့်ကြည့်ရေး'
+          )
+        : section === 'compare'
+          ? t('nav.compare')
+          : section === 'migrations'
+            ? tr(
+                'Pre-Flight Migration Linter',
+                'Migration ဘေးကင်းရေး စစ်ဆေးစက်'
+              )
+            : section === 'incidents'
+              ? t('nav.incidents')
+              : section === 'sql-suite'
+                ? t('nav.telemetry')
+                : section === 'diagrams'
+                  ? tr(
+                      'Architecture & UML Diagram Studio',
+                      'စနစ် ဗိသုကာနှင့် UML ပုံကြမ်း စတူဒီယို'
+                    )
+                  : section === 'webhooks'
+                    ? t('nav.webhooks')
+                    : section === 'governance'
+                      ? tr(
+                          'Governance, Approvals & Executive Reports',
+                          'စီမံခန့်ခွဲမှု၊ အတည်ပြုချက်များနှင့် အစီရင်ခံစာများ'
+                        )
+                      : tr('CI/CD Gates & Threshold Rules', 'CI/CD နှင့် စည်းမျဉ်းများ');
 
   const formatTargetHealth = (status: string) => {
     if (status === 'HEALTHY') return t('status.healthy');
@@ -426,14 +469,14 @@ function DashboardShell() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col w-68 shrink-0 border-r border-slate-200 bg-white">
-        <div className="h-16 px-6 flex items-center border-b border-slate-200">
+      <aside className="hidden lg:flex lg:flex-col w-68 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div className="h-16 px-6 flex items-center border-b border-slate-200 dark:border-slate-800">
           <button
             type="button"
             onClick={() => navigateTo('targets')}
-            className="font-display text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap cursor-pointer"
+            className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100 whitespace-nowrap cursor-pointer"
           >
             DriftGuard
           </button>
@@ -453,14 +496,14 @@ function DashboardShell() {
                 onClick={() => navigateTo(item.id)}
                 className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                   active
-                    ? 'bg-slate-100 text-slate-900'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                 }`}
               >
                 <span className="flex items-center gap-2.5 min-w-0">
                   <Icon
                     className={`w-4 h-4 shrink-0 ${
-                      active ? 'text-blue-700' : 'text-slate-400'
+                      active ? 'text-blue-700 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
                     }`}
                   />
                   <span className="truncate">{item.label}</span>
@@ -469,8 +512,8 @@ function DashboardShell() {
                   <span
                     className={`text-xs font-mono tabular-nums shrink-0 ${
                       item.id === 'incidents' && totalCriticalIncidents > 0
-                        ? 'text-red-700 font-semibold'
-                        : 'text-slate-500'
+                        ? 'text-red-700 dark:text-red-400 font-semibold'
+                        : 'text-slate-500 dark:text-slate-400'
                     }`}
                   >
                     {item.count}
@@ -481,19 +524,22 @@ function DashboardShell() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-200 space-y-3">
-          <LanguageSwitcher variant="sidebar" />
-          <div className="min-w-0 pt-2 border-t border-slate-100">
-            <p className="text-xs font-medium text-slate-900 truncate">
+        <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+          <div className="space-y-1">
+            <ThemeSwitcher variant="sidebar" />
+            <LanguageSwitcher variant="sidebar" />
+          </div>
+          <div className="min-w-0 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+            <p className="text-xs font-medium text-slate-900 dark:text-slate-100 truncate">
               {user.displayName ||
                 tr('Workspace Operator', 'လုပ်ငန်းခွင် စီမံခန့်ခွဲသူ')}
             </p>
-            <p className="text-xs text-slate-500 truncate">{user.email}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
           </div>
           <button
             type="button"
             onClick={signOut}
-            className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+            className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>{t('action.signOut')}</span>
@@ -505,19 +551,19 @@ function DashboardShell() {
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-slate-900/40"
+            className="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/75"
             onClick={() => setMobileNavOpen(false)}
           />
-          <div className="relative w-72 max-w-[85vw] bg-white h-full flex flex-col border-r border-slate-200 z-10">
-            <div className="h-16 px-5 flex items-center justify-between border-b border-slate-200">
-              <span className="font-display text-lg font-bold text-slate-900">
+          <div className="relative w-72 max-w-[85vw] bg-white dark:bg-slate-900 h-full flex flex-col border-r border-slate-200 dark:border-slate-800 z-10">
+            <div className="h-16 px-5 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+              <span className="font-display text-lg font-bold text-slate-900 dark:text-slate-100">
                 DriftGuard
               </span>
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(false)}
                 aria-label={tr('Close navigation', 'မီနူး ပိတ်ရန်')}
-                className="p-2 text-slate-500 hover:text-slate-900"
+                className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -533,8 +579,8 @@ function DashboardShell() {
                     onClick={() => navigateTo(item.id)}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${
                       active
-                        ? 'bg-slate-100 text-slate-900'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                     }`}
                   >
                     <span className="flex items-center gap-2.5 min-w-0">
@@ -545,15 +591,18 @@ function DashboardShell() {
                 );
               })}
             </nav>
-            <div className="p-4 border-t border-slate-200 space-y-3">
-              <LanguageSwitcher variant="sidebar" />
-              <p className="text-xs text-slate-500 truncate pt-1 border-t border-slate-100">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+              <div className="space-y-1">
+                <ThemeSwitcher variant="sidebar" />
+                <LanguageSwitcher variant="sidebar" />
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate pt-1 border-t border-slate-100 dark:border-slate-800/80">
                 {user.email}
               </p>
               <button
                 type="button"
                 onClick={signOut}
-                className="w-full py-2 text-xs font-medium text-slate-700 border border-slate-200 rounded-lg"
+                className="w-full py-2 text-xs font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-lg"
               >
                 {t('action.signOut')}
               </button>
@@ -565,24 +614,24 @@ function DashboardShell() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar Contract: Breadcrumb on left, 1 primary action on right */}
-        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between gap-4 shrink-0">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
               aria-label={tr('Open navigation', 'မီနူး ဖွင့်ရန်')}
-              className="lg:hidden p-2 -ml-2 text-slate-600 hover:text-slate-900 rounded-lg"
+              className="lg:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 text-sm min-w-0">
-              <span className="text-slate-400 whitespace-nowrap">
+              <span className="text-slate-400 dark:text-slate-500 whitespace-nowrap">
                 DriftGuard
               </span>
-              <span className="text-slate-300" aria-hidden="true">
+              <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                 /
               </span>
-              <span className="font-medium text-slate-900 truncate">
+              <span className="font-medium text-slate-900 dark:text-slate-100 truncate">
                 {breadcrumbLabel}
               </span>
             </div>
@@ -591,7 +640,7 @@ function DashboardShell() {
           <button
             type="button"
             onClick={() => setAddModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>{t('action.addTarget')}</span>
@@ -610,13 +659,13 @@ function DashboardShell() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                  <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                     {tr(
                       'Monitored PostgreSQL Targets',
                       'စောင့်ကြည့်နေသော PostgreSQL ဒေတာဘေ့စ်များ'
                     )}
                   </h1>
-                  <p className="text-sm text-slate-500 mt-1">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     {tr(
                       'Safe, read-only monitoring for unexpected schema changes, blocking queries, table bloat, and unused indexes.',
                       'မမျှော်လင့်သော ဖွဲ့စည်းပုံ ပြောင်းလဲမှုများ၊ Lock ပိတ်ဆို့နေသော Query များ၊ ဇယား ဖောင်းပွမှုနှင့် အသုံးမပြုသော အညွှန်းများကို Read-Only စနစ်ဖြင့် ဘေးကင်းစွာ စောင့်ကြည့်ပေးပါသည်။'
@@ -628,7 +677,7 @@ function DashboardShell() {
                     type="button"
                     disabled={sweepingAll}
                     onClick={handleInspectAll}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
                   >
                     <RefreshCw
                       className={`w-3.5 h-3.5 ${sweepingAll ? 'animate-spin' : ''}`}
@@ -646,7 +695,7 @@ function DashboardShell() {
               </div>
 
               {notice && (
-                <div className="px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm text-blue-900">
+                <div className="px-4 py-3 rounded-lg border border-blue-200 dark:border-blue-900/70 bg-blue-50 dark:bg-blue-950/40 text-sm text-blue-900 dark:text-blue-200">
                   {notice}
                 </div>
               )}
@@ -654,22 +703,22 @@ function DashboardShell() {
               {error && (
                 <div
                   role="alert"
-                  className="px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-800"
+                  className="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-sm text-red-800 dark:text-red-300"
                 >
                   {error}
                 </div>
               )}
 
               {/* 4-Column KPI Strip */}
-              <div className="bg-white border border-slate-200 rounded-xl grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800">
                 <div className="p-5">
-                  <p className="text-xs font-medium text-slate-500">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     {t('nav.targets')}
                   </p>
-                  <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-slate-900">
+                  <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                     {databases.length}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500 tabular-nums">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                     {tr(
                       `${databases.filter((d) => d.isActive).length} active polling`,
                       `${databases.filter((d) => d.isActive).length} ခု အလိုအလျောက် စောင့်ကြည့်နေသည်`
@@ -678,7 +727,7 @@ function DashboardShell() {
                 </div>
 
                 <div className="p-5">
-                  <p className="text-xs font-medium text-slate-500">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     {tr(
                       'Critical Schema Drifts',
                       'အရေးကြီး ဖွဲ့စည်းပုံ ပြောင်းလဲမှုများ'
@@ -687,13 +736,13 @@ function DashboardShell() {
                   <p
                     className={`mt-1.5 text-2xl font-bold font-mono tabular-nums ${
                       totalCriticalIncidents > 0
-                        ? 'text-red-700'
-                        : 'text-slate-900'
+                        ? 'text-red-700 dark:text-red-400'
+                        : 'text-slate-900 dark:text-slate-100'
                     }`}
                   >
                     {totalCriticalIncidents}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {tr(
                       'SHA-256 baseline mismatches',
                       'SHA-256 မူလစံဖွဲ့စည်းပုံနှင့် မကိုက်ညီမှုများ'
@@ -702,7 +751,7 @@ function DashboardShell() {
                 </div>
 
                 <div className="p-5">
-                  <p className="text-xs font-medium text-slate-500">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     {tr(
                       'Open Telemetry Incidents',
                       'ဖွင့်ထားသော သတိပေးချက်များ'
@@ -711,13 +760,13 @@ function DashboardShell() {
                   <p
                     className={`mt-1.5 text-2xl font-bold font-mono tabular-nums ${
                       totalOpenIncidents > 0
-                        ? 'text-amber-700'
-                        : 'text-slate-900'
+                        ? 'text-amber-700 dark:text-amber-400'
+                        : 'text-slate-900 dark:text-slate-100'
                     }`}
                   >
                     {totalOpenIncidents}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {tr(
                       'Drift, locks, bloat & vacuum',
                       'ဖွဲ့စည်းပုံ၊ Lock၊ ဖောင်းပွမှုနှင့် VACUUM'
@@ -726,16 +775,16 @@ function DashboardShell() {
                 </div>
 
                 <div className="p-5">
-                  <p className="text-xs font-medium text-slate-500">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     {tr(
                       'Active Alert Channels',
                       'ဖွင့်ထားသော သတိပေးချက် လမ်းကြောင်းများ'
                     )}
                   </p>
-                  <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-slate-900">
+                  <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                     {activeWebhooksCount}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {tr(
                       'Slack, Discord & HTTPS hooks',
                       'Slack၊ Discord နှင့် HTTPS Webhook များ'
@@ -759,7 +808,7 @@ function DashboardShell() {
 
               {/* Filter, Search & Layout Toolbar */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-100 rounded-lg w-fit">
+                <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
                   {(
                     ['all', 'production', 'staging', 'development'] as const
                   ).map((env) => (
@@ -769,8 +818,8 @@ function DashboardShell() {
                       onClick={() => setEnvFilter(env)}
                       className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                         envFilter === env
-                          ? 'bg-white text-slate-900 shadow-xs'
-                          : 'text-slate-600 hover:text-slate-900'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                       }`}
                     >
                       {env === 'all' ? t('env.all') : formatEnv(env, true)}
@@ -780,7 +829,7 @@ function DashboardShell() {
 
                 <div className="flex items-center gap-2.5 w-full sm:w-auto">
                   <div className="relative flex-1 sm:w-64">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={searchTerm}
@@ -789,14 +838,14 @@ function DashboardShell() {
                         'Search targets…',
                         'ဒေတာဘေ့စ် အမည် ရှာဖွေရန်…'
                       )}
-                      className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+                      className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
                     />
                   </div>
 
                   <div
                     role="group"
                     aria-label={tr('Targets layout', 'ဒေတာဘေ့စ် ပြသမှု ပုံစံ')}
-                    className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg shrink-0"
+                    className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg shrink-0"
                   >
                     <button
                       type="button"
@@ -804,8 +853,8 @@ function DashboardShell() {
                       aria-pressed={targetsViewMode === 'grid'}
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
                         targetsViewMode === 'grid'
-                          ? 'bg-white text-slate-900 shadow-xs'
-                          : 'text-slate-600 hover:text-slate-900'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                       }`}
                     >
                       <LayoutGrid className="w-3.5 h-3.5" />
@@ -817,8 +866,8 @@ function DashboardShell() {
                       aria-pressed={targetsViewMode === 'table'}
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
                         targetsViewMode === 'table'
-                          ? 'bg-white text-slate-900 shadow-xs'
-                          : 'text-slate-600 hover:text-slate-900'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                       }`}
                     >
                       <List className="w-3.5 h-3.5" />
@@ -837,7 +886,7 @@ function DashboardShell() {
                       'Bulk target actions',
                       'ဒေတာဘေ့စ် အများအပြား လုပ်ဆောင်ချက်များ'
                     )}
-                    className="bg-white border border-blue-200 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3"
+                    className="bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900/70 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3"
                   >
                     <div className="flex flex-wrap items-center gap-3 min-w-0">
                       <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
@@ -853,9 +902,9 @@ function DashboardShell() {
                             'Select all visible targets',
                             'ပြသထားသော ဒေတာဘေ့စ်အားလုံး ရွေးချယ်ရန်'
                           )}
-                          className="h-4 w-4 rounded border-slate-300 text-blue-700 accent-blue-700 focus:ring-2 focus:ring-blue-700/30 cursor-pointer"
+                          className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-blue-700 dark:text-blue-400 accent-blue-700 dark:accent-blue-500 focus:ring-2 focus:ring-blue-700/30 dark:focus:ring-blue-500/30 cursor-pointer"
                         />
-                        <span className="text-xs font-semibold text-slate-900 tabular-nums whitespace-nowrap">
+                        <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 tabular-nums whitespace-nowrap">
                           {tr(
                             `${selectedTargetIds.length} selected`,
                             `${selectedTargetIds.length} ခု ရွေးချယ်ထားသည်`
@@ -863,7 +912,7 @@ function DashboardShell() {
                         </span>
                       </label>
                       {selectedTargetIds.length > visibleSelectedCount && (
-                        <span className="text-xs text-slate-500 tabular-nums whitespace-nowrap">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">
                           {tr(
                             `(${visibleSelectedCount} shown)`,
                             `(${visibleSelectedCount} ခု ပြသထား)`
@@ -874,7 +923,7 @@ function DashboardShell() {
                         type="button"
                         disabled={bulkActionBusy !== null}
                         onClick={clearSelection}
-                        className="text-xs font-medium text-slate-500 hover:text-slate-900 underline underline-offset-2 whitespace-nowrap cursor-pointer disabled:opacity-50"
+                        className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline underline-offset-2 whitespace-nowrap cursor-pointer disabled:opacity-50"
                       >
                         {tr('Clear', 'ရှင်းလင်းရန်')}
                       </button>
@@ -883,7 +932,7 @@ function DashboardShell() {
                     <div className="flex flex-wrap items-center gap-2">
                       {confirmBulkDelete ? (
                         <>
-                          <span className="text-xs font-medium text-red-800 whitespace-nowrap">
+                          <span className="text-xs font-medium text-red-800 dark:text-red-300 whitespace-nowrap">
                             {tr(
                               `Delete ${selectedTargetIds.length} target${
                                 selectedTargetIds.length === 1 ? '' : 's'
@@ -908,7 +957,7 @@ function DashboardShell() {
                             type="button"
                             disabled={bulkActionBusy !== null}
                             onClick={() => setConfirmBulkDelete(false)}
-                            className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                            className="px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
                           >
                             {tr('Cancel', 'မလုပ်တော့ပါ')}
                           </button>
@@ -919,7 +968,7 @@ function DashboardShell() {
                             type="button"
                             disabled={bulkActionBusy !== null}
                             onClick={handleBulkInspect}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
                           >
                             <RefreshCw
                               className={`w-3.5 h-3.5 ${
@@ -941,7 +990,7 @@ function DashboardShell() {
                             type="button"
                             disabled={bulkActionBusy !== null}
                             onClick={() => setConfirmBulkDelete(true)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-700 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-700 dark:text-red-400 bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/70 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             <span>
@@ -956,8 +1005,8 @@ function DashboardShell() {
                     </div>
                   </div>
                 ) : targetsViewMode === 'grid' ? (
-                  <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-slate-500">
-                    <label className="inline-flex items-center gap-2 cursor-pointer select-none hover:text-slate-900">
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-slate-500 dark:text-slate-400">
+                    <label className="inline-flex items-center gap-2 cursor-pointer select-none hover:text-slate-900 dark:hover:text-slate-100">
                       <input
                         type="checkbox"
                         checked={allVisibleSelected}
@@ -970,7 +1019,7 @@ function DashboardShell() {
                           'Select all visible targets',
                           'ပြသထားသော ဒေတာဘေ့စ်အားလုံး ရွေးချယ်ရန်'
                         )}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-700 accent-blue-700 focus:ring-2 focus:ring-blue-700/30 cursor-pointer"
+                        className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-blue-700 dark:text-blue-400 accent-blue-700 dark:accent-blue-500 focus:ring-2 focus:ring-blue-700/30 dark:focus:ring-blue-500/30 cursor-pointer"
                       />
                       <span className="font-medium tabular-nums">
                         {tr(
@@ -995,30 +1044,30 @@ function DashboardShell() {
                   {[1, 2, 3, 4].map((card) => (
                     <div
                       key={card}
-                      className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 animate-pulse"
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 animate-pulse"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1.5 w-2/3">
-                          <div className="h-4 bg-slate-200 rounded w-40" />
-                          <div className="h-3 bg-slate-100 rounded w-56" />
+                          <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-40" />
+                          <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-56" />
                         </div>
-                        <div className="h-7 bg-slate-100 rounded w-20" />
+                        <div className="h-7 bg-slate-100 dark:bg-slate-800 rounded w-20" />
                       </div>
-                      <div className="h-12 bg-slate-100 rounded" />
-                      <div className="h-4 bg-slate-100 rounded w-3/4" />
+                      <div className="h-12 bg-slate-100 dark:bg-slate-800 rounded" />
+                      <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-3/4" />
                     </div>
                   ))}
                 </div>
               ) : databases.length === 0 ? (
-                <div className="bg-white border border-slate-200 rounded-xl p-12 text-center space-y-4">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center space-y-4">
                   <div className="space-y-1.5 max-w-md mx-auto">
-                    <h2 className="text-base font-semibold text-slate-900">
+                    <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                       {tr(
                         'No PostgreSQL targets registered yet',
                         'စောင့်ကြည့်မည့် PostgreSQL ဒေတာဘေ့စ် မရှိသေးပါ'
                       )}
                     </h2>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
                       {tr(
                         "Connect an external PostgreSQL 13+ cluster with a read-only role, or inspect this workspace's live provisioned PostgreSQL instance right away.",
                         'ပြင်ပ PostgreSQL 13+ ဒေတာဘေ့စ်ကို Read-Only အကောင့်ဖြင့် ချိတ်ဆက်နိုင်ပြီး သို့မဟုတ် ဤလုပ်ငန်းခွင်၏ PostgreSQL ဒေတာဘေ့စ်ကို ချက်ချင်း စတင်စောင့်ကြည့်နိုင်ပါသည်။'
@@ -1029,7 +1078,7 @@ function DashboardShell() {
                     <button
                       type="button"
                       onClick={handleQuickRegisterWorkspaceDb}
-                      className="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                     >
                       {tr(
                         'Monitor Workspace PostgreSQL Now',
@@ -1039,7 +1088,7 @@ function DashboardShell() {
                     <button
                       type="button"
                       onClick={() => setAddModalOpen(true)}
-                      className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                      className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                     >
                       {tr(
                         'Register External URI',
@@ -1049,7 +1098,7 @@ function DashboardShell() {
                   </div>
                 </div>
               ) : filteredDatabases.length === 0 ? (
-                <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-sm text-slate-500">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center text-sm text-slate-500 dark:text-slate-400">
                   {tr(
                     'No targets match your current search or environment filter.',
                     'လက်ရှိ ရှာဖွေမှု သို့မဟုတ် ပတ်ဝန်းကျင် စစ်ထုတ်မှုနှင့် ကိုက်ညီသော ဒေတာဘေ့စ် မတွေ့ရှိပါ။'
@@ -1074,8 +1123,8 @@ function DashboardShell() {
                         aria-label={`${db.name} (${formatEnv(db.environment, true)}) — ${formatTargetHealth(db.lastHealthStatus)}`}
                         className={`border rounded-xl p-5 flex flex-col justify-between gap-4 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/40 ${
                           isSelected
-                            ? 'bg-blue-50/20 border-blue-600/70'
-                            : 'bg-white border-slate-200 hover:border-slate-300'
+                            ? 'bg-blue-50/20 dark:bg-blue-950/30 border-blue-600/70 dark:border-blue-500/80'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                         }`}
                       >
                         {/* Top Header: Checkbox, Title, Environment, Health Status & Inspect CTA */}
@@ -1095,25 +1144,25 @@ function DashboardShell() {
                                   `Select ${db.name}`,
                                   `${db.name} ကို ရွေးချယ်ရန်`
                                 )}
-                                className="h-4 w-4 rounded border-slate-300 text-blue-700 accent-blue-700 focus:ring-2 focus:ring-blue-700/30 cursor-pointer"
+                                className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-blue-700 dark:text-blue-400 accent-blue-700 dark:accent-blue-500 focus:ring-2 focus:ring-blue-700/30 dark:focus:ring-blue-500/30 cursor-pointer"
                               />
                             </label>
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                                <h3 className="text-sm font-semibold text-slate-900 truncate">
+                                <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
                                   {db.name}
                                 </h3>
                                 <span
-                                  className="text-slate-300"
+                                  className="text-slate-300 dark:text-slate-700"
                                   aria-hidden="true"
                                 >
                                   ·
                                 </span>
-                                <span className="text-xs text-slate-500 whitespace-nowrap">
+                                <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                   {formatEnv(db.environment, true)}
                                 </span>
                                 <span
-                                  className="text-slate-300"
+                                  className="text-slate-300 dark:text-slate-700"
                                   aria-hidden="true"
                                 >
                                   ·
@@ -1121,19 +1170,19 @@ function DashboardShell() {
                                 <span
                                   className={`text-xs font-semibold whitespace-nowrap ${
                                     db.lastHealthStatus === 'HEALTHY'
-                                      ? 'text-emerald-700'
+                                      ? 'text-emerald-700 dark:text-emerald-400'
                                       : db.lastHealthStatus === 'DRIFT' ||
                                           db.lastHealthStatus === 'ERROR'
-                                        ? 'text-red-700'
+                                        ? 'text-red-700 dark:text-red-400'
                                         : db.lastHealthStatus === 'WARNING'
-                                          ? 'text-amber-700'
-                                          : 'text-slate-500'
+                                          ? 'text-amber-700 dark:text-amber-400'
+                                          : 'text-slate-500 dark:text-slate-400'
                                   }`}
                                 >
                                   {formatTargetHealth(db.lastHealthStatus)}
                                 </span>
                               </div>
-                              <p className="text-xs font-mono text-slate-500 mt-1 truncate">
+                              <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1 truncate">
                                 {db.maskedTarget}
                               </p>
                             </div>
@@ -1145,7 +1194,7 @@ function DashboardShell() {
                               inspectingId === db.id || bulkActionBusy !== null
                             }
                             onClick={(e) => handleQuickInspect(e, db.id)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
                           >
                             <RefreshCw
                               className={`w-3 h-3 ${
@@ -1162,7 +1211,7 @@ function DashboardShell() {
 
                         {/* 7-Day Health Status Trend Sparkline */}
                         <div
-                          className="pt-3.5 border-t border-slate-100"
+                          className="pt-3.5 border-t border-slate-100 dark:border-slate-800/80"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <HealthTrendSparkline
@@ -1173,12 +1222,12 @@ function DashboardShell() {
                         </div>
 
                         {/* Footer Telemetry Metadata */}
-                        <div className="pt-3 border-t border-slate-100 grid grid-cols-3 gap-3 text-xs">
+                        <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 grid grid-cols-3 gap-3 text-xs">
                           <div className="min-w-0">
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
                               {tr('Baseline SHA-256', 'မူလစံ SHA-256')}
                             </p>
-                            <p className="mt-0.5 font-mono text-slate-800 tabular-nums truncate">
+                            <p className="mt-0.5 font-mono text-slate-800 dark:text-slate-200 tabular-nums truncate">
                               {db.latestBaseline
                                 ? db.latestBaseline.schemaHash.slice(0, 10)
                                 : tr('None', 'မရှိပါ')}
@@ -1186,16 +1235,16 @@ function DashboardShell() {
                           </div>
 
                           <div>
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
                               {tr('Open Alerts', 'သတိပေးချက်')}
                             </p>
                             <p
                               className={`mt-0.5 font-mono tabular-nums ${
                                 db.criticalIncidentsCount > 0
-                                  ? 'font-semibold text-red-700'
+                                  ? 'font-semibold text-red-700 dark:text-red-400'
                                   : db.openIncidentsCount > 0
-                                    ? 'font-semibold text-amber-700'
-                                    : 'text-slate-700'
+                                    ? 'font-semibold text-amber-700 dark:text-amber-400'
+                                    : 'text-slate-700 dark:text-slate-300'
                               }`}
                             >
                               {db.openIncidentsCount}
@@ -1206,10 +1255,10 @@ function DashboardShell() {
                           </div>
 
                           <div className="text-right">
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
                               {tr('Last Polled', 'နောက်ဆုံး စစ်ဆေး')}
                             </p>
-                            <p className="mt-0.5 text-slate-700 tabular-nums whitespace-nowrap">
+                            <p className="mt-0.5 text-slate-700 dark:text-slate-300 tabular-nums whitespace-nowrap">
                               {formatRelativeTime(db.lastPolledAt)}
                             </p>
                           </div>
@@ -1219,11 +1268,11 @@ function DashboardShell() {
                   })}
                 </div>
               ) : (
-                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
+                        <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs font-medium text-slate-500 dark:text-slate-400">
                           <th className="py-3 pl-5 pr-2 w-10">
                             <input
                               type="checkbox"
@@ -1237,7 +1286,7 @@ function DashboardShell() {
                                 'Select all visible targets',
                                 'ပြသထားသော ဒေတာဘေ့စ်အားလုံး ရွေးချယ်ရန်'
                               )}
-                              className="h-4 w-4 rounded border-slate-300 text-blue-700 accent-blue-700 focus:ring-2 focus:ring-blue-700/30 cursor-pointer align-middle"
+                              className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-blue-700 dark:text-blue-400 accent-blue-700 dark:accent-blue-500 focus:ring-2 focus:ring-blue-700/30 dark:focus:ring-blue-500/30 cursor-pointer align-middle"
                             />
                           </th>
                           <th className="py-3 pl-2 pr-4">
@@ -1263,7 +1312,7 @@ function DashboardShell() {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 text-sm">
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                         {filteredDatabases.map((db) => {
                           const isSelected = selectedSet.has(db.id);
                           return (
@@ -1272,8 +1321,8 @@ function DashboardShell() {
                               onClick={() => setSelectedDatabaseId(db.id)}
                               className={`transition-colors cursor-pointer ${
                                 isSelected
-                                  ? 'bg-blue-50/40 hover:bg-blue-50/60'
-                                  : 'hover:bg-slate-50'
+                                  ? 'bg-blue-50/40 dark:bg-blue-950/35 hover:bg-blue-50/60 dark:hover:bg-blue-950/55'
+                                  : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
                               }`}
                             >
                               <td
@@ -1289,25 +1338,25 @@ function DashboardShell() {
                                     `Select ${db.name}`,
                                     `${db.name} ကို ရွေးချယ်ရန်`
                                   )}
-                                  className="h-4 w-4 rounded border-slate-300 text-blue-700 accent-blue-700 focus:ring-2 focus:ring-blue-700/30 cursor-pointer align-middle"
+                                  className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-blue-700 dark:text-blue-400 accent-blue-700 dark:accent-blue-500 focus:ring-2 focus:ring-blue-700/30 dark:focus:ring-blue-500/30 cursor-pointer align-middle"
                                 />
                               </td>
                               <td className="py-3.5 pl-2 pr-4">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-slate-900">
+                                  <span className="font-semibold text-slate-900 dark:text-slate-100">
                                     {db.name}
                                   </span>
                                   <span
-                                    className="text-slate-300"
+                                    className="text-slate-300 dark:text-slate-700"
                                     aria-hidden="true"
                                   >
                                     ·
                                   </span>
-                                  <span className="text-xs text-slate-500">
+                                  <span className="text-xs text-slate-500 dark:text-slate-400">
                                     {formatEnv(db.environment, true)}
                                   </span>
                                 </div>
-                                <p className="text-xs font-mono text-slate-500 mt-0.5 truncate max-w-sm">
+                                <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5 truncate max-w-sm">
                                   {db.maskedTarget}
                                 </p>
                               </td>
@@ -1316,13 +1365,13 @@ function DashboardShell() {
                                 <span
                                   className={
                                     db.lastHealthStatus === 'HEALTHY'
-                                      ? 'text-emerald-700'
+                                      ? 'text-emerald-700 dark:text-emerald-400'
                                       : db.lastHealthStatus === 'DRIFT' ||
                                           db.lastHealthStatus === 'ERROR'
-                                        ? 'text-red-700'
+                                        ? 'text-red-700 dark:text-red-400'
                                         : db.lastHealthStatus === 'WARNING'
-                                          ? 'text-amber-700'
-                                          : 'text-slate-500'
+                                          ? 'text-amber-700 dark:text-amber-400'
+                                          : 'text-slate-500 dark:text-slate-400'
                                   }
                                 >
                                   {formatTargetHealth(db.lastHealthStatus)}
@@ -1337,13 +1386,13 @@ function DashboardShell() {
                                 />
                               </td>
 
-                              <td className="py-3.5 px-4 text-xs font-mono text-slate-700 tabular-nums">
+                              <td className="py-3.5 px-4 text-xs font-mono text-slate-700 dark:text-slate-300 tabular-nums">
                                 {db.latestBaseline ? (
                                   <div>
                                     <span>
                                       {db.latestBaseline.schemaHash.slice(0, 12)}
                                     </span>
-                                    <span className="text-slate-400 ml-1.5 font-sans">
+                                    <span className="text-slate-400 dark:text-slate-500 ml-1.5 font-sans">
                                       (
                                       {tr(
                                         `${db.latestBaseline.tableCount}t / ${db.latestBaseline.columnCount}c`,
@@ -1353,7 +1402,7 @@ function DashboardShell() {
                                     </span>
                                   </div>
                                 ) : (
-                                  <span className="text-slate-400 font-sans">
+                                  <span className="text-slate-400 dark:text-slate-500 font-sans">
                                     {tr('No baseline', 'မူလစံ မရှိသေးပါ')}
                                   </span>
                                 )}
@@ -1363,17 +1412,17 @@ function DashboardShell() {
                                 <span
                                   className={
                                     db.criticalIncidentsCount > 0
-                                      ? 'font-semibold text-red-700'
+                                      ? 'font-semibold text-red-700 dark:text-red-400'
                                       : db.openIncidentsCount > 0
-                                        ? 'font-semibold text-amber-700'
-                                        : 'text-slate-500'
+                                        ? 'font-semibold text-amber-700 dark:text-amber-400'
+                                        : 'text-slate-500 dark:text-slate-400'
                                   }
                                 >
                                   {db.openIncidentsCount}
                                 </span>
                               </td>
 
-                              <td className="py-3.5 px-4 text-right text-xs text-slate-500 tabular-nums whitespace-nowrap">
+                              <td className="py-3.5 px-4 text-right text-xs text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">
                                 {formatRelativeTime(db.lastPolledAt)}
                               </td>
 
@@ -1385,7 +1434,7 @@ function DashboardShell() {
                                     bulkActionBusy !== null
                                   }
                                   onClick={(e) => handleQuickInspect(e, db.id)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
                                 >
                                   <RefreshCw
                                     className={`w-3 h-3 ${
@@ -1410,6 +1459,8 @@ function DashboardShell() {
                 </div>
               )}
             </div>
+          ) : section === 'live-monitor' ? (
+            <LiveMonitorView api={api} databases={databases} />
           ) : section === 'compare' ? (
             <CompareEnvironmentsView
               api={api}
@@ -1434,8 +1485,20 @@ function DashboardShell() {
               onIncidentCreated={loadWorkspaceData}
               onDatabasesChanged={loadWorkspaceData}
             />
+          ) : section === 'diagrams' ? (
+            <ArchitectureDiagramsView
+              api={api}
+              databases={databases}
+              webhooks={webhooks}
+            />
           ) : section === 'webhooks' ? (
             <WebhooksView api={api} onChanged={loadWorkspaceData} />
+          ) : section === 'governance' ? (
+            <GovernanceReportsView
+              api={api}
+              databases={databases}
+              onDatabasesChanged={loadWorkspaceData}
+            />
           ) : (
             <AutomationSettingsView
               api={api}
@@ -1463,9 +1526,11 @@ function DashboardShell() {
 export default function App() {
   return (
     <LocaleProvider>
-      <AuthProvider>
-        <DashboardShell />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <DashboardShell />
+        </AuthProvider>
+      </ThemeProvider>
     </LocaleProvider>
   );
 }

@@ -13,6 +13,7 @@ import type {
   QueryPerformanceResponse,
 } from '../types/telemetry.ts';
 import { LockContentionPanel } from './LockContentionPanel.tsx';
+import { ReplicationMonitorPanel } from './ReplicationMonitorPanel.tsx';
 import { CapacityPlanningPanel } from './CapacityPlanningPanel.tsx';
 import { HealthTrendsPanel } from './HealthTrendsPanel.tsx';
 import { PerformanceTrendsPanel } from './PerformanceTrendsPanel.tsx';
@@ -67,17 +68,17 @@ export function TelemetrySuiteView({
   const formatLatencySeverity = useCallback(
     (ms: number): { label: string; className: string } => {
       if (ms >= 100) {
-        return { label: tr('Critical', 'အရေးကြီး'), className: 'text-red-700' };
+        return { label: tr('Critical', 'အရေးကြီး'), className: 'text-red-700 dark:text-red-400' };
       }
       if (ms >= 25) {
         return {
           label: tr('Elevated', 'မြင့်တက်နေသည်'),
-          className: 'text-amber-700',
+          className: 'text-amber-700 dark:text-amber-400',
         };
       }
       return {
         label: tr('Nominal', 'ပုံမှန်'),
-        className: 'text-emerald-700',
+        className: 'text-emerald-700 dark:text-emerald-400',
       };
     },
     [tr]
@@ -152,13 +153,13 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {tr(
             'SQL Telemetry & Provisioning Suite',
             'SQL စောင့်ကြည့်ရေးနှင့် အခွင့်အာဏာ သတ်မှတ်ရေး စနစ်'
           )}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           {tr(
             'Live query latency profiling, 30-day performance regression trends, query-plan index advisor, real-time lock contention hierarchy, storage capacity planning, sliding-window health trends, and all 8 read-only collectors.',
             'တိုက်ရိုက် query နှောင့်နှေးမှု တိုင်းတာခြင်း၊ ရက် ၃၀ စွမ်းဆောင်ရည် လမ်းကြောင်းများ၊ အညွှန်း အကြံပေးစနစ်၊ အချိန်နှင့်တစ်ပြေးညီ Lock ပိတ်ဆို့မှု၊ သိုလှောင်မှု ပမာဏ ကြိုတင်ခန့်မှန်းခြင်း၊ ကျန်းမာရေး လမ်းကြောင်းများနှင့် ဖတ်ရှုသီးသန့် စစ်ဆေးရေး SQL ၈ ခုလုံး ပါဝင်ပါသည်။'
@@ -169,36 +170,36 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
       {/* Performance Panel (Top 5 Most Expensive Queries by Average Latency) */}
       <section
         aria-labelledby="performance-panel-heading"
-        className="bg-white border border-slate-200 rounded-xl overflow-hidden"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden"
       >
-        <div className="px-6 py-5 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h2
                 id="performance-panel-heading"
-                className="text-base font-semibold text-slate-900"
+                className="text-base font-semibold text-slate-900 dark:text-slate-100"
               >
                 {tr('Performance', 'စွမ်းဆောင်ရည်')}
               </h2>
-              <span className="text-slate-300" aria-hidden="true">
+              <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">
                 ·
               </span>
-              <span className="text-xs font-mono text-slate-500">
+              <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
                 pg_stat_statements
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               {locale === 'my' ? (
                 <>
                   ပျမ်းမျှ လုပ်ဆောင်ချိန် (
-                  <code className="font-mono text-slate-700">mean_exec_time</code>
+                  <code className="font-mono text-slate-700 dark:text-slate-300">mean_exec_time</code>
                   ) အများဆုံး ထိပ်တန်း Query ၅ ခုကို စီစဉ်ဖော်ပြထားပါသည်။
                 </>
               ) : (
                 <>
                   Top 5 most expensive queries ranked by average execution
                   latency (
-                  <code className="font-mono text-slate-700">mean_exec_time</code>
+                  <code className="font-mono text-slate-700 dark:text-slate-300">mean_exec_time</code>
                   ).
                 </>
               )}
@@ -206,7 +207,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <label className="flex items-center gap-2 text-xs text-slate-600">
+            <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
               <span className="whitespace-nowrap">
                 {tr('Source', 'အရင်းအမြစ်')}
               </span>
@@ -220,7 +221,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                   'Select PostgreSQL target for query performance',
                   'Query စွမ်းဆောင်ရည်အတွက် PostgreSQL ပစ်မှတ် ရွေးချယ်ရန်'
                 )}
-                className="px-3 py-1.5 text-xs font-medium text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700 max-w-xs truncate"
+                className="px-3 py-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500 max-w-xs truncate"
               >
                 <option value="">
                   {tr(
@@ -240,7 +241,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
               type="button"
               disabled={loadingPerf}
               onClick={() => loadPerformance(selectedTargetId)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-60"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${loadingPerf ? 'animate-spin' : ''}`}
@@ -256,13 +257,13 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
 
         {/* Performance Summary Strip */}
         {!loadingPerf && !perfError && performance?.extensionAvailable && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 border-b border-slate-200 bg-slate-50/50">
+          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Slowest Average Latency', 'အနှေးဆုံး ပျမ်းမျှ ကြာချိန်')}
               </p>
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-xl font-bold font-mono tabular-nums text-slate-900">
+                <span className="text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                   {queries.length > 0 ? formatMs(peakMeanMs) : '—'}
                 </span>
                 {queries.length > 0 && (
@@ -273,19 +274,19 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 mt-0.5 truncate">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                 {performance.targetLabel}
               </p>
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Top 5 Cumulative Time', 'ထိပ်တန်း ၅ ခု စုစုပေါင်း ကြာချိန်')}
               </p>
-              <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900">
+              <p className="mt-1 text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100">
                 {queries.length > 0 ? formatMs(combinedTotalMs) : '—'}
               </p>
-              <p className="text-xs text-slate-500 font-mono tabular-nums mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono tabular-nums mt-0.5">
                 {locale === 'my'
                   ? `စုစုပေါင်း လုပ်ဆောင်မှု ${combinedCalls.toLocaleString()} ကြိမ်`
                   : `${combinedCalls.toLocaleString()} total executions`}
@@ -293,7 +294,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr(
                   'Top 5 Shared Buffer Hit Rate',
                   'ထိပ်တန်း ၅ ခု Shared Buffer ထိရောက်မှုနှုန်း'
@@ -302,13 +303,13 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
               <p
                 className={`mt-1 text-xl font-bold font-mono tabular-nums ${
                   queries.length > 0 && avgCacheHit < 90
-                    ? 'text-amber-700'
-                    : 'text-slate-900'
+                    ? 'text-amber-700 dark:text-amber-400'
+                    : 'text-slate-900 dark:text-slate-100'
                 }`}
               >
                 {queries.length > 0 ? `${avgCacheHit.toFixed(1)}%` : '—'}
               </p>
-              <p className="text-xs text-slate-500 tabular-nums mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 tabular-nums mt-0.5">
                 {tr('Collected', 'စုဆောင်းချိန်')}{' '}
                 {new Date(performance.collectedAt).toLocaleTimeString(
                   locale === 'my' ? 'my-MM' : 'en-US',
@@ -325,19 +326,19 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
 
         {/* Performance Body States */}
         {loadingPerf ? (
-          <div className="divide-y divide-slate-200">
+          <div className="divide-y divide-slate-200 dark:divide-slate-800">
             {[1, 2, 3, 4, 5].map((row) => (
               <div
                 key={row}
                 className="px-6 py-3.5 flex items-center justify-between gap-4 animate-pulse"
               >
                 <div className="flex items-center gap-3 w-3/5">
-                  <div className="h-4 w-6 bg-slate-200 rounded" />
-                  <div className="h-4 w-full bg-slate-100 rounded" />
+                  <div className="h-4 w-6 bg-slate-200 dark:bg-slate-700 rounded" />
+                  <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded" />
                 </div>
-                <div className="h-4 w-20 bg-slate-200 rounded" />
-                <div className="h-4 w-16 bg-slate-200 rounded" />
-                <div className="h-4 w-16 bg-slate-200 rounded" />
+                <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
+                <div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded" />
+                <div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded" />
               </div>
             ))}
           </div>
@@ -345,10 +346,10 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
           <div className="p-6">
             <div
               role="alert"
-              className="px-4 py-3.5 rounded-lg border border-red-200 bg-red-50 text-xs text-red-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              className="px-4 py-3.5 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-xs text-red-800 dark:text-red-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
             >
               <div className="space-y-1">
-                <p className="font-medium text-red-900">
+                <p className="font-medium text-red-900 dark:text-red-200">
                   {isCredentialDecryptError
                     ? tr(
                         'Stored connection credentials could not be decrypted because the server encryption key changed on restart.',
@@ -357,7 +358,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                     : perfError}
                 </p>
                 {isCredentialDecryptError && (
-                  <p className="text-red-700">
+                  <p className="text-red-700 dark:text-red-400">
                     {tr(
                       'Re-enter the PostgreSQL connection URI once — it will now be encrypted with a persistent server key and survive restarts.',
                       'PostgreSQL ချိတ်ဆက်မှု URI ကို တစ်ကြိမ် ပြန်လည်ထည့်သွင်းပါ — ယခုအခါ တည်မြဲသော ဆာဗာသော့ဖြင့် ကုဒ်ဝှက်သိမ်းဆည်းမည်ဖြစ်ပြီး ဆာဗာပြန်စတင်သော်လည်း မပျက်တော့ပါ။'
@@ -370,7 +371,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                   <button
                     type="button"
                     onClick={() => setReconnectModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
                   >
                     <KeyRound className="w-3.5 h-3.5" />
                     <span>
@@ -381,7 +382,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                 <button
                   type="button"
                   onClick={() => loadPerformance(selectedTargetId)}
-                  className="px-3 py-1.5 text-xs font-medium text-red-900 bg-white border border-red-200 hover:bg-red-100 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-medium text-red-900 dark:text-red-200 bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/70 hover:bg-red-100 dark:hover:bg-red-950/70 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   {tr('Retry Query', 'ပြန်လည်စမ်းသပ်ရန်')}
                 </button>
@@ -391,12 +392,12 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
         ) : !performance?.extensionAvailable ? (
           <div className="p-6 space-y-4">
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {locale === 'my'
                   ? `${performance?.targetLabel ?? 'ဤပစ်မှတ်'} တွင် pg_stat_statements ဖွင့်မထားပါ`
                   : `pg_stat_statements is not active on ${performance?.targetLabel ?? 'this target'}`}
               </p>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 {performance?.unavailableReason ||
                   tr(
                     'Enable the pg_stat_statements extension and grant pg_read_all_stats to track average query latency.',
@@ -421,13 +422,13 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
           </div>
         ) : queries.length === 0 ? (
           <div className="p-8 text-center space-y-2">
-            <p className="text-sm font-medium text-slate-900">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
               {tr(
                 'No query execution statistics recorded yet',
                 'Query လုပ်ဆောင်မှု စာရင်းအင်း မှတ်တမ်း မရှိသေးပါ'
               )}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {locale === 'my'
                 ? `${performance.targetLabel} တွင် query များ လုပ်ဆောင်ပြီးနောက် အနှေးဆုံး ထိပ်တန်း ၅ ခုကို ကြည့်ရှုရန် ပြန်လည်စစ်ဆေးရန် နှိပ်ပါ။`
                 : `Run workload queries against ${performance.targetLabel} and click Refresh to inspect the top 5 slowest statements.`}
@@ -437,7 +438,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs font-medium text-slate-500 dark:text-slate-400">
                   <th className="py-3 pl-6 pr-3 w-14">
                     {tr('Rank', 'အဆင့်')}
                   </th>
@@ -461,7 +462,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 text-xs">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
                 {queries.map((q, index) => {
                   const rowKey = `${q.query_id}-${index}`;
                   const isExpanded = expandedQueryId === rowKey;
@@ -482,14 +483,14 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                         onClick={() =>
                           setExpandedQueryId(isExpanded ? null : rowKey)
                         }
-                        className="hover:bg-slate-50 transition-colors cursor-pointer"
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
                       >
-                        <td className="py-3.5 pl-6 pr-3 font-mono font-semibold text-slate-500 tabular-nums whitespace-nowrap">
+                        <td className="py-3.5 pl-6 pr-3 font-mono font-semibold text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">
                           <span className="inline-flex items-center gap-1">
                             {isExpanded ? (
-                              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                              <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                             ) : (
-                              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                              <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                             )}
                             <span>#{index + 1}</span>
                           </span>
@@ -497,25 +498,25 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
 
                         <td className="py-3.5 px-3 max-w-md lg:max-w-lg">
                           <p
-                            className="font-mono text-slate-900 truncate"
+                            className="font-mono text-slate-900 dark:text-slate-100 truncate"
                             title={q.query}
                           >
                             {q.query}
                           </p>
                           <div className="mt-1.5 flex items-center gap-2">
-                            <div className="h-1 flex-1 max-w-[160px] bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-1 flex-1 max-w-[160px] bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
                                   q.mean_exec_time_ms >= 100
                                     ? 'bg-red-600'
                                     : q.mean_exec_time_ms >= 25
                                       ? 'bg-amber-500'
-                                      : 'bg-blue-700'
+                                      : 'bg-blue-700 dark:bg-blue-600'
                                 }`}
                                 style={{ width: `${relativePct}%` }}
                               />
                             </div>
-                            <span className="text-[11px] text-slate-500 font-mono tabular-nums">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono tabular-nums">
                               {locale === 'my'
                                 ? `တစ်ကြိမ်လျှင် ${avgRowsPerCall} အတန်း`
                                 : `${avgRowsPerCall} rows/call`}
@@ -529,15 +530,15 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                           </span>
                         </td>
 
-                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-700 whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {formatMs(q.max_exec_time_ms)}
                         </td>
 
-                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-700 whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {q.calls.toLocaleString()}
                         </td>
 
-                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-700 whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {formatMs(q.total_exec_time_ms)}
                         </td>
 
@@ -545,8 +546,8 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                           <span
                             className={
                               q.cache_hit_pct < 90
-                                ? 'font-semibold text-amber-700'
-                                : 'text-slate-700'
+                                ? 'font-semibold text-amber-700 dark:text-amber-400'
+                                : 'text-slate-700 dark:text-slate-300'
                             }
                           >
                             {q.cache_hit_pct.toFixed(1)}%
@@ -555,15 +556,15 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                       </tr>
 
                       {isExpanded && (
-                        <tr className="bg-slate-50/70">
+                        <tr className="bg-slate-50/70 dark:bg-slate-800/60">
                           <td colSpan={7} className="px-6 py-4 space-y-3">
-                            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+                            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-300">
                               <div className="flex flex-wrap items-center gap-2 font-mono tabular-nums">
                                 <span>
                                   {tr('Query ID', 'Query ID')} {q.query_id}
                                 </span>
                                 <span
-                                  className="text-slate-300"
+                                  className="text-slate-300 dark:text-slate-700"
                                   aria-hidden="true"
                                 >
                                   ·
@@ -574,7 +575,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                                     : `${q.total_rows.toLocaleString()} total rows`}
                                 </span>
                                 <span
-                                  className="text-slate-300"
+                                  className="text-slate-300 dark:text-slate-700"
                                   aria-hidden="true"
                                 >
                                   ·
@@ -593,11 +594,11 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                                   e.stopPropagation();
                                   handleCopy(`perf-${rowKey}`, q.query);
                                 }}
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md whitespace-nowrap shrink-0 cursor-pointer"
                               >
                                 {copiedId === `perf-${rowKey}` ? (
                                   <>
-                                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                                     <span>{t('action.copied')}</span>
                                   </>
                                 ) : (
@@ -608,7 +609,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                                 )}
                               </button>
                             </div>
-                            <pre className="p-3.5 bg-slate-900 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap break-words leading-relaxed">
+                            <pre className="p-3.5 bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 text-slate-100 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap break-words leading-relaxed">
                               {q.query}
                             </pre>
                           </td>
@@ -664,6 +665,18 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
         }}
       />
 
+      {/* Replication Lag & WAL Slot Monitor */}
+      <ReplicationMonitorPanel
+        key={`replication-${panelRefreshKey}`}
+        api={api}
+        databases={databases}
+        selectedTargetId={selectedTargetId}
+        onTargetChange={(nextId) => {
+          setSelectedTargetId(nextId);
+          setExpandedQueryId(null);
+        }}
+      />
+
       {/* Capacity Planning & Disk Usage Growth Forecast */}
       <CapacityPlanningPanel
         key={`capacity-${panelRefreshKey}`}
@@ -690,16 +703,16 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
       />
 
       {/* Read-Only Role Provisioning Generator */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
               {tr(
                 '1. Read-Only Target Role Provisioning',
                 '၁။ ဖတ်ရှုသီးသန့် ပစ်မှတ် Role ဖန်တီးခြင်း'
               )}
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {tr(
                 'Grants bounded system-catalog inspection only—never reads or alters customer tables.',
                 'System catalog စစ်ဆေးခွင့်ကိုသာ ကန့်သတ်ပေးထားပြီး အသုံးပြုသူ ဒေတာဇယားများကို မဖတ်ရှု၊ မပြင်ဆင်ပါ။'
@@ -707,22 +720,22 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <label className="text-xs text-slate-600 flex items-center gap-1.5">
+            <label className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
               <span>{tr('Role', 'Role အမည်')}</span>
               <input
                 type="text"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
-                className="w-32 px-2.5 py-1.5 text-xs font-mono border border-slate-300 rounded-md bg-white text-slate-900"
+                className="w-32 px-2.5 py-1.5 text-xs font-mono border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
               />
             </label>
-            <label className="text-xs text-slate-600 flex items-center gap-1.5">
+            <label className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
               <span>{tr('Database', 'ဒေတာဘေ့စ်')}</span>
               <input
                 type="text"
                 value={dbName}
                 onChange={(e) => setDbName(e.target.value)}
-                className="w-32 px-2.5 py-1.5 text-xs font-mono border border-slate-300 rounded-md bg-white text-slate-900"
+                className="w-32 px-2.5 py-1.5 text-xs font-mono border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
               />
             </label>
           </div>
@@ -740,15 +753,15 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
       </div>
 
       {/* Core Inspection Queries */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
             {tr(
               '2. Core Inspection SQL Collectors (8 Queries)',
               '၂။ အဓိက စစ်ဆေးရေး SQL Collector များ (Query ၈ ခု)'
             )}
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {tr(
               'Exact read-only queries executed against monitored targets during telemetry, performance, and capacity inspections.',
               'စောင့်ကြည့်နေသော ပစ်မှတ်များတွင် ကျန်းမာရေး၊ စွမ်းဆောင်ရည်နှင့် သိုလှောင်မှု စစ်ဆေးစဉ် လုပ်ဆောင်သည့် ဖတ်ရှုသီးသန့် SQL များဖြစ်ပါသည်။'
@@ -758,8 +771,8 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
 
         {loadingSuite || !suite ? (
           <div className="space-y-4">
-            <div className="h-32 bg-slate-100 rounded-lg animate-pulse" />
-            <div className="h-44 bg-slate-100 rounded-lg animate-pulse" />
+            <div className="h-32 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+            <div className="h-44 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
           </div>
         ) : (
           <div className="space-y-4">
@@ -864,9 +877,9 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
       </div>
 
       {/* Incident Trigger Matrix */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-base font-semibold text-slate-900">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
             {tr(
               '3. Incident Alerting & Webhook Trigger Matrix',
               '၃။ သတိပေးချက်နှင့် Webhook ထုတ်လွှတ်မှု ဇယား'
@@ -876,7 +889,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs font-medium text-slate-500 dark:text-slate-400">
                 <th className="py-3 px-6">
                   {tr('Incident Type', 'သတိပေးချက် အမျိုးအစား')}
                 </th>
@@ -891,21 +904,21 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-xs">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
               <tr>
-                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900">
+                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900 dark:text-slate-100">
                   SCHEMA_DRIFT
                 </td>
-                <td className="py-3.5 px-4 font-semibold text-red-700">
+                <td className="py-3.5 px-4 font-semibold text-red-700 dark:text-red-400">
                   {formatSeverity('CRITICAL')}
                 </td>
-                <td className="py-3.5 px-4 text-slate-700">
+                <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
                   {tr(
                     'Live catalog SHA-256 hash does not match stored baseline SHA.',
                     'လက်ရှိ catalog SHA-256 တန်ဖိုးသည် သိမ်းဆည်းထားသော မူလစံ SHA နှင့် မကိုက်ညီပါက။'
                   )}
                 </td>
-                <td className="py-3.5 px-6 text-slate-700">
+                <td className="py-3.5 px-6 text-slate-700 dark:text-slate-300">
                   {tr(
                     'Generates column diff + revert SQL; dispatches high-priority Slack/Discord alert.',
                     'ကော်လံ ကွာခြားချက်နှင့် ပြန်ပြင် SQL ထုတ်ပေးပြီး ဦးစားပေး Slack/Discord သတိပေးချက် ပေးပို့ပါသည်။'
@@ -913,19 +926,19 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                 </td>
               </tr>
               <tr>
-                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900">
+                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900 dark:text-slate-100">
                   LOCK_CONTENTION
                 </td>
-                <td className="py-3.5 px-4 font-semibold text-amber-700">
+                <td className="py-3.5 px-4 font-semibold text-amber-700 dark:text-amber-400">
                   {formatSeverity('WARNING')}
                 </td>
-                <td className="py-3.5 px-4 text-slate-700">
+                <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
                   {tr(
                     'Blocking query holds exclusive lock past threshold (default 15s).',
                     'ပိတ်ဆို့နေသော query သည် exclusive lock ကို ကန့်သတ်ချိန် (မူလ ၁၅ စက္ကန့်) ထက် ကျော်လွန် ထိန်းထားပါက။'
                   )}
                 </td>
-                <td className="py-3.5 px-6 text-slate-700">
+                <td className="py-3.5 px-6 text-slate-700 dark:text-slate-300">
                   {tr(
                     'Captures blocker PID and redacted query string; alerts active channels.',
                     'ပိတ်ဆို့နေသော PID နှင့် ဖုံးအုပ်ထားသော query စာသားကို မှတ်တမ်းတင်ပြီး ချိတ်ဆက်ထားသော ချန်နယ်များသို့ အကြောင်းကြားပါသည်။'
@@ -933,23 +946,23 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                 </td>
               </tr>
               <tr>
-                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900">
+                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900 dark:text-slate-100">
                   INDEX_BLOAT
                 </td>
-                <td className="py-3.5 px-4 font-semibold text-blue-700">
+                <td className="py-3.5 px-4 font-semibold text-blue-700 dark:text-blue-400">
                   {formatSeverity('INFO')}
                 </td>
-                <td className="py-3.5 px-4 text-slate-700">
+                <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
                   {tr(
                     'Index size > 50 MB and estimated bloat percentage > 40%.',
                     'အညွှန်း အရွယ်အစား 50 MB အထက်နှင့် ခန့်မှန်း ဖောင်းပွမှု 40% အထက် ရှိပါက။'
                   )}
                 </td>
-                <td className="py-3.5 px-6 text-slate-700">
+                <td className="py-3.5 px-6 text-slate-700 dark:text-slate-300">
                   {locale === 'my' ? (
                     <>
                       ဖောင်းပွမှု အကြံပြုချက် မှတ်တမ်းတင်ပြီး{' '}
-                      <code className="font-mono text-slate-900">
+                      <code className="font-mono text-slate-900 dark:text-slate-100">
                         REINDEX INDEX CONCURRENTLY
                       </code>{' '}
                       အသုံးပြုရန် အကြံပြုပါသည်။
@@ -957,7 +970,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                   ) : (
                     <>
                       Logs bloat advisory; suggests{' '}
-                      <code className="font-mono text-slate-900">
+                      <code className="font-mono text-slate-900 dark:text-slate-100">
                         REINDEX INDEX CONCURRENTLY
                       </code>
                       .
@@ -966,23 +979,23 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                 </td>
               </tr>
               <tr>
-                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900">
+                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900 dark:text-slate-100">
                   VACUUM_HEALTH
                 </td>
-                <td className="py-3.5 px-4 font-semibold text-amber-700">
+                <td className="py-3.5 px-4 font-semibold text-amber-700 dark:text-amber-400">
                   {formatSeverity('WARNING')}
                 </td>
-                <td className="py-3.5 px-4 text-slate-700">
+                <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
                   {tr(
                     'Dead tuples exceed 10,000 rows and 20% dead ratio.',
                     'Dead tuple အရေအတွက် ၁၀,၀၀၀ ကျော်ပြီး 20% အထက် ရောက်ရှိပါက။'
                   )}
                 </td>
-                <td className="py-3.5 px-6 text-slate-700">
+                <td className="py-3.5 px-6 text-slate-700 dark:text-slate-300">
                   {locale === 'my' ? (
                     <>
                       ဇယား ဖောင်းပွမှုကို သတိပေးပြီး ကူးယူအသုံးပြုနိုင်သော{' '}
-                      <code className="font-mono text-slate-900">
+                      <code className="font-mono text-slate-900 dark:text-slate-100">
                         VACUUM (VERBOSE, ANALYZE)
                       </code>{' '}
                       အမိန့် ပေးပါသည်။
@@ -990,7 +1003,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                   ) : (
                     <>
                       Flags table bloat; provides copyable{' '}
-                      <code className="font-mono text-slate-900">
+                      <code className="font-mono text-slate-900 dark:text-slate-100">
                         VACUUM (VERBOSE, ANALYZE)
                       </code>{' '}
                       command.
@@ -999,13 +1012,13 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                 </td>
               </tr>
               <tr>
-                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900">
+                <td className="py-3.5 px-6 font-mono font-semibold text-slate-900 dark:text-slate-100">
                   CONNECTION_SATURATION
                 </td>
-                <td className="py-3.5 px-4 font-semibold text-amber-700">
+                <td className="py-3.5 px-4 font-semibold text-amber-700 dark:text-amber-400">
                   {formatSeverity('WARNING')}
                 </td>
-                <td className="py-3.5 px-4 text-slate-700">
+                <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
                   {locale === 'my' ? (
                     <>
                       လုပ်ဆောင်နေဆဲနှင့် idle session များသည်{' '}
@@ -1019,7 +1032,7 @@ GRANT pg_read_all_stats TO ${safeRole}; -- For pg_stat_activity, pg_stat_stateme
                     </>
                   )}
                 </td>
-                <td className="py-3.5 px-6 text-slate-700">
+                <td className="py-3.5 px-6 text-slate-700 dark:text-slate-300">
                   {tr(
                     'Alerts before connection pool exhaustion; tracks idle-in-tx leaks.',
                     'ချိတ်ဆက်မှု ပမာဏ မပြည့်မီ ကြိုတင်သတိပေးပြီး idle-in-tx ယိုစိမ့်မှုများကို စောင့်ကြည့်ပါသည်။'
@@ -1069,13 +1082,13 @@ function SqlBlock({
   copiedLabel: string;
 }) {
   return (
-    <div className="bg-slate-900 rounded-lg overflow-hidden">
+    <div className="bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 rounded-lg overflow-hidden">
       <div className="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between gap-4">
-        <span className="text-xs font-medium text-slate-300">{title}</span>
+        <span className="text-xs font-medium text-slate-300 dark:text-slate-700">{title}</span>
         <button
           type="button"
           onClick={() => onCopy(id, sql)}
-          className="inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white cursor-pointer whitespace-nowrap shrink-0"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-300 dark:text-slate-700 hover:text-white cursor-pointer whitespace-nowrap shrink-0"
         >
           {copied ? (
             <>

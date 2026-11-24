@@ -90,10 +90,10 @@ export function CompareEnvironmentsView({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {tr('Compare Environments', 'ပတ်ဝန်းကျင် ဖွဲ့စည်းပုံ နှိုင်းယှဉ်ခြင်း')}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           {tr(
             'Diff any two databases (such as Staging vs. Production) side by side and generate ready-to-review PostgreSQL synchronization SQL.',
             'Staging နှင့် Production ကဲ့သို့ မည်သည့် ဒေတာဘေ့စ် နှစ်ခုကိုမဆို ယှဉ်တွဲစစ်ဆေးပြီး အသင့်စစ်ဆေးအသုံးပြုနိုင်သော PostgreSQL ညှိနှိုင်းရေး SQL ကို ထုတ်ယူနိုင်ပါသည်။'
@@ -102,14 +102,14 @@ export function CompareEnvironmentsView({
       </div>
 
       {databases.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-xl p-10 text-center space-y-3">
-          <p className="text-sm font-semibold text-slate-900">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-10 text-center space-y-3">
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             {tr(
               'Register at least one monitored database to compare schemas',
               'ဖွဲ့စည်းပုံ နှိုင်းယှဉ်ရန် အနည်းဆုံး ဒေတာဘေ့စ်တစ်ခု ထည့်သွင်းထားရန် လိုအပ်ပါသည်'
             )}
           </p>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
             {tr(
               'Add Staging and Production targets to inspect column differences and auto-generate alignment migrations.',
               'Staging နှင့် Production ဒေတာဘေ့စ်များ ထည့်သွင်းပြီး ကော်လံကွာခြားချက်များနှင့် ညှိနှိုင်းရေး Migration များကို အလိုအလျောက် ထုတ်ယူနိုင်ပါသည်။'
@@ -118,18 +118,18 @@ export function CompareEnvironmentsView({
           <button
             type="button"
             onClick={onOpenAddModal}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg cursor-pointer"
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-lg cursor-pointer"
           >
             {tr('Register Target Database', 'ဒေတာဘေ့စ် ပစ်မှတ် ထည့်သွင်းရန်')}
           </button>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-11 gap-3 items-end">
             <div className="lg:col-span-4">
               <label
                 htmlFor="cmp-source"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
+                className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 {tr(
                   'Source Schema (Desired State, e.g. Staging)',
@@ -140,7 +140,7 @@ export function CompareEnvironmentsView({
                 id="cmp-source"
                 value={sourceId}
                 onChange={(e) => setSourceId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white text-slate-900"
+                className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
               >
                 {databases.map((db) => (
                   <option key={db.id} value={db.id}>
@@ -158,7 +158,7 @@ export function CompareEnvironmentsView({
                   'Swap source and target',
                   'မူရင်းနှင့် ပစ်မှတ် နေရာလဲလှယ်ရန်'
                 )}
-                className="p-2.5 text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50 rounded-lg cursor-pointer"
+                className="p-2.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg cursor-pointer"
               >
                 <ArrowLeftRight className="w-4 h-4" />
               </button>
@@ -167,7 +167,7 @@ export function CompareEnvironmentsView({
             <div className="lg:col-span-4">
               <label
                 htmlFor="cmp-target"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
+                className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 {tr(
                   'Destination Schema (To Align, e.g. Production)',
@@ -178,7 +178,7 @@ export function CompareEnvironmentsView({
                 id="cmp-target"
                 value={targetId}
                 onChange={(e) => setTargetId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white text-slate-900"
+                className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
               >
                 {databases.map((db) => (
                   <option key={db.id} value={db.id}>
@@ -193,7 +193,7 @@ export function CompareEnvironmentsView({
                 type="button"
                 onClick={handleCompare}
                 disabled={loading}
-                className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
+                className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
               >
                 {loading
                   ? tr('Comparing…', 'နှိုင်းယှဉ်နေသည်…')
@@ -205,7 +205,7 @@ export function CompareEnvironmentsView({
           {error && (
             <div
               role="alert"
-              className="px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-800"
+              className="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-950/40 text-sm text-red-800 dark:text-red-300"
             >
               {error}
             </div>
@@ -216,15 +216,15 @@ export function CompareEnvironmentsView({
       {result && (
         <div className="space-y-6">
           {/* Summary Strip */}
-          <div className="bg-white border border-slate-200 rounded-xl grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800">
             <div className="p-5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Source', 'မူရင်း')} · {formatEnv(result.source.environment, true)}
               </p>
-              <p className="text-base font-semibold text-slate-900 mt-1">
+              <p className="text-base font-semibold text-slate-900 dark:text-slate-100 mt-1">
                 {result.source.name}
               </p>
-              <p className="text-xs font-mono text-slate-500 mt-1 tabular-nums">
+              <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1 tabular-nums">
                 SHA {result.source.schemaHash.slice(0, 12)} ·{' '}
                 <span className="font-sans">
                   {tr(
@@ -236,14 +236,14 @@ export function CompareEnvironmentsView({
             </div>
 
             <div className="p-5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Destination', 'ပစ်မှတ်')} ·{' '}
                 {formatEnv(result.target.environment, true)}
               </p>
-              <p className="text-base font-semibold text-slate-900 mt-1">
+              <p className="text-base font-semibold text-slate-900 dark:text-slate-100 mt-1">
                 {result.target.name}
               </p>
-              <p className="text-xs font-mono text-slate-500 mt-1 tabular-nums">
+              <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1 tabular-nums">
                 SHA {result.target.schemaHash.slice(0, 12)} ·{' '}
                 <span className="font-sans">
                   {tr(
@@ -255,12 +255,12 @@ export function CompareEnvironmentsView({
             </div>
 
             <div className="p-5">
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {tr('Parity Verdict', 'ကိုက်ညီမှု ရလဒ်')}
               </p>
               <p
                 className={`text-base font-semibold mt-1 ${
-                  result.identical ? 'text-emerald-700' : 'text-amber-700'
+                  result.identical ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'
                 }`}
               >
                 {result.identical
@@ -272,7 +272,7 @@ export function CompareEnvironmentsView({
                       `ကော်လံ ကွာခြားချက် ${result.diffs.length} ခု တွေ့ရှိသည်`
                     )}
               </p>
-              <p className="text-xs text-slate-500 mt-1 tabular-nums">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 tabular-nums">
                 {tr(
                   `+${result.addedCount} added · -${result.removedCount} extra · ~${result.modifiedCount} modified`,
                   `+${result.addedCount} ထပ်တိုး · -${result.removedCount} အပို · ~${result.modifiedCount} ပြင်ဆင်ထား`
@@ -282,9 +282,9 @@ export function CompareEnvironmentsView({
           </div>
 
           {/* Diff Table */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200">
-              <h2 className="text-sm font-semibold text-slate-900">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {tr(
                   'Column-by-Column Differences',
                   'ကော်လံအလိုက် ကွာခြားချက်များ'
@@ -293,7 +293,7 @@ export function CompareEnvironmentsView({
             </div>
 
             {result.diffs.length === 0 ? (
-              <div className="p-8 text-center text-sm font-medium text-emerald-700">
+              <div className="p-8 text-center text-sm font-medium text-emerald-700 dark:text-emerald-400">
                 {tr(
                   `No schema differences found between ${result.source.name} and ${result.target.name}.`,
                   `${result.source.name} နှင့် ${result.target.name} အကြား ဖွဲ့စည်းပုံ ကွာခြားချက် မရှိပါ။`
@@ -303,7 +303,7 @@ export function CompareEnvironmentsView({
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium">
                       <th className="py-2.5 px-4">
                         {tr('Change', 'ပြောင်းလဲမှု')}
                       </th>
@@ -317,17 +317,17 @@ export function CompareEnvironmentsView({
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 font-mono">
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 font-mono">
                     {result.diffs.map((d, idx) => (
                       <tr key={`${d.table_name}-${d.column_name}-${idx}`}>
                         <td className="py-2.5 px-4 font-sans font-semibold whitespace-nowrap">
                           <span
                             className={
                               d.kind === 'ADDED'
-                                ? 'text-emerald-700'
+                                ? 'text-emerald-700 dark:text-emerald-400'
                                 : d.kind === 'REMOVED'
-                                  ? 'text-red-700'
-                                  : 'text-amber-700'
+                                  ? 'text-red-700 dark:text-red-400'
+                                  : 'text-amber-700 dark:text-amber-400'
                             }
                           >
                             {d.kind === 'ADDED'
@@ -337,18 +337,18 @@ export function CompareEnvironmentsView({
                                 : tr('~ Modified', '~ ပြောင်းလဲထားသည်')}
                           </span>
                         </td>
-                        <td className="py-2.5 px-4 text-slate-700">
+                        <td className="py-2.5 px-4 text-slate-700 dark:text-slate-300">
                           {d.table_schema}.{d.table_name}
                         </td>
-                        <td className="py-2.5 px-4 font-semibold text-slate-900">
+                        <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-slate-100">
                           {d.column_name}
                         </td>
-                        <td className="py-2.5 px-4 text-slate-600">
+                        <td className="py-2.5 px-4 text-slate-600 dark:text-slate-300">
                           {d.baseline
                             ? `${d.baseline.data_type} (${d.baseline.is_nullable === 'YES' ? 'NULL' : 'NOT NULL'})`
                             : '—'}
                         </td>
-                        <td className="py-2.5 px-4 text-slate-900">
+                        <td className="py-2.5 px-4 text-slate-900 dark:text-slate-100">
                           {d.live
                             ? `${d.live.data_type} (${d.live.is_nullable === 'YES' ? 'NULL' : 'NOT NULL'})`
                             : '—'}
@@ -362,9 +362,9 @@ export function CompareEnvironmentsView({
           </div>
 
           {/* Generated Sync SQL */}
-          <div className="bg-slate-900 rounded-xl overflow-hidden">
+          <div className="bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
-              <span className="text-xs font-medium text-slate-300">
+              <span className="text-xs font-medium text-slate-300 dark:text-slate-700">
                 {tr(
                   `Auto-Generated Reconciliation DDL (Aligns ${result.target.name} to ${result.source.name})`,
                   `အလိုအလျောက် ထုတ်ပေးထားသော ညှိနှိုင်းရေး DDL (${result.target.name} ကို ${result.source.name} နှင့် ကိုက်ညီစေရန်)`
@@ -374,7 +374,7 @@ export function CompareEnvironmentsView({
                 <button
                   type="button"
                   onClick={handleCopySql}
-                  className="inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs text-slate-300 dark:text-slate-700 hover:text-white cursor-pointer"
                 >
                   {copiedSql ? (
                     <>
@@ -391,7 +391,7 @@ export function CompareEnvironmentsView({
                 <button
                   type="button"
                   onClick={handleDownloadSql}
-                  className="inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs text-slate-300 dark:text-slate-700 hover:text-white cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>{tr('Download .sql', '.sql ဒေါင်းလုဒ်ဆွဲရန်')}</span>

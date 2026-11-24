@@ -38,13 +38,13 @@ interface EventTimelineSidebarProps {
 function severityTextClass(severity: DatabaseTimelineEvent['severity']): string {
   switch (severity) {
     case 'CRITICAL':
-      return 'text-red-700';
+      return 'text-red-700 dark:text-red-400';
     case 'WARNING':
-      return 'text-amber-700';
+      return 'text-amber-700 dark:text-amber-400';
     case 'SUCCESS':
-      return 'text-emerald-700';
+      return 'text-emerald-700 dark:text-emerald-400';
     default:
-      return 'text-blue-700';
+      return 'text-blue-700 dark:text-blue-400';
   }
 }
 
@@ -53,18 +53,18 @@ function nodeSurfaceClass(
   severity: DatabaseTimelineEvent['severity']
 ): string {
   if (severity === 'CRITICAL') {
-    return 'bg-red-50 border-red-200 text-red-700';
+    return 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/70 text-red-700 dark:text-red-400';
   }
   if (severity === 'WARNING') {
-    return 'bg-amber-50 border-amber-200 text-amber-700';
+    return 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/70 text-amber-700 dark:text-amber-400';
   }
   if (severity === 'SUCCESS') {
-    return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+    return 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/70 text-emerald-700 dark:text-emerald-400';
   }
   if (category === 'schema_change') {
-    return 'bg-blue-50 border-blue-200 text-blue-700';
+    return 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/70 text-blue-700 dark:text-blue-400';
   }
-  return 'bg-slate-50 border-slate-200 text-slate-600';
+  return 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300';
 }
 
 function CategoryIcon({ category }: { category: TimelineEventCategory }) {
@@ -269,15 +269,15 @@ export function EventTimelineSidebar({
         `Event Timeline for ${databaseName}`,
         `${databaseName} အတွက် ဖြစ်ရပ် အချိန်ဇယား`
       )}
-      className="bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden w-full xl:w-[368px] 2xl:w-[396px] shrink-0 xl:sticky xl:top-6"
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col overflow-hidden w-full xl:w-[368px] 2xl:w-[396px] shrink-0 xl:sticky xl:top-6"
     >
       {/* Sidebar Header */}
-      <div className="px-4 py-3.5 border-b border-slate-200 flex items-start justify-between gap-2">
+      <div className="px-4 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-slate-900 tracking-tight">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
             {tr('Event Timeline', 'ဖြစ်ရပ် အချိန်ဇယား')}
           </h2>
-          <p className="mt-0.5 text-xs text-slate-500 tabular-nums truncate">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 tabular-nums truncate">
             {tr(
               `${counts.all} logged event${counts.all === 1 ? '' : 's'}`,
               `မှတ်တမ်း ${counts.all} ခု`
@@ -303,7 +303,7 @@ export function EventTimelineSidebar({
                     'အဟောင်းဆုံးမှ အသစ်ဆုံးသို့ ပြသနေသည် (ပြောင်းရန် နှိပ်ပါ)'
                   )
             }
-            className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <Clock className="w-3 h-3" />
             <span>
@@ -322,7 +322,7 @@ export function EventTimelineSidebar({
               'ဖြစ်ရပ် အချိန်ဇယား ပြန်တင်ရန်'
             )}
             title={t('action.refresh')}
-            className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors disabled:opacity-50 cursor-pointer"
+            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}
@@ -338,7 +338,7 @@ export function EventTimelineSidebar({
                 'ဖြစ်ရပ် အချိန်ဇယား ပိတ်ရန်'
               )}
               title={tr('Collapse sidebar', 'ဘေးဘောင် ပိတ်ရန်')}
-              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+              className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors cursor-pointer"
             >
               <PanelRightClose className="w-3.5 h-3.5" />
             </button>
@@ -347,14 +347,14 @@ export function EventTimelineSidebar({
       </div>
 
       {/* Category Filter Bar + Search */}
-      <div className="px-4 py-3 border-b border-slate-200 space-y-2.5 bg-slate-50/60">
+      <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 space-y-2.5 bg-slate-50/60 dark:bg-slate-800/50">
         <div
           role="tablist"
           aria-label={tr(
             'Filter timeline events by category',
             'အမျိုးအစားအလိုက် စစ်ထုတ်ရန်'
           )}
-          className="grid grid-cols-4 gap-1 p-1 bg-slate-200/70 rounded-lg"
+          className="grid grid-cols-4 gap-1 p-1 bg-slate-200/70 dark:bg-slate-700/70 rounded-lg"
         >
           {(
             [
@@ -386,8 +386,8 @@ export function EventTimelineSidebar({
                 onClick={() => setCategoryFilter(tab.id)}
                 className={`px-1.5 py-1 text-[11px] font-medium rounded-md transition-colors whitespace-nowrap shrink-0 tabular-nums cursor-pointer truncate ${
                   active
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
                 {tab.label} {tab.count}
@@ -397,7 +397,7 @@ export function EventTimelineSidebar({
         </div>
 
         <div className="relative">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
@@ -410,14 +410,14 @@ export function EventTimelineSidebar({
               'Filter timeline events',
               'ဖြစ်ရပ်များ ရှာဖွေရန်'
             )}
-            className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+            className="w-full pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:focus:ring-blue-500/30 focus:border-blue-700 dark:focus:border-blue-500"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
               aria-label={tr('Clear search', 'ရှာဖွေမှု ရှင်းလင်းရန်')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -431,29 +431,29 @@ export function EventTimelineSidebar({
           <div className="p-4 space-y-4">
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="flex gap-3 animate-pulse">
-                <div className="w-7 h-7 rounded-full bg-slate-200 shrink-0" />
+                <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
                 <div className="flex-1 space-y-2 pt-0.5">
-                  <div className="h-3 w-28 bg-slate-200 rounded" />
-                  <div className="h-3.5 w-48 bg-slate-200 rounded" />
-                  <div className="h-3 w-full bg-slate-100 rounded" />
+                  <div className="h-3 w-28 bg-slate-200 dark:bg-slate-700 rounded" />
+                  <div className="h-3.5 w-48 bg-slate-200 dark:bg-slate-700 rounded" />
+                  <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded" />
                 </div>
               </div>
             ))}
           </div>
         ) : error ? (
           <div className="p-6 text-center space-y-2.5">
-            <p className="text-xs font-medium text-red-700">{error}</p>
+            <p className="text-xs font-medium text-red-700 dark:text-red-400">{error}</p>
             <button
               type="button"
               onClick={() => loadTimeline(false)}
-              className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg cursor-pointer"
+              className="px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg cursor-pointer"
             >
               {tr('Retry', 'ထပ်မံကြိုးစားရန်')}
             </button>
           </div>
         ) : filteredEvents.length === 0 ? (
           <div className="p-7 text-center space-y-2.5">
-            <p className="text-sm font-medium text-slate-900">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
               {counts.all === 0
                 ? tr(
                     'No timeline events recorded yet',
@@ -464,7 +464,7 @@ export function EventTimelineSidebar({
                     'ကိုက်ညီသော ဖြစ်ရပ် မတွေ့ရှိပါ'
                   )}
             </p>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               {counts.all === 0
                 ? tr(
                     'Schema baselines, drift alerts, and manual inspections for this database will appear here in chronological order.',
@@ -479,7 +479,7 @@ export function EventTimelineSidebar({
               <button
                 type="button"
                 onClick={onInspectNow}
-                className="mt-1 inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer"
+                className="mt-1 inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 rounded-lg transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>
@@ -494,7 +494,7 @@ export function EventTimelineSidebar({
                     setCategoryFilter('all');
                     setSearchTerm('');
                   }}
-                  className="mt-1 px-3 py-1.5 text-xs font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                  className="mt-1 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer"
                 >
                   {t('action.clearFilters')}
                 </button>
@@ -502,14 +502,14 @@ export function EventTimelineSidebar({
             )}
           </div>
         ) : (
-          <div className="divide-y divide-slate-200">
+          <div className="divide-y divide-slate-200 dark:divide-slate-800">
             {groupedByDay.map((group) => (
               <section key={group.day} className="px-4 py-3.5">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold text-slate-700">
+                  <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     {group.day}
                   </h3>
-                  <span className="text-[11px] text-slate-400 tabular-nums">
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 tabular-nums">
                     {tr(
                       `${group.items.length} event${
                         group.items.length === 1 ? '' : 's'
@@ -522,7 +522,7 @@ export function EventTimelineSidebar({
                 <ol className="relative space-y-3.5">
                   <span
                     aria-hidden="true"
-                    className="absolute left-[13px] top-3 bottom-3 w-px bg-slate-200"
+                    className="absolute left-[13px] top-3 bottom-3 w-px bg-slate-200 dark:bg-slate-700"
                   />
 
                   {group.items.map((ev) => {
@@ -561,18 +561,18 @@ export function EventTimelineSidebar({
                               {ev.statusLabel && (
                                 <>
                                   <span
-                                    className="text-slate-300"
+                                    className="text-slate-300 dark:text-slate-700"
                                     aria-hidden="true"
                                   >
                                     ·
                                   </span>
-                                  <span className="font-medium text-slate-600">
+                                  <span className="font-medium text-slate-600 dark:text-slate-300">
                                     {ev.statusLabel}
                                   </span>
                                 </>
                               )}
                               <span
-                                className="text-slate-300"
+                                className="text-slate-300 dark:text-slate-700"
                                 aria-hidden="true"
                               >
                                 ·
@@ -580,17 +580,17 @@ export function EventTimelineSidebar({
                               <time
                                 dateTime={ev.timestamp}
                                 title={new Date(ev.timestamp).toLocaleString()}
-                                className="font-mono text-slate-400 tabular-nums"
+                                className="font-mono text-slate-400 dark:text-slate-500 tabular-nums"
                               >
                                 {formatRelativeTime(ev.timestamp)}
                               </time>
                             </div>
 
                             <div className="mt-1 flex items-start justify-between gap-2">
-                              <p className="text-xs font-semibold text-slate-900 group-hover:text-blue-700 transition-colors leading-snug">
+                              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors leading-snug">
                                 {ev.title}
                               </p>
-                              <span className="text-slate-400 group-hover:text-slate-700 shrink-0 mt-0.5">
+                              <span className="text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300 shrink-0 mt-0.5">
                                 {isExpanded ? (
                                   <ChevronDown className="w-3.5 h-3.5" />
                                 ) : (
@@ -599,16 +599,16 @@ export function EventTimelineSidebar({
                               </span>
                             </div>
 
-                            <p className="mt-0.5 text-xs text-slate-600 leading-relaxed line-clamp-2">
+                            <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
                               {ev.summary}
                             </p>
 
-                            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-400 font-mono tabular-nums truncate">
+                            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 font-mono tabular-nums truncate">
                               <span>{formatTimeOnly(ev.timestamp)}</span>
                               {ev.actor && (
                                 <>
                                   <span aria-hidden="true">·</span>
-                                  <span className="font-sans text-slate-500 truncate">
+                                  <span className="font-sans text-slate-500 dark:text-slate-400 truncate">
                                     {ev.actor}
                                   </span>
                                 </>
@@ -617,7 +617,7 @@ export function EventTimelineSidebar({
                           </button>
 
                           {isExpanded && (
-                            <div className="mt-2.5 p-3 rounded-lg bg-slate-50 border border-slate-200/80 space-y-2.5 text-xs">
+                            <div className="mt-2.5 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 space-y-2.5 text-xs">
                               {ev.meta.length > 0 && (
                                 <dl className="space-y-1.5">
                                   {ev.meta.map((item) => (
@@ -625,11 +625,11 @@ export function EventTimelineSidebar({
                                       key={`${ev.id}-${item.label}`}
                                       className="flex items-baseline justify-between gap-3"
                                     >
-                                      <dt className="text-[11px] text-slate-500 shrink-0">
+                                      <dt className="text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
                                         {item.label}
                                       </dt>
                                       <dd
-                                        className={`text-[11px] text-slate-800 text-right break-all ${
+                                        className={`text-[11px] text-slate-800 dark:text-slate-200 text-right break-all ${
                                           item.mono
                                             ? 'font-mono tabular-nums'
                                             : ''
@@ -643,9 +643,9 @@ export function EventTimelineSidebar({
                               )}
 
                               {ev.remediationSql && (
-                                <div className="pt-2 border-t border-slate-200/80 space-y-1">
+                                <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800 space-y-1">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-medium text-slate-500">
+                                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                                       {tr('Remediation SQL', 'ပြင်ဆင်ရေး SQL')}
                                     </span>
                                     <button
@@ -656,11 +656,11 @@ export function EventTimelineSidebar({
                                           ev.remediationSql!
                                         )
                                       }
-                                      className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-700 hover:text-blue-900 cursor-pointer"
+                                      className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 cursor-pointer"
                                     >
                                       {copiedId === `sql-${ev.id}` ? (
                                         <>
-                                          <Check className="w-3 h-3 text-emerald-700" />
+                                          <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
                                           <span>{t('action.copied')}</span>
                                         </>
                                       ) : (
@@ -673,13 +673,13 @@ export function EventTimelineSidebar({
                                       )}
                                     </button>
                                   </div>
-                                  <pre className="p-2 bg-slate-900 text-slate-100 rounded text-[11px] font-mono overflow-x-auto leading-relaxed">
+                                  <pre className="p-2 bg-slate-900 dark:bg-slate-950 dark:border dark:border-slate-800 text-slate-100 rounded text-[11px] font-mono overflow-x-auto leading-relaxed">
                                     {ev.remediationSql}
                                   </pre>
                                 </div>
                               )}
 
-                              <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between gap-2">
+                              <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2">
                                 {ev.schemaHash ? (
                                   <button
                                     type="button"
@@ -689,11 +689,11 @@ export function EventTimelineSidebar({
                                         ev.schemaHash!
                                       )
                                     }
-                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
+                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
                                   >
                                     {copiedId === `hash-${ev.id}` ? (
                                       <>
-                                        <Check className="w-3 h-3 text-emerald-700" />
+                                        <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
                                         <span>
                                           {tr('Hash copied', 'Hash ကူးယူပြီး')}
                                         </span>
@@ -718,7 +718,7 @@ export function EventTimelineSidebar({
                                   <button
                                     type="button"
                                     onClick={() => onJumpToTab(ev.targetTab!)}
-                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 hover:text-blue-900 cursor-pointer whitespace-nowrap"
+                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 cursor-pointer whitespace-nowrap"
                                   >
                                     <span>
                                       {tr(
